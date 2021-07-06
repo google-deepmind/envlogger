@@ -1,0 +1,120 @@
+# Copyright 2021 DeepMind Technologies Limited..
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Converters to and from environment logger proto format.
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "codec",
+    srcs = ["codec.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//envlogger/proto:storage_py_pb2",
+        requirement("numpy"),
+    ],
+)
+
+py_test(
+    name = "codec_test",
+    srcs = ["codec_test.py"],
+    python_version = "PY3",
+    deps = [
+        ":codec",
+        "//envlogger/proto:storage_py_pb2",
+        requirement("absl-py"),
+        requirement("numpy"),
+    ],
+)
+
+py_library(
+    name = "spec_codec",
+    srcs = ["spec_codec.py"],
+    srcs_version = "PY3",
+    deps = [
+        requirement("dm_env"),
+        requirement("numpy"),
+    ],
+)
+
+py_test(
+    name = "spec_codec_test",
+    srcs = ["spec_codec_test.py"],
+    python_version = "PY3",
+    deps = [
+        ":spec_codec",
+        "//envlogger/proto:storage_py_pb2",
+        requirement("absl-py"),
+        requirement("dm_env"),
+        requirement("numpy"),
+    ],
+)
+
+cc_library(
+    name = "xtensor_codec",
+    srcs = ["xtensor_codec.cc"],
+    hdrs = ["xtensor_codec.h"],
+    linkopts = [
+        "-lgmp",
+        "-lgmpxx",
+    ],
+    deps = [
+        "//envlogger/proto:storage_cc_proto",
+        "@com_github_google_glog//:glog",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_absl//absl/types:variant",
+        "@com_google_riegeli//riegeli/endian:endian_reading",
+        "@com_google_riegeli//riegeli/endian:endian_writing",
+        "@xtensor",
+    ],
+)
+
+cc_test(
+    name = "xtensor_codec_test",
+    srcs = ["xtensor_codec_test.cc"],
+    deps = [
+        ":make_visitor",
+        ":xtensor_codec",
+        "//envlogger/platform:parse_text_proto",
+        "//envlogger/platform:proto_testutil",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "make_visitor",
+    hdrs = ["make_visitor.h"],
+    deps = [
+        "@com_google_absl//absl/types:variant",
+        "@com_google_absl//absl/utility",
+    ],
+)
+
+cc_test(
+    name = "make_visitor_test",
+    srcs = ["make_visitor_test.cc"],
+    deps = [
+        ":make_visitor",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/types:variant",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

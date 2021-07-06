@@ -1,0 +1,259 @@
+# Copyright 2021 DeepMind Technologies Limited..
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Backends.
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "episode_info",
+    hdrs = ["episode_info.h"],
+    deps = [
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_test(
+    name = "riegeli_shard_io_test",
+    srcs = ["riegeli_shard_io_test.cc"],
+    deps = [
+        ":episode_info",
+        ":riegeli_shard_reader",
+        ":riegeli_shard_writer",
+        "//envlogger/platform:parse_text_proto",
+        "//envlogger/platform:proto_testutil",
+        "//envlogger/platform:test_macros",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "riegeli_shard_reader",
+    srcs = ["riegeli_shard_reader.cc"],
+    hdrs = ["riegeli_shard_reader.h"],
+    deps = [
+        ":episode_info",
+        "//envlogger/converters:make_visitor",
+        "//envlogger/converters:xtensor_codec",
+        "//envlogger/platform:filesystem",
+        "//envlogger/platform:riegeli_file_reader",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:variant",
+        "@com_google_riegeli//riegeli/records:record_reader",
+        "@xtensor",
+    ],
+)
+
+cc_test(
+    name = "riegeli_shard_reader_test",
+    srcs = ["riegeli_shard_reader_test.cc"],
+    deps = [
+        ":episode_info",
+        ":riegeli_shard_reader",
+        "//envlogger/converters:xtensor_codec",
+        "//envlogger/platform:filesystem",
+        "//envlogger/platform:parse_text_proto",
+        "//envlogger/platform:proto_testutil",
+        "//envlogger/platform:riegeli_file_writer",
+        "//envlogger/platform:test_macros",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_riegeli//riegeli/base",
+        "@com_google_riegeli//riegeli/records:record_position",
+        "@com_google_riegeli//riegeli/records:record_writer",
+        "@xtensor",
+    ],
+)
+
+cc_library(
+    name = "riegeli_shard_writer",
+    srcs = ["riegeli_shard_writer.cc"],
+    hdrs = ["riegeli_shard_writer.h"],
+    deps = [
+        ":episode_info",
+        "//envlogger/converters:xtensor_codec",
+        "//envlogger/platform:riegeli_file_writer",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_riegeli//riegeli/base",
+        "@com_google_riegeli//riegeli/records:record_position",
+        "@com_google_riegeli//riegeli/records:record_writer",
+        "@xtensor",
+    ],
+)
+
+cc_test(
+    name = "riegeli_shard_writer_test",
+    srcs = ["riegeli_shard_writer_test.cc"],
+    deps = [
+        ":episode_info",
+        ":riegeli_shard_writer",
+        "//envlogger/converters:xtensor_codec",
+        "//envlogger/platform:filesystem",
+        "//envlogger/platform:parse_text_proto",
+        "//envlogger/platform:proto_testutil",
+        "//envlogger/platform:riegeli_file_reader",
+        "//envlogger/platform:test_macros",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_riegeli//riegeli/records:record_reader",
+        "@xtensor",
+    ],
+)
+
+cc_library(
+    name = "riegeli_dataset_io_constants",
+    hdrs = ["riegeli_dataset_io_constants.h"],
+    deps = ["@com_google_absl//absl/strings"],
+)
+
+cc_test(
+    name = "riegeli_dataset_io_test_cc",
+    srcs = ["riegeli_dataset_io_test.cc"],
+    deps = [
+        ":episode_info",
+        ":riegeli_dataset_reader",
+        ":riegeli_dataset_writer",
+        ":riegeli_shard_writer",
+        "//envlogger/platform:parse_text_proto",
+        "//envlogger/platform:proto_testutil",
+        "//envlogger/platform:test_macros",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_riegeli//riegeli/base",
+        "@com_google_riegeli//riegeli/records:record_reader",
+        "@com_google_riegeli//riegeli/records:record_writer",
+    ],
+)
+
+cc_library(
+    name = "riegeli_dataset_reader",
+    srcs = ["riegeli_dataset_reader.cc"],
+    hdrs = ["riegeli_dataset_reader.h"],
+    deps = [
+        ":episode_info",
+        ":riegeli_dataset_io_constants",
+        ":riegeli_shard_reader",
+        ":riegeli_shard_writer",
+        "//envlogger/platform:bundle",
+        "//envlogger/platform:filesystem",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_riegeli//riegeli/base",
+        "@com_google_riegeli//riegeli/records:record_reader",
+        "@com_google_riegeli//riegeli/records:record_writer",
+    ],
+)
+
+cc_test(
+    name = "riegeli_dataset_reader_test",
+    srcs = ["riegeli_dataset_reader_test.cc"],
+    deps = [
+        ":episode_info",
+        ":riegeli_dataset_io_constants",
+        ":riegeli_dataset_reader",
+        ":riegeli_shard_writer",
+        "//envlogger/platform:parse_text_proto",
+        "//envlogger/platform:proto_testutil",
+        "//envlogger/platform:riegeli_file_writer",
+        "//envlogger/platform:test_macros",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_riegeli//riegeli/base",
+        "@com_google_riegeli//riegeli/records:record_reader",
+        "@com_google_riegeli//riegeli/records:record_writer",
+    ],
+)
+
+cc_library(
+    name = "riegeli_dataset_writer",
+    srcs = ["riegeli_dataset_writer.cc"],
+    hdrs = ["riegeli_dataset_writer.h"],
+    deps = [
+        ":episode_info",
+        ":riegeli_shard_reader",
+        ":riegeli_shard_writer",
+        "//envlogger/backends/cc:riegeli_dataset_io_constants",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_riegeli//riegeli/base",
+        "@com_google_riegeli//riegeli/records:record_reader",
+        "@com_google_riegeli//riegeli/records:record_writer",
+    ],
+)
+
+cc_test(
+    name = "riegeli_dataset_writer_test",
+    srcs = ["riegeli_dataset_writer_test.cc"],
+    deps = [
+        ":episode_info",
+        ":riegeli_dataset_io_constants",
+        ":riegeli_dataset_writer",
+        ":riegeli_shard_writer",
+        "//envlogger/platform:parse_text_proto",
+        "//envlogger/platform:proto_testutil",
+        "//envlogger/platform:test_macros",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_riegeli//riegeli/base",
+        "@com_google_riegeli//riegeli/records:record_reader",
+        "@com_google_riegeli//riegeli/records:record_writer",
+    ],
+)

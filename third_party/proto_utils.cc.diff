@@ -1,0 +1,23 @@
+--- pybind11_protobuf/proto_utils.cc
++++ pybind11_protobuf/proto_utils.cc
+@@ -13,7 +13,9 @@
+ #include "google/protobuf/any.pb.h"
+ #include "google/protobuf/descriptor.pb.h"
+ #include "google/protobuf/descriptor.h"
++#include "google/protobuf/io/zero_copy_stream_impl.h"
+ #include "google/protobuf/message.h"
++
+ #include "absl/strings/str_format.h"
+ 
+ void pybind11_proto_casters_collision() {
+@@ -1024,8 +1026,8 @@
+         any_proto.value());
+   } else {
+     bytes serialized(nullptr, any_proto.value().size());
+-    absl::SNPrintF(PYBIND11_BYTES_AS_STRING(serialized.ptr()),
+-                   any_proto.value().size(), any_proto.value().c_str());
++    any_proto.value().copy(PYBIND11_BYTES_AS_STRING(serialized.ptr()),
++                           any_proto.value().size());
+     getattr(py_proto, "ParseFromString")(serialized);
+     return true;
+   }

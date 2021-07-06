@@ -1,0 +1,148 @@
+# Copyright 2021 DeepMind Technologies Limited..
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Backends.
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "backend_type",
+    srcs = ["backend_type.py"],
+    srcs_version = "PY3",
+)
+
+py_library(
+    name = "schedulers",
+    srcs = ["schedulers.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//envlogger:step_data",
+        requirement("numpy"),
+    ],
+)
+
+py_test(
+    name = "schedulers_test",
+    srcs = ["schedulers_test.py"],
+    python_version = "PY3",
+    deps = [
+        ":schedulers",
+        "//envlogger:step_data",
+        requirement("absl-py"),
+        requirement("dm_env"),
+        requirement("numpy"),
+    ],
+)
+
+py_library(
+    name = "backend_reader",
+    srcs = ["backend_reader.py"],
+    data = ["//envlogger/backends/python:episode_info.so"],
+    srcs_version = "PY3",
+    deps = [
+        "//envlogger:step_data",
+        "//envlogger/converters:codec",
+        requirement("absl-py"),
+    ],
+)
+
+py_library(
+    name = "backend_writer",
+    srcs = ["backend_writer.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//envlogger:step_data",
+    ],
+)
+
+py_library(
+    name = "in_memory_backend",
+    srcs = ["in_memory_backend.py"],
+    data = ["//envlogger/backends/python:episode_info.so"],
+    srcs_version = "PY3",
+    deps = [
+        ":backend_reader",
+        ":backend_writer",
+        "//envlogger:step_data",
+    ],
+)
+
+py_test(
+    name = "in_memory_backend_test",
+    srcs = ["in_memory_backend_test.py"],
+    python_version = "PY3",
+    deps = [
+        ":backend_writer",
+        ":in_memory_backend",
+        ":schedulers",
+        "//envlogger:step_data",
+        "//envlogger/testing:catch_env",
+        requirement("absl-py"),
+        requirement("numpy"),
+    ],
+)
+
+py_library(
+    name = "riegeli_backend_reader",
+    srcs = ["riegeli_backend_reader.py"],
+    data = [
+        "//envlogger/backends/python:riegeli_dataset_reader.so",
+        "@pybind11_abseil//pybind11_abseil:status.so",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        ":backend_reader",
+        "//envlogger:step_data",
+        "//envlogger/converters:codec",
+        "//envlogger/proto:storage_py_pb2",
+        requirement("absl-py"),
+        requirement("dm_env"),
+    ],
+)
+
+py_library(
+    name = "riegeli_backend_writer",
+    srcs = ["riegeli_backend_writer.py"],
+    data = [
+        "//envlogger/backends/python:riegeli_dataset_writer.so",
+        "@pybind11_abseil//pybind11_abseil:status.so",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        ":backend_writer",
+        ":schedulers",
+        "//envlogger:step_data",
+        "//envlogger/converters:codec",
+        requirement("absl-py"),
+    ],
+)
+
+py_test(
+    name = "riegeli_backend_writer_test",
+    srcs = ["riegeli_backend_writer_test.py"],
+    python_version = "PY3",
+    deps = [
+        ":backend_writer",
+        ":riegeli_backend_reader",
+        ":riegeli_backend_writer",
+        ":schedulers",
+        "//envlogger:step_data",
+        "//envlogger/testing:catch_env",
+        requirement("absl-py"),
+        requirement("dm_env"),
+        requirement("numpy"),
+    ],
+)

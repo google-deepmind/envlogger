@@ -1,0 +1,96 @@
+# Copyright 2021 DeepMind Technologies Limited..
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Build targets for environment logger.
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "environment_logger",
+    srcs = ["environment_logger.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":environment_wrapper",
+        ":step_data",
+        "//envlogger/backends:backend_type",
+        "//envlogger/backends:backend_writer",
+        "//envlogger/backends:in_memory_backend",
+        "//envlogger/backends:riegeli_backend_writer",
+        "//envlogger/converters:spec_codec",
+        requirement("dm_env"),
+    ],
+)
+
+py_test(
+    name = "environment_logger_test",
+    srcs = ["environment_logger_test.py"],
+    python_version = "PY3",
+    deps = [
+        ":environment_logger",
+        ":reader",
+        ":step_data",
+        "//envlogger/backends:backend_writer",
+        "//envlogger/backends:in_memory_backend",
+        "//envlogger/backends:schedulers",
+        "//envlogger/converters:codec",
+        "//envlogger/converters:spec_codec",
+        "//envlogger/proto:storage_py_pb2",
+        "//envlogger/testing:catch_env",
+        "@com_google_riegeli//python/riegeli",
+        requirement("absl-py"),
+        requirement("dm_env"),
+        requirement("mock"),
+        requirement("numpy"),
+    ],
+)
+
+py_library(
+    name = "environment_wrapper",
+    srcs = ["environment_wrapper.py"],
+    srcs_version = "PY3",
+    deps = [
+        requirement("dm_env"),
+    ],
+)
+
+py_library(
+    name = "reader",
+    srcs = ["reader.py"],
+    data = [
+        "//envlogger/backends/python:episode_info.so",
+        "//envlogger/backends/python:riegeli_dataset_reader.so",
+        "@pybind11_abseil//pybind11_abseil:status.so",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        ":step_data",
+        "//envlogger/backends:backend_reader",
+        "//envlogger/backends:backend_type",
+        "//envlogger/backends:in_memory_backend",
+        "//envlogger/backends:riegeli_backend_reader",
+        "//envlogger/converters:spec_codec",
+        requirement("absl-py"),
+    ],
+)
+
+py_library(
+    name = "step_data",
+    srcs = ["step_data.py"],
+    srcs_version = "PY3",
+    deps = [
+        requirement("dm_env"),
+    ],
+)

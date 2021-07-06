@@ -1,0 +1,67 @@
+# Copyright 2021 DeepMind Technologies Limited..
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@py_deps//:requirements.bzl", "requirement")
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+
+package(default_visibility = ["//envlogger:__subpackages__"])
+
+pybind_extension(
+    name = "riegeli_dataset_reader",
+    srcs = ["riegeli_dataset_reader.cc"],
+    deps = [
+        "//envlogger/backends/cc:riegeli_dataset_reader",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_riegeli//riegeli/bytes:string_writer",
+        "@com_google_riegeli//riegeli/endian:endian_writing",
+        "@pybind11_abseil//pybind11_abseil:status_casters",
+        "@pybind11_protobuf//pybind11_protobuf:proto_casters",
+    ],
+)
+
+pybind_extension(
+    name = "riegeli_dataset_writer",
+    srcs = ["riegeli_dataset_writer.cc"],
+    deps = [
+        "//envlogger/backends/cc:riegeli_dataset_writer",
+        "//envlogger/proto:storage_cc_proto",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_riegeli//riegeli/bytes:string_writer",
+        "@com_google_riegeli//riegeli/endian:endian_writing",
+        "@pybind11_abseil//pybind11_abseil:status_casters",
+        "@pybind11_protobuf//pybind11_protobuf:proto_casters",
+    ],
+)
+
+pybind_extension(
+    name = "episode_info",
+    srcs = ["episode_info.cc"],
+    deps = [
+        "//envlogger/backends/cc:episode_info",
+        "//envlogger/proto:storage_cc_proto",
+        "@pybind11_protobuf//pybind11_protobuf:proto_casters",
+    ],
+)
+
+py_test(
+    name = "episode_info_test",
+    srcs = ["episode_info_test.py"],
+    data = [":episode_info.so"],
+    python_version = "PY3",
+    deps = [
+        "//envlogger/proto:storage_py_pb2",
+        requirement("absl-py"),
+    ],
+)

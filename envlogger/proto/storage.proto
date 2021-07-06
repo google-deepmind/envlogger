@@ -1,0 +1,138 @@
+// Copyright 2021 DeepMind Technologies Limited..
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package envlogger;
+
+// Datum is basically a multidimensional Matrix (or Tensor if you like).
+message Datum {
+  message Shape {
+    // One dimension of the tensor.
+    message Dim {
+      // Size of the tensor in that dimension.
+
+      // -438 is a dimension size reserved for pure scalars.
+      // Pure scalars are different from zero-dimensional matrices in many
+      // programming languages, so this value is used to differentiate between
+      // them.
+      // It comes from the sum of negative ASCII codes:
+      // S = -83
+      // C = -67
+      // A = -65
+      // L = -76
+      // A = -65
+      // R = -82
+      // ------
+      //    -438
+      int64 size = 1;
+    }
+
+    // Dimensions of the tensor, such as {"input", 30}, {"output", 40}
+    // for a 30 x 40 2D tensor. The names are optional.
+    //
+    // The order of entries in "dim" matters: It indicates the layout of the
+    // values in the tensor in-memory representation.
+    //
+    // The first entry in "dim" is the outermost dimension used to layout the
+    // values, the last entry is the innermost dimension.  This matches the
+    // in-memory layout of RowMajor Eigen tensors and xt::xarray.
+    repeated Dim dim = 2;
+  }
+
+  Shape shape = 1;
+
+  // Storage of basic value types.
+  // Please refer to the API of your programming language to determine the exact
+  // type that's obtained from decoding Datums.
+  message Values {
+    // Types supported natively by protobuf.
+    // 32-bit float.
+    repeated float float_values = 1;
+    // float32 values encoded as big-endian bytes.
+    bytes float_values_buffer = 15;
+    // 64-bit float.
+    repeated double double_values = 2;
+    // 32-bit signed integer.
+    repeated int32 int32_values = 3;
+    // 64-bit signed integer.
+    repeated int64 int64_values = 4;
+    // 32-bit unsigned integer.
+    repeated uint32 uint32_values = 5;
+    // 64-bit unsigned integer.
+    repeated uint64 uint64_values = 6;
+    // boolean value.
+    repeated bool bool_values = 7;
+    // string value.
+    repeated string string_values = 8;
+
+    // Opaque bytes to store arbitrary user-defined values.
+    repeated bytes bytes_values = 9;
+
+    // Arbitrarily long signed ints stored in big-endian byte order.
+    // These correspond to normal Python int()s.
+    repeated bytes bigint_values = 10;
+
+    // Small ints are not supported by protobuf so we encode them as bytes in
+    // big-endian byte order with fixed-length (1 byte for int8 and 2 bytes for
+    // int16).
+    // https://developers.google.com/protocol-buffers/docs/proto3#scalar
+
+    // int8 corresponds to an np.int8 in Python and int8 in C++.
+    bytes int8_values = 11;
+    // int16 corresponds to an np.int16 in Python and int16 in C++.
+    bytes int16_values = 12;
+    // uint8 corresponds to an np.uint8 in Python and uint8 in C++.
+    bytes uint8_values = 13;
+    // uint16 corresponds to an np.uint16 in Python and uint16 in C++.
+    bytes uint16_values = 14;
+  }
+  Values values = 2;
+}
+
+message Data {
+  // Array represents a sequence of homogeneous elements.
+  //
+  // Our APIs expect and check that all elements in Array are of the same type.
+  // An Array corresponds to a Python list() and to a C++ std::vector<T>.
+  message Array {
+    repeated Data values = 1;
+  }
+
+  // Tuple represents a sequence of heterogeneous elements.
+  //
+  // A Tuple corresponds to a Python tuple() and to a C++ std::tuple<>.
+  message Tuple {
+    repeated Data values = 1;
+  }
+
+  // Dict represents a mapping from strings to elements.
+  //
+  // A Dict corresponds to a Python dict() and to a C++
+  // std::{unordered_}map<T, U>.
+  message Dict {
+    map<string, Data> values = 1;
+  }
+
+  // Notice that the format does NOT differentiate between empty values, that
+  // is, an empty Array is represented equally as an empty Dict or empty Tuple.
+  // Empty `Data` objects are completely empty and do not occupy any space on
+  // disk and are not sent over the wire.
+  oneof value {
+    Datum datum = 1;
+    Array array = 2;
+    Tuple tuple = 3;
+    Dict dict = 4;
+  }
+}

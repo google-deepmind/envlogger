@@ -1,0 +1,220 @@
+# Copyright 2021 DeepMind Technologies Limited..
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Import protobuf dependencies.
+http_archive(
+    name = "com_google_protobuf",
+    url = "https://github.com/protocolbuffers/protobuf/archive/v3.9.0.zip",
+    strip_prefix = "protobuf-3.9.0",
+    patch_cmds = [r"sed -i -e 's/\/\/external:six/@six_archive\/\/:six/g' BUILD"],
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
+http_archive(
+    name = "six_archive",
+    build_file = "@com_google_protobuf//:six.BUILD",
+    sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
+    url = "https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz#md5=34eed507548117b2ab523ab14b2f8b55",
+)
+
+# Install the requirements.
+http_archive(
+    name = "rules_python",
+    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+)
+
+load("@rules_python//python:pip.bzl", "pip_install")
+
+pip_install(
+    name = "py_deps",
+    quiet = False,
+    requirements = "//envlogger:requirements.txt",
+)
+
+# Import Bazel protobuf rules.
+http_archive(
+    name = "rules_proto",
+    sha256 = "602e7161d9195e50246177e7c55b2f39950a9cf7366f74ed5f22fd45750cd208",
+    strip_prefix = "rules_proto-97d8af4dc474595af3900dd85cb3a29ad28cc313",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
+        "https://github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
+    ],
+)
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+
+rules_proto_dependencies()
+rules_proto_toolchains()
+
+# abseil-cpp.
+http_archive(
+    name = "com_google_absl",
+    sha256 = "35f22ef5cb286f09954b7cc4c85b5a3f6221c9d4df6b8c4a1e9d399555b366ee",  # SHARED_ABSL_SHA
+    strip_prefix = "abseil-cpp-997aaf3a28308eba1b9156aa35ab7bca9688e9f6",
+    urls = [
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/abseil/abseil-cpp/archive/997aaf3a28308eba1b9156aa35ab7bca9688e9f6.tar.gz",
+        "https://github.com/abseil/abseil-cpp/archive/997aaf3a28308eba1b9156aa35ab7bca9688e9f6.tar.gz",
+    ],
+)
+
+# Google Test and gmock.
+http_archive(
+    name = "com_google_googletest",
+    sha256 = "ff7a82736e158c077e76188232eac77913a15dac0b22508c390ab3f88e6d6d86",
+    strip_prefix = "googletest-b6cd405286ed8635ece71c72f118e659f4ade3fb",
+    urls = [
+        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/google/googletest/archive/b6cd405286ed8635ece71c72f118e659f4ade3fb.zip",
+        "https://github.com/google/googletest/archive/b6cd405286ed8635ece71c72f118e659f4ade3fb.zip",
+    ],
+)
+
+# Riegeli.
+http_archive(
+    name = "com_google_riegeli",
+    sha256 = "0e2abe5eea18eba5df0b259c3a830ec673c01b46144873b3470c57649c21470f",
+    strip_prefix = "riegeli-313fa1fea5c7b73001f4536dbafc26503a81b440",
+    url = "https://github.com/google/riegeli/archive/313fa1fea5c7b73001f4536dbafc26503a81b440.tar.gz",  # 2021-07-01
+)
+
+# Dependencies needed by Riegeli.
+http_archive(
+    name = "highwayhash",
+    build_file = "//third_party:highwayhash.BUILD.bazel",
+    sha256 = "cf891e024699c82aabce528a024adbe16e529f2b4e57f954455e0bf53efae585",
+    strip_prefix = "highwayhash-276dd7b4b6d330e4734b756e97ccfb1b69cc2e12",
+    url = "https://github.com/google/highwayhash/archive/276dd7b4b6d330e4734b756e97ccfb1b69cc2e12.zip",  # 2019-02-22
+)
+
+http_archive(
+    name = "net_zstd",
+    build_file = "//third_party:net_zstd.BUILD.bazel",
+    sha256 = "b6c537b53356a3af3ca3e621457751fa9a6ba96daf3aebb3526ae0f610863532",
+    strip_prefix = "zstd-1.4.5/lib",
+    url = "https://github.com/facebook/zstd/archive/v1.4.5.zip",  # 2020-05-22
+)
+
+http_archive(
+    name = "org_brotli",
+    sha256 = "6e69be238ff61cef589a3fa88da11b649c7ff7a5932cb12d1e6251c8c2e17a2f",
+    strip_prefix = "brotli-1.0.7",
+    url = "https://github.com/google/brotli/archive/v1.0.7.zip",  # 2018-10-23
+    patches = [
+        "@//third_party:org_brotli_no_wconversion.diff"
+    ],
+    patch_args = [
+        "-p1",
+    ],
+)
+
+http_archive(
+    name = "snappy",
+    build_file = "//third_party:snappy.BUILD.bazel",
+    sha256 = "38b4aabf88eb480131ed45bfb89c19ca3e2a62daeb081bdf001cfb17ec4cd303",
+    strip_prefix = "snappy-1.1.8",
+    url = "https://github.com/google/snappy/archive/1.1.8.zip",  # 2020-01-14
+)
+
+http_archive(
+    name = "crc32c",
+    build_file = "//third_party:crc32.BUILD.bazel",
+    sha256 = "338f1d9d95753dc3cdd882dfb6e176bbb4b18353c29c411ebcb7b890f361722e",
+    strip_prefix = "crc32c-1.1.0",
+    urls = [
+        "https://mirror.bazel.build/github.com/google/crc32c/archive/1.1.0.zip",
+        "https://github.com/google/crc32c/archive/1.1.0.zip",  # 2019-05-24
+    ],
+)
+
+http_archive(
+    name = "zlib",
+    build_file = "//third_party:zlib.BUILD.bazel",
+    sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
+    strip_prefix = "zlib-1.2.11",
+    urls = [
+        "http://mirror.bazel.build/zlib.net/fossils/zlib-1.2.11.tar.gz",
+        "http://zlib.net/fossils/zlib-1.2.11.tar.gz",  # 2017-01-15
+    ],
+)
+
+# Xtensor and dependencies.
+http_archive(
+    name = "xtl",
+    urls = ["https://github.com/xtensor-stack/xtl/archive/e0f00666d90086bb245ae73abb6123d0e2c1b30b.zip"],
+    sha256 = "7c517db8a652a965c02a9e37ca3c3a8c7f5ba87868a02fe5a678eb4256b42d0b",
+    strip_prefix = "xtl-e0f00666d90086bb245ae73abb6123d0e2c1b30b",
+    build_file = "//third_party:xtl.BUILD.bazel",
+)
+
+http_archive(
+    name = "xtensor",
+    urls = ["https://github.com/xtensor-stack/xtensor/archive/54dbb8223d5a874261e8e988b487054d2e50710e.zip"],
+    sha256 = "63ae5657e14f28a2375cc70b6dd0deb10247cb2010055a74fb6de93511735999",
+    strip_prefix = "xtensor-54dbb8223d5a874261e8e988b487054d2e50710e",
+    build_file = "//third_party:xtensor.BUILD.bazel",
+)
+
+# Google Logging library.
+http_archive(
+    name = "com_github_gflags_gflags",
+    sha256 = "34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9dfc499492966c64dcf",
+    strip_prefix = "gflags-2.2.2",
+    urls = ["https://github.com/gflags/gflags/archive/v2.2.2.tar.gz"],
+)
+
+http_archive(
+    name = "com_github_google_glog",
+    sha256 = "21bc744fb7f2fa701ee8db339ded7dce4f975d0d55837a97be7d46e8382dea5a",
+    strip_prefix = "glog-0.5.0",
+    urls = ["https://github.com/google/glog/archive/v0.5.0.zip"],
+)
+
+# Pybind11 bindings for the Abseil C++ common libraries.
+http_archive(
+    name = "pybind11_bazel",
+    strip_prefix = "pybind11_bazel-26973c0ff320cb4b39e45bc3e4297b82bc3a6c09",
+    urls = ["https://github.com/pybind/pybind11_bazel/archive/26973c0ff320cb4b39e45bc3e4297b82bc3a6c09.zip"],
+)
+
+http_archive(
+    name = "pybind11",
+    sha256 = "4828cd4b5b637ac5bc1106655931e5fe8dd6b56db6c24ccf7b44d3b2c55f49c2",
+    build_file = "@pybind11_bazel//:pybind11.BUILD",
+    strip_prefix = "pybind11-0c93a0f3fcf6bf26be584558d7426564720cea6f",
+    urls = ["https://github.com/pybind/pybind11/archive/0c93a0f3fcf6bf26be584558d7426564720cea6f.tar.gz"],
+)
+
+load("@pybind11_bazel//:python_configure.bzl", "python_configure")
+python_configure(name = "local_config_python", python_version = "3")
+
+git_repository(
+    name = "pybind11_abseil",
+    commit = "7cf76381300671ade35127cb25566d588c69e717",
+    remote = "https://github.com/pybind/pybind11_abseil.git",
+)
+
+git_repository(
+    name = "pybind11_protobuf",
+    commit = "0f9d7e967cb20e3875be04115e7340ab3211ffe2",
+    remote = "https://github.com/scal444/pybind11_protobuf.git",
+    patch_args = ["-p0"],
+    patches = ["//third_party:proto_utils.cc.diff"],
+)
