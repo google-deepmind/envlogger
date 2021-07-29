@@ -68,7 +68,7 @@ absl::StatusOr<Data> ReadFirstRiegeliRecord(const absl::string_view filepath) {
 absl::Status RiegeliDatasetReader::Init(absl::string_view data_dir) {
   ENVLOGGER_ASSIGN_OR_RETURN(
       std::vector<std::string> matches,
-      file::GetSubdirectories(tag_dir, internal::kStepOffsetsFilename));
+      file::GetSubdirectories(data_dir, internal::kStepOffsetsFilename));
 
   // Sort matches to have a deterministic and increasing order.
   std::sort(std::begin(matches), std::end(matches));
