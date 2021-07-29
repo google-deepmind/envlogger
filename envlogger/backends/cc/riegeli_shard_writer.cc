@@ -69,18 +69,6 @@ void WriteLastEpisodeIndex(
 
 }  // namespace
 
-absl::Status RiegeliShardWriter::Init(absl::string_view index_filepath,
-                                      absl::string_view trajectories_filepath,
-                                      absl::string_view writer_options) {
-  num_steps_at_flush_ = 0;
-  riegeli::RecordWriterBase::Options options;
-  ENVLOGGER_RETURN_IF_ERROR(options.FromString(writer_options));
-  index_writer_.Reset(RiegeliFileWriter<>(index_filepath, "w"), options);
-  ENVLOGGER_RETURN_IF_ERROR(index_writer_.status());
-  steps_writer_.Reset(RiegeliFileWriter<>(trajectories_filepath, "w"), options);
-  ENVLOGGER_RETURN_IF_ERROR(steps_writer_.status());
-  return absl::OkStatus();
-}
 
 absl::Status RiegeliShardWriter::Init(
     absl::string_view steps_filepath, absl::string_view step_offsets_filepath,
@@ -130,7 +118,6 @@ void RiegeliShardWriter::Flush() {
     VLOG(0) << "steps_writer_.status(): " << steps_writer_.status();
   }
 
-  if (!index_writer_.is_open()) {  // New format.
     // Write and flush step offsets.
     if (const Datum step_offsets_datum = Encode(step_offsets);
         !step_offsets_writer_.WriteRecord(step_offsets_datum) ||
@@ -168,22 +155,6 @@ void RiegeliShardWriter::Flush() {
       episode_starts_.push_back(latest_episode_start);
       episode_offsets_.clear();
     }
-  } else {  // Legacy format.
-    Data data;
-    auto& dict = *data.mutable_dict()->mutable_values();
-    *dict["step_offsets_array"].mutable_datum() = Encode(step_offsets);
-    if (num_episodes > 0) {
-      *dict["episode_starts_array"].mutable_datum() = Encode(episode_starts);
-    }
-    if (index_writer_.is_open() && !index_writer_.WriteRecord(data)) {
-      VLOG(0) << "index_writer_.status(): " << index_writer_.status();
-    }
-    if (index_writer_.is_open() &&
-        !index_writer_.Flush(riegeli::FlushType::kFromMachine)) {
-      VLOG(0) << "index_writer_.status(): " << index_writer_.status();
-    }
-    episode_starts_.clear();
-  }
   step_offsets_.clear();
 
   VLOG(2) << "~Flush()";
@@ -199,17 +170,12 @@ void RiegeliShardWriter::Close() {
   // Close everything.
   const bool steps_close_status = steps_writer_.Close();
   VLOG(1) << "steps_close_status: " << steps_close_status;
-  if (!index_writer_.is_open()) {
     const bool step_offsets_close_status = step_offsets_writer_.Close();
     VLOG(1) << "step_offsets_close_status: " << step_offsets_close_status;
     const bool episodes_close_status = episode_metadata_writer_.Close();
     VLOG(1) << "episodes_close_status: " << episodes_close_status;
     const bool episode_offsets_close_status = episode_index_writer_.Close();
     VLOG(1) << "episode_offsets_close_status: " << episode_offsets_close_status;
-  } else {
-    const bool index_close_status = index_writer_.Close();
-    VLOG(1) << "index_close_status: " << index_close_status;
-  }
 }
 
 void RiegeliShardWriter::AddStep(const google::protobuf::Message& data,

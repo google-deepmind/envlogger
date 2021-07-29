@@ -31,7 +31,7 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
 
   def __init__(
       self,
-      tag_directory: str,
+      data_directory: str,
       max_episodes_per_file: int = 10000,
       writer_options: str = 'transpose,brotli:6,chunk_size:1M',
       flush_scheduler: Optional[schedulers.Scheduler] = None,
@@ -47,7 +47,7 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
     short-lived, then a large portion of the trajectories can disappear.
 
     Args:
-      tag_directory: Destination for the episode data.
+      data_directory: Destination for the episode data.
       max_episodes_per_file: maximum number of episodes stored in one file.
       writer_options: Comma-separated list of options that are passed to the
         Riegeli RecordWriter as is.
@@ -57,20 +57,20 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
       **base_kwargs: arguments for the base class.
     """
     super().__init__(**base_kwargs)
-    self._tag_directory = tag_directory
+    self._data_directory = data_directory
     if flush_scheduler is None:
       self._flush_scheduler = schedulers.bernoulli_step_scheduler(
           1.0 / 5000)
     else:
       self._flush_scheduler = flush_scheduler
-    self._tag_writer = riegeli_dataset_writer.RiegeliDatasetWriter()
-    logging.info('self._tag_directory: %r', self._tag_directory)
+    self._data_writer = riegeli_dataset_writer.RiegeliDatasetWriter()
+    logging.info('self._data_directory: %r', self._data_directory)
 
     metadata = self._metadata or {}
 
     try:
-      self._tag_writer.init(
-          tag_dir=tag_directory,
+      self._data_writer.init(
+          data_dir=data_directory,
           metadata=codec.encode(metadata),
           max_episodes_per_shard=max_episodes_per_file,
           writer_options=writer_options)
@@ -80,17 +80,17 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
   def _record_step(self, data: step_data.StepData,
                    is_new_episode: bool) -> None:
     encoded_data = codec.encode(data)
-    self._tag_writer.add_step(encoded_data, is_new_episode)
+    self._data_writer.add_step(encoded_data, is_new_episode)
     if self._flush_scheduler is not None and not self._flush_scheduler(data):
       return
-    self._tag_writer.flush()
+    self._data_writer.flush()
 
   def set_episode_metadata(self, data: Any) -> None:
     encoded_data = codec.encode(data)
-    self._tag_writer.set_episode_metadata(encoded_data)
+    self._data_writer.set_episode_metadata(encoded_data)
 
   def close(self) -> None:
-    logging.info('Deleting the backend with tagdir: %r', self._tag_directory)
-    self._tag_writer.close()
-    logging.info('Done deleting the backend with tagdir: %r',
-                 self._tag_directory)
+    logging.info('Deleting the backend with data_dir: %r', self._data_directory)
+    self._data_writer.close()
+    logging.info('Done deleting the backend with data_dir: %r',
+                 self._data_directory)

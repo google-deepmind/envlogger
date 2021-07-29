@@ -51,10 +51,10 @@ class RiegeliBackendTest(parameterized.TestCase):
       env = catch_env.Catch()
       logging.info('Done creating Catch environment.')
     temp_dir = self.create_tempdir()
-    tag_directory = temp_dir.full_path
+    data_directory = temp_dir.full_path
 
     backend = riegeli_backend_writer.RiegeliBackendWriter(
-        tag_directory=tag_directory,
+        data_directory=data_directory,
         max_episodes_per_file=max_episodes_per_file,
         metadata=metadata,
         scheduler=scheduler,
@@ -78,7 +78,7 @@ class RiegeliBackendTest(parameterized.TestCase):
     logging.info('Done training a random agent for %r episodes.', num_episodes)
     env.close()
     backend.close()
-    return episodes_data, tag_directory
+    return episodes_data, data_directory
 
   def _validate_steps(self,
                       actual_steps,
@@ -95,21 +95,21 @@ class RiegeliBackendTest(parameterized.TestCase):
     """Test logging without having an environment."""
 
     num_episodes = 3
-    expected_steps, tag_directory = self._collect_episode_data(
+    expected_steps, data_directory = self._collect_episode_data(
         num_episodes=num_episodes)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
-      actual_steps = list(tag_reader.steps)
+        data_directory) as data_reader:
+      actual_steps = list(data_reader.steps)
       self._validate_steps(actual_steps, expected_steps, num_episodes)
 
   def test_episodes_round_trip(self):
     num_episodes = 3
     num_steps_per_episode = 10
-    expected_steps, tag_directory = self._collect_episode_data(
+    expected_steps, data_directory = self._collect_episode_data(
         num_episodes=num_episodes)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
-      for episode_index, episode in enumerate(tag_reader.episodes):
+        data_directory) as data_reader:
+      for episode_index, episode in enumerate(data_reader.episodes):
         episode_actual_steps = list(episode)
         episode_expected_steps = expected_steps[episode_index *
                                                 num_steps_per_episode:
@@ -122,15 +122,15 @@ class RiegeliBackendTest(parameterized.TestCase):
     num_episodes = 2
     step_interval = 2
     scheduler = schedulers.n_step_scheduler(step_interval=step_interval)
-    expected_steps, tag_directory = self._collect_episode_data(
+    expected_steps, data_directory = self._collect_episode_data(
         num_episodes=num_episodes, scheduler=scheduler)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
+        data_directory) as data_reader:
       expected_steps = [
           step for i, step in enumerate(expected_steps)
           if i % step_interval == 0
       ]
-      actual_steps = list(tag_reader.steps)
+      actual_steps = list(data_reader.steps)
       self._validate_steps(
           actual_steps,
           expected_steps,
@@ -139,66 +139,67 @@ class RiegeliBackendTest(parameterized.TestCase):
 
   def test_step_negative_indices(self):
     """Ensures that negative step indices are handled correctly."""
-    _, tag_directory = self._collect_episode_data(
+    _, data_directory = self._collect_episode_data(
         num_episodes=6, max_episodes_per_file=3)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
-      np.testing.assert_equal(tag_reader.steps[-1],
-                              tag_reader.steps[len(tag_reader.steps) - 1])
-      np.testing.assert_equal(tag_reader.steps[-len(tag_reader.steps)],
-                              tag_reader.steps[0])
+        data_directory) as data_reader:
+      np.testing.assert_equal(data_reader.steps[-1],
+                              data_reader.steps[len(data_reader.steps) - 1])
+      np.testing.assert_equal(data_reader.steps[-len(data_reader.steps)],
+                              data_reader.steps[0])
 
   def test_step_out_of_bounds_indices(self):
     """Ensures that out of bounds step indices are handled correctly."""
-    _, tag_directory = self._collect_episode_data(
+    _, data_directory = self._collect_episode_data(
         num_episodes=6, max_episodes_per_file=3)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
-      self.assertRaises(IndexError, operator.getitem, tag_reader.steps,
-                        len(tag_reader.steps))
-      self.assertRaises(IndexError, operator.getitem, tag_reader.steps,
-                        -len(tag_reader.steps) - 1)
+        data_directory) as data_reader:
+      self.assertRaises(IndexError, operator.getitem, data_reader.steps,
+                        len(data_reader.steps))
+      self.assertRaises(IndexError, operator.getitem, data_reader.steps,
+                        -len(data_reader.steps) - 1)
 
   def test_episode_negative_indices(self):
     """Ensures that negative episode indices are handled correctly."""
-    _, tag_directory = self._collect_episode_data(
+    _, data_directory = self._collect_episode_data(
         num_episodes=6, max_episodes_per_file=3)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
+        data_directory) as data_reader:
       np.testing.assert_equal(
-          tag_reader.episodes[-1][:],
-          tag_reader.episodes[len(tag_reader.episodes) - 1][:])
-      np.testing.assert_equal(tag_reader.episodes[-len(tag_reader.episodes)][:],
-                              tag_reader.episodes[0][:])
+          data_reader.episodes[-1][:],
+          data_reader.episodes[len(data_reader.episodes) - 1][:])
+      np.testing.assert_equal(
+          data_reader.episodes[-len(data_reader.episodes)][:],
+          data_reader.episodes[0][:])
 
   def test_episode_out_of_bounds_indices(self):
     """Ensures that out of bounds episode indices are handled correctly."""
-    _, tag_directory = self._collect_episode_data(
+    _, data_directory = self._collect_episode_data(
         num_episodes=6, max_episodes_per_file=3)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
-      self.assertRaises(IndexError, operator.getitem, tag_reader.episodes,
-                        len(tag_reader.episodes))
-      self.assertRaises(IndexError, operator.getitem, tag_reader.episodes,
-                        -len(tag_reader.episodes) - 1)
+        data_directory) as data_reader:
+      self.assertRaises(IndexError, operator.getitem, data_reader.episodes,
+                        len(data_reader.episodes))
+      self.assertRaises(IndexError, operator.getitem, data_reader.episodes,
+                        -len(data_reader.episodes) - 1)
 
   def test_episode_step_negative_indices(self):
     """Ensures that negative episode step indices are handled correctly."""
-    _, tag_directory = self._collect_episode_data(
+    _, data_directory = self._collect_episode_data(
         num_episodes=6, max_episodes_per_file=3)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
-      for episode in tag_reader.episodes:
+        data_directory) as data_reader:
+      for episode in data_reader.episodes:
         np.testing.assert_equal(episode[-1], episode[len(episode) - 1])
         np.testing.assert_equal(episode[-len(episode)], episode[0])
 
   def test_episode_step_out_of_bounds_indices(self):
     """Ensures that out of bounds episode step indices are handled correctly."""
-    _, tag_directory = self._collect_episode_data(
+    _, data_directory = self._collect_episode_data(
         num_episodes=6, max_episodes_per_file=3)
     with riegeli_backend_reader.RiegeliBackendReader(
-        tag_directory) as tag_reader:
-      for episode in tag_reader.episodes:
+        data_directory) as data_reader:
+      for episode in data_reader.episodes:
         self.assertRaises(IndexError, operator.getitem, episode, len(episode))
         self.assertRaises(IndexError, operator.getitem, episode,
                           -len(episode) - 1)

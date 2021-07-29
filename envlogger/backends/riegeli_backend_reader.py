@@ -39,10 +39,10 @@ class RiegeliBackendReader(backend_reader.BackendReader):
     steps: Traverse the data stepwise in list-like fashion.
   """
 
-  def __init__(self, tag_directory: str):
+  def __init__(self, data_directory: str):
     self._reader = riegeli_dataset_reader.RiegeliDatasetReader()
     try:
-      self._reader.init(tag_directory)
+      self._reader.init(data_directory)
     except status.StatusNotOk as e:
       if (e.status.code() == status.StatusCode.NOT_FOUND and
           e.status.message().startswith('Empty steps in ')):

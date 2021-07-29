@@ -65,16 +65,10 @@ absl::StatusOr<Data> ReadFirstRiegeliRecord(const absl::string_view filepath) {
 
 }  // namespace
 
-absl::Status RiegeliDatasetReader::Init(absl::string_view tag_dir) {
+absl::Status RiegeliDatasetReader::Init(absl::string_view data_dir) {
   ENVLOGGER_ASSIGN_OR_RETURN(
       std::vector<std::string> matches,
-      file::GetSubdirectories(tag_dir, internal::kIndexFilenameLegacy));
-  const bool is_new_format = matches.empty();
-  if (is_new_format) {
-    ENVLOGGER_ASSIGN_OR_RETURN(
-        matches,
-        file::GetSubdirectories(tag_dir, internal::kStepOffsetsFilename));
-  }
+      file::GetSubdirectories(tag_dir, internal::kStepOffsetsFilename));
 
   // Sort matches to have a deterministic and increasing order.
   std::sort(std::begin(matches), std::end(matches));
@@ -87,38 +81,37 @@ absl::Status RiegeliDatasetReader::Init(absl::string_view tag_dir) {
   std::vector<absl::Status> init_results(matches.size() + 1);
   const int metadata_index = matches.size();
 
+  auto initialize_shard =
+      [](absl::string_view timestamp_dir,
+         RiegeliDatasetReader::Shard* shard) -> absl::Status {
+    const std::string steps_file =
+        file::JoinPath(timestamp_dir, internal::kStepsFilename);
+    const std::string step_offsets_file =
+        file::JoinPath(timestamp_dir, internal::kStepOffsetsFilename);
+    const std::string episode_metadata_file =
+        file::JoinPath(timestamp_dir, internal::kEpisodeMetadataFilename);
+    const std::string episode_index_file =
+        file::JoinPath(timestamp_dir, internal::kEpisodeIndexFilename);
+    return shard->index.Init(steps_file, step_offsets_file,
+                             episode_metadata_file, episode_index_file);
+  };
+
   thread::Bundle bundle;
   for (size_t i = 0; i < matches.size(); ++i) {
     const std::string& timestamp_dir = matches[i];
     auto* shard = &shards_[i];
-    bundle.Add([is_new_format, shard, &timestamp_dir,
+    bundle.Add([shard, &timestamp_dir, initialize_shard,
                 init_result = &init_results[i]]() {
       shard->timestamp_dir = timestamp_dir;
-      if (is_new_format) {
-        const std::string steps_file =
-            file::JoinPath(timestamp_dir, internal::kStepsFilename);
-        const std::string step_offsets_file =
-            file::JoinPath(timestamp_dir, internal::kStepOffsetsFilename);
-        const std::string episode_metadata_file =
-            file::JoinPath(timestamp_dir, internal::kEpisodeMetadataFilename);
-        const std::string episode_index_file =
-            file::JoinPath(timestamp_dir, internal::kEpisodeIndexFilename);
-        *init_result =
-            shard->index.Init(steps_file, step_offsets_file,
-                              episode_metadata_file, episode_index_file);
-      } else {
-        *init_result = shard->index.Init(
-            file::JoinPath(timestamp_dir, internal::kIndexFilenameLegacy),
-            file::JoinPath(timestamp_dir, internal::kStepsFilenameLegacy));
-      }
+      *init_result = initialize_shard(timestamp_dir, shard);
     });
   }
 
   // Read metadata.
-  bundle.Add([metadata = &metadata_, tag_dir,
+  bundle.Add([metadata = &metadata_, data_dir,
               init_result = &init_results[metadata_index]]() {
     const std::string metadata_file =
-        file::JoinPath(tag_dir, internal::kMetadataFilename);
+        file::JoinPath(data_dir, internal::kMetadataFilename);
     if (auto data_or = ReadFirstRiegeliRecord(metadata_file); data_or.ok()) {
       *metadata = std::move(*data_or);
     } else {

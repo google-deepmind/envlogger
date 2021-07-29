@@ -23,13 +23,6 @@ namespace envlogger {
 namespace internal {
 // The riegeli filename for metadata set at Init() time.
 inline constexpr absl::string_view kMetadataFilename = "metadata.riegeli";
-// Legacy format (soon to be deleted).
-// Steps (timesteps, actions and per-step metadata).
-inline constexpr absl::string_view kStepsFilenameLegacy =
-    "trajectories.riegeli";
-// Step offsets and episode starts.
-inline constexpr absl::string_view kIndexFilenameLegacy = "index.riegeli";
-// New format.
 // Steps (timesteps, actions and per-step metadata).
 inline constexpr absl::string_view kStepsFilename = "steps.riegeli";
 // Step offsets for faster seeking into kStepsFilename.

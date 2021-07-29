@@ -75,13 +75,13 @@ struct TimestampDirSpec {
   std::vector<StepSpec> steps;
 };
 
-// Creates timestamp dirs in `tag_dir` according to `specs`.
-void CreateTimestampDirs(absl::string_view tag_dir,
+// Creates timestamp dirs in `data_dir` according to `specs`.
+void CreateTimestampDirs(absl::string_view data_dir,
                          const std::vector<TimestampDirSpec>& specs) {
   for (const auto& spec : specs) {
     const std::string timestamp = absl::FormatTime(
         "%Y%m%dT%H%M%E6f", spec.timestamp, absl::UTCTimeZone());
-    const std::string timestamp_dir = file::JoinPath(tag_dir, timestamp);
+    const std::string timestamp_dir = file::JoinPath(data_dir, timestamp);
     ENVLOGGER_EXPECT_OK(file::CreateDir(timestamp_dir));
     const std::string steps_file =
         file::JoinPath(timestamp_dir, internal::kStepsFilename);
@@ -113,10 +113,10 @@ void CreateTimestampDirs(absl::string_view tag_dir,
   }
 }
 
-TEST(TagDirectoryIndex, BadRiegeliProtoFormatFile) {
-  const std::string tag_dir =
-      file::JoinPath(getenv("TEST_TMPDIR"), "my_tag_dir");
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+TEST(DataDirectoryIndex, BadRiegeliProtoFormatFile) {
+  const std::string data_dir =
+      file::JoinPath(getenv("TEST_TMPDIR"), "my_data_dir");
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
 
   // Write metadata and specs in the wrong proto format (Datum instead of Data).
   Datum datum;
@@ -124,23 +124,23 @@ TEST(TagDirectoryIndex, BadRiegeliProtoFormatFile) {
   {
     riegeli::RecordWriter writer(
         RiegeliFileWriter<>(
-            file::JoinPath(tag_dir, internal::kMetadataFilename), "w"),
+            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(datum), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
   }
 
   RiegeliDatasetReader reader;
-  EXPECT_TRUE(absl::IsInternal(reader.Init(tag_dir)));
+  EXPECT_TRUE(absl::IsInternal(reader.Init(data_dir)));
   reader.Close();  // (optional) Close the reader and free up its resources.
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
-TEST(TagDirectoryIndex, SimpleMetadataAndSpec) {
-  const std::string tag_dir =
+TEST(DataDirectoryIndex, SimpleMetadataAndSpec) {
+  const std::string data_dir =
       file::JoinPath(getenv("TEST_TMPDIR"), "meta_spec_dir");
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
 
   // Write metadata and specs.
   Data metadata;
@@ -148,25 +148,25 @@ TEST(TagDirectoryIndex, SimpleMetadataAndSpec) {
   {
     riegeli::RecordWriter writer(
         RiegeliFileWriter<>(
-            file::JoinPath(tag_dir, internal::kMetadataFilename), "w"),
+            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(metadata), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
   }
 
   RiegeliDatasetReader reader;
-  ENVLOGGER_EXPECT_OK(reader.Init(tag_dir));
+  ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   const auto actual_metadata = reader.Metadata();
   EXPECT_THAT(actual_metadata, Not(Eq(absl::nullopt)));
   EXPECT_THAT(*actual_metadata, EqualsProto(metadata));
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
-TEST(TagDirectoryIndex, OneShard) {
-  const std::string tag_dir =
-      file::JoinPath(getenv("TEST_TMPDIR"), "my_tag_dir");
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+TEST(DataDirectoryIndex, OneShard) {
+  const std::string data_dir =
+      file::JoinPath(getenv("TEST_TMPDIR"), "my_data_dir");
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
 
   // Write metadata and specs.
   Data episode0_metadata = ParseTextProtoOrDie(R"pb(
@@ -176,19 +176,19 @@ TEST(TagDirectoryIndex, OneShard) {
   {
     riegeli::RecordWriter writer(
         RiegeliFileWriter<>(
-            file::JoinPath(tag_dir, internal::kMetadataFilename), "w"),
+            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
   }
-  CreateTimestampDirs(tag_dir, {{absl::Now() - absl::Minutes(60),
-                                 {{1.0f, true},
-                                  {2.0f, false},
-                                  {3.0f, false, episode0_metadata},
-                                  {4.0f, true},
-                                  {5.0f, false}}}});
+  CreateTimestampDirs(data_dir, {{absl::Now() - absl::Minutes(60),
+                                  {{1.0f, true},
+                                   {2.0f, false},
+                                   {3.0f, false, episode0_metadata},
+                                   {4.0f, true},
+                                   {5.0f, false}}}});
   RiegeliDatasetReader reader;
-  ENVLOGGER_EXPECT_OK(reader.Init(tag_dir));
+  ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   EXPECT_THAT(reader.NumSteps(), Eq(5));
   EXPECT_THAT(reader.NumEpisodes(), Eq(2));
   // Check for some invalid operations.
@@ -223,15 +223,15 @@ TEST(TagDirectoryIndex, OneShard) {
   EXPECT_THAT(episodes[0].metadata, Not(Eq(absl::nullopt)));
   EXPECT_THAT(*episodes[0].metadata, EqualsProto(episode0_metadata));
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
 // Same as OneShard, but it stores a payload that's not envlogger::Data to
 // ensure that the reader and writer can work with arbitrary proto messages.
-TEST(TagDirectoryIndex, OneShardNonDmDataPayload) {
-  const std::string tag_dir =
-      file::JoinPath(getenv("TEST_TMPDIR"), "my_tag_dir");
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+TEST(DataDirectoryIndex, OneShardNonDmDataPayload) {
+  const std::string data_dir =
+      file::JoinPath(getenv("TEST_TMPDIR"), "my_data_dir");
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
 
   // Write metadata and specs.
   Data episode0_metadata = ParseTextProtoOrDie(R"pb(
@@ -241,21 +241,21 @@ TEST(TagDirectoryIndex, OneShardNonDmDataPayload) {
   {
     riegeli::RecordWriter writer(
         RiegeliFileWriter<>(
-            file::JoinPath(tag_dir, internal::kMetadataFilename), "w"),
+            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
   }
   const bool use_other_payload_type = true;
   CreateTimestampDirs(
-      tag_dir, {{absl::Now() - absl::Minutes(60),
-                 {{1.0f, true, absl::nullopt, use_other_payload_type},
-                  {2.0f, false, absl::nullopt, use_other_payload_type},
-                  {3.0f, false, episode0_metadata, use_other_payload_type},
-                  {4.0f, true, absl::nullopt, use_other_payload_type},
-                  {5.0f, false, absl::nullopt, use_other_payload_type}}}});
+      data_dir, {{absl::Now() - absl::Minutes(60),
+                  {{1.0f, true, absl::nullopt, use_other_payload_type},
+                   {2.0f, false, absl::nullopt, use_other_payload_type},
+                   {3.0f, false, episode0_metadata, use_other_payload_type},
+                   {4.0f, true, absl::nullopt, use_other_payload_type},
+                   {5.0f, false, absl::nullopt, use_other_payload_type}}}});
   RiegeliDatasetReader reader;
-  ENVLOGGER_EXPECT_OK(reader.Init(tag_dir));
+  ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   EXPECT_THAT(reader.NumSteps(), Eq(5));
   EXPECT_THAT(reader.NumEpisodes(), Eq(2));
   // Check for some invalid operations.
@@ -286,26 +286,26 @@ TEST(TagDirectoryIndex, OneShardNonDmDataPayload) {
   EXPECT_THAT(episodes[0].metadata, Not(Eq(absl::nullopt)));
   EXPECT_THAT(*episodes[0].metadata, EqualsProto(episode0_metadata));
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
-TEST(TagDirectoryIndex, TwoShards) {
-  const std::string tag_dir =
-      file::JoinPath(getenv("TEST_TMPDIR"), "my_tag_dir");
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+TEST(DataDirectoryIndex, TwoShards) {
+  const std::string data_dir =
+      file::JoinPath(getenv("TEST_TMPDIR"), "my_data_dir");
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
 
   // Write metadata and specs.
   Data dummy;
   {
     riegeli::RecordWriter writer(
         RiegeliFileWriter<>(
-            file::JoinPath(tag_dir, internal::kMetadataFilename), "w"),
+            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
   }
   CreateTimestampDirs(
-      tag_dir,
+      data_dir,
       {{absl::Now() - absl::Minutes(60),
         {{1.0f, true},
          {2.0f, false},
@@ -315,7 +315,7 @@ TEST(TagDirectoryIndex, TwoShards) {
        {absl::Now() - absl::Minutes(50),
         {{60.0f, true}, {70.0f, true}, {80.0f, false}, {90.0f, false}}}});
   RiegeliDatasetReader reader;
-  ENVLOGGER_EXPECT_OK(reader.Init(tag_dir));
+  ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   EXPECT_THAT(reader.NumSteps(), Eq(9));
   EXPECT_THAT(reader.NumEpisodes(), Eq(4));
 
@@ -348,7 +348,7 @@ TEST(TagDirectoryIndex, TwoShards) {
   EXPECT_THAT(episodes, ElementsAre(EqualsEpisode(0, 3), EqualsEpisode(3, 2),
                                     EqualsEpisode(5, 1), EqualsEpisode(6, 3)));
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
 }  // namespace

@@ -16,7 +16,7 @@ per `EnvLogger` instance.
 ```python
 env = envlogger.EnvLogger(
     env,
-    tag_directory='/tmp/experiment_logs',
+    data_directory='/tmp/experiment_logs',
     metadata={
         'environment_type': 'dm_control',
         'agent_type': 'D4PG'
@@ -32,7 +32,7 @@ from envlogger.testing import catch_env
 
 env = catch_env.Catch()
 env = envlogger.EnvLogger(
-    env, tag_directory='tmp/experiment_logs')
+    env, data_directory='tmp/experiment_logs')
 ```
 
 ## Reading stored trajectories

@@ -41,54 +41,6 @@ bool IsScalar(const std::vector<int>& shape) {
   return shape.size() == 1 && shape[0] == SCALAR_DIM_SIZE;
 }
 
-// Converts `value` arbitrary precision integer to a binary string.
-std::string FromMpzClass(mpz_class value) {
-  auto z = value.get_mpz_t();
-  const int num_bits = mpz_sizeinbase(z, 2);
-  const int num_bytes = num_bits / 8 + 1;
-  const bool is_negative = mpz_sgn(z) == -1;
-  if (is_negative) {
-    // NOTE: We cannot reinterpret cast z from a signed to an unsigned value so
-    // we convert it by hand using the formula:
-    // z_unsigned = 2^num_bytes(z) + z
-    mpz_t max_int;
-    mpz_init(max_int);
-    mpz_pow_ui(max_int, /*base=*/mpz_class(2).get_mpz_t(), num_bytes * 8);
-    mpz_add(z, max_int, z);
-    mpz_clear(max_int);
-  }
-  std::string output(num_bytes, '\0');
-  const int should_pad_first_byte = num_bits % 8 ? 0 : 1;
-  mpz_export(/*rop=*/output.data() + should_pad_first_byte,
-             /*countp=*/nullptr, /*order=*/1,
-             /*size=*/1, /*endian=*/1, /*nails=*/0, z);
-  return output;
-}
-
-// Converts the binary representation `bytes` to an arbitrary precision integer.
-mpz_class ToMpzClass(const absl::string_view bytes) {
-  const bool is_padded = bytes[0] == '\0';
-  mpz_t z;
-  mpz_init(z);
-  mpz_import(/*rop=*/z, /*count=*/bytes.size() + (is_padded ? -1 : 0),
-             /*order=*/1,
-             /*size=*/1, /*endian=*/1, /*nails=*/0,
-             bytes.data() + (is_padded ? 1 : 0));
-  const bool is_negative = static_cast<int>(bytes[0]) > 127;
-  if (is_negative) {
-    // NOTE: We cannot reinterpret cast from an unsigned to a signed integer so
-    // we convert it by hand using the formula:
-    // z_signed = z - 2^num_bytes(z)
-    mpz_t max_int;
-    mpz_init(max_int);
-    mpz_pow_ui(max_int, /*base=*/mpz_class(2).get_mpz_t(), bytes.size() * 8);
-    mpz_sub(z, z, max_int);
-    mpz_clear(max_int);
-  }
-  mpz_class output(z);
-  mpz_clear(z);  // Free up memory taken by `z`.
-  return output;
-}
 
 template <typename T>
 xt::xarray<T> FillXarrayValues(const google::protobuf::RepeatedField<T>& values,
@@ -185,16 +137,6 @@ xt::xarray<absl::Cord> FillXarrayValuesCord(
   return output;
 }
 
-xt::xarray<mpz_class> FillXarrayValuesMpzClass(
-    const google::protobuf::RepeatedPtrField<std::string>& values,
-    const std::vector<int>& shape) {
-  xt::xarray<mpz_class> output;
-  for (int i = 0; i < values.size(); ++i) {
-    output(i) = ToMpzClass(values[i]);
-  }
-  output.reshape(shape);
-  return output;
-}
 
 template <typename T>
 absl::optional<BasicType> DecodeValues(const google::protobuf::RepeatedField<T>& values,
@@ -320,12 +262,6 @@ Datum Encode(absl::Cord value) {
   return datum;
 }
 
-Datum Encode(mpz_class value) {
-  Datum datum;
-  datum.mutable_shape()->add_dim()->set_size(SCALAR_DIM_SIZE);
-  datum.mutable_values()->add_bigint_values(FromMpzClass(value));
-  return datum;
-}
 
 Datum Encode(const int8_t value) {
   Datum datum;
@@ -473,17 +409,6 @@ Datum Encode(const xt::xarray<absl::Cord>& value) {
   return datum;
 }
 
-Datum Encode(const xt::xarray<mpz_class>& value) {
-  Datum datum;
-  auto* shape = datum.mutable_shape();
-  for (const auto& dim : value.shape()) {
-    shape->add_dim()->set_size(dim);
-  }
-  for (const auto& x : xt::ravel<xt::layout_type::row_major>(value)) {
-    datum.mutable_values()->add_bigint_values(FromMpzClass(x));
-  }
-  return datum;
-}
 
 // Implementation of a generic packer for integer types T.
 // Values in `value` are encoded with a big-endian byte order and added one
@@ -584,13 +509,6 @@ absl::optional<BasicType> Decode(const Datum& datum) {
     }
   }
 
-  if (!datum.values().bigint_values().empty()) {
-    if (is_scalar) {
-      return ToMpzClass(datum.values().bigint_values(0));
-    } else {
-      return FillXarrayValuesMpzClass(datum.values().bigint_values(), shape);
-    }
-  }
 
   if (!datum.values().string_values().empty()) {
     if (is_scalar) {

@@ -48,7 +48,7 @@ class RiegeliDatasetReader {
   RiegeliDatasetReader() = default;
   ~RiegeliDatasetReader();
 
-  absl::Status Init(absl::string_view tag_dir);
+  absl::Status Init(absl::string_view data_dir);
 
   // Returns metadata associated with this tag directory.
   absl::optional<Data> Metadata();

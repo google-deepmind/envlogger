@@ -56,16 +56,6 @@ class RiegeliShardReader {
 
   ~RiegeliShardReader();
 
-  // Reads trajectory `trajectories_filepath` with index `index_filepath`.
-  //
-  // If `index_filepath` is empty the constructor will return early leaving the
-  // object members empty. All methods should fail if called on a object in this
-  // state. This is used by clients for efficiently initializing objects to
-  // minimize memory allocations by preallocating everything beforehand.
-  // DEPRECATED LEGACY format. Please do not use (this will be removed once all
-  // existing trajectories have been converted or dealt with).
-  absl::Status Init(absl::string_view index_filepath,
-                    absl::string_view trajectories_filepath);
 
   // Reads trajectory data written by TrajectoryWriter.
   //

@@ -44,7 +44,7 @@ def main(unused_argv):
   logging.info('Wrapping environment with EnvironmentLogger...')
   env = environment_logger.EnvLogger(
       env,
-      tag_directory=FLAGS.trajectories_dir,
+      data_directory=FLAGS.trajectories_dir,
       max_episodes_per_file=1000,
       metadata={
           'agent_type': 'random',

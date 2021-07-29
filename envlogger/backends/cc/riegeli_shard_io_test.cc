@@ -45,14 +45,19 @@ MATCHER_P2(EqualsEpisode, start_index, num_steps, "") {
 }
 
 TEST(RiegeliShardIoTest, NonEmptyMultipleEpisodes) {
-  const std::string index_filename =
-      file::JoinPath(getenv("TEST_TMPDIR"), "another_index.riegeli");
-  const std::string trajectories_filename = file::JoinPath(
-      getenv("TEST_TMPDIR"), "another_trajectories.riegeli");
+  const std::string steps_filename =
+      file::JoinPath(getenv("TEST_TMPDIR"), "some_steps.riegeli");
+  const std::string step_offsets_filename =
+      file::JoinPath(getenv("TEST_TMPDIR"), "step_offsets.riegeli");
+  const std::string episode_metadata_filename = file::JoinPath(
+      getenv("TEST_TMPDIR"), "some_episodic_metadata.riegeli");
+  const std::string episode_index_filename = file::JoinPath(
+      getenv("TEST_TMPDIR"), "episodic_index.riegeli");
   {
     RiegeliShardWriter writer;
-    ENVLOGGER_EXPECT_OK(writer.Init(index_filename, trajectories_filename,
-                                    "transpose,brotli:6,chunk_size:1M"));
+    ENVLOGGER_EXPECT_OK(writer.Init(
+        steps_filename, step_offsets_filename, episode_metadata_filename,
+        episode_index_filename, "transpose,brotli:6,chunk_size:1M"));
     writer.AddStep(ParseTextOrDie<Data>(R"PROTO(datum: {
                                                   values: { float_values: 10.0 }
                                                 })PROTO"),
@@ -77,7 +82,9 @@ TEST(RiegeliShardIoTest, NonEmptyMultipleEpisodes) {
   }
 
   RiegeliShardReader reader;
-  ENVLOGGER_EXPECT_OK(reader.Init(index_filename, trajectories_filename));
+  ENVLOGGER_EXPECT_OK(reader.Init(steps_filename, step_offsets_filename,
+                                  episode_metadata_filename,
+                                  episode_index_filename));
   EXPECT_THAT(reader.NumSteps(), Eq(7));
   EXPECT_THAT(reader.NumEpisodes(), Eq(3));
 
@@ -113,10 +120,14 @@ TEST(RiegeliShardIoTest, NonEmptyMultipleEpisodes) {
 // Checks that the index is written and read correctly even when multiple
 // flushes occur between writes.
 TEST(RiegeliShardIoTest, MultipleFlushes) {
-  const std::string index_filename =
-      file::JoinPath(getenv("TEST_TMPDIR"), "my_index.riegeli");
-  const std::string trajectories_filename = file::JoinPath(
+  const std::string steps_filename = file::JoinPath(
       getenv("TEST_TMPDIR"), "my_trajectories.riegeli");
+  const std::string step_offsets_filename =
+      file::JoinPath(getenv("TEST_TMPDIR"), "my_index.riegeli");
+  const std::string episode_metadata_filename = file::JoinPath(
+      getenv("TEST_TMPDIR"), "my_episodic_metadata.riegeli");
+  const std::string episode_index_filename = file::JoinPath(
+      getenv("TEST_TMPDIR"), "my_episodic_index.riegeli");
 
   // Write some data with random interleaved Flush()es.
   absl::BitGen bitgen;
@@ -129,8 +140,9 @@ TEST(RiegeliShardIoTest, MultipleFlushes) {
       R"PROTO(datum: { values: { float_values: 1.0 } })PROTO");
   {
     RiegeliShardWriter writer;
-    ENVLOGGER_EXPECT_OK(writer.Init(index_filename, trajectories_filename,
-                                    "transpose,brotli:6,chunk_size:1M"));
+    ENVLOGGER_EXPECT_OK(writer.Init(
+        steps_filename, step_offsets_filename, episode_metadata_filename,
+        episode_index_filename, "transpose,brotli:6,chunk_size:1M"));
 
     for (int i = 0; i < num_steps; ++i) {
       const bool is_new_episode =
@@ -145,7 +157,9 @@ TEST(RiegeliShardIoTest, MultipleFlushes) {
 
   // Check that the index contains the expected data.
   RiegeliShardReader reader;
-  ENVLOGGER_EXPECT_OK(reader.Init(index_filename, trajectories_filename));
+  ENVLOGGER_EXPECT_OK(reader.Init(steps_filename, step_offsets_filename,
+                                  episode_metadata_filename,
+                                  episode_index_filename));
   EXPECT_THAT(reader.NumSteps(), Eq(num_steps));
   EXPECT_THAT(reader.NumEpisodes(), Eq(episode_starts.size()));
   for (size_t i = 0; i + 1 < episode_starts.size(); ++i) {

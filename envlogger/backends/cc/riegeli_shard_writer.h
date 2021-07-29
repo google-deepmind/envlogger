@@ -36,13 +36,6 @@ class RiegeliShardWriter {
   RiegeliShardWriter() = default;
   ~RiegeliShardWriter();
 
-  // IMPORTANT: The directory where this file lives MUST exist _before_ calling
-  //            Init().
-  // DEPRECATED LEGACY format. Please do not use (this will be removed once all
-  // existing trajectories have been converted or dealt with).
-  absl::Status Init(absl::string_view index_filepath,
-                    absl::string_view trajectories_filepath,
-                    absl::string_view writer_options);
 
   // IMPORTANT: The directory where these file live MUST exist _before_ calling
   //            Init().
@@ -114,8 +107,6 @@ class RiegeliShardWriter {
   riegeli::RecordWriter<RiegeliFileWriter<>> episode_metadata_writer_;
   riegeli::RecordWriter<RiegeliFileWriter<>> episode_index_writer_;
 
-  // (Deprecated) Legacy format.
-  riegeli::RecordWriter<RiegeliFileWriter<>> index_writer_;
 };
 
 }  // namespace envlogger

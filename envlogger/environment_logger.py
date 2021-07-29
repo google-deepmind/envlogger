@@ -54,14 +54,14 @@ class EnvLogger(environment_wrapper.EnvironmentWrapper):
 
     Usage:
       my_env = MyDmEnvironment()
-      env = EnvLogger(my_env, tag_directory='/some/path/', ...)
+      env = EnvLogger(my_env, data_directory='/some/path/', ...)
       # Use `env` just like `my_env`.
       env.close()  # <- VERY IMPORTANT
       ...
 
     Or via a Context Manager:
       my_env = MyDmEnvironment()
-      with EnvLogger(my_env, tag_directory='/some/path/', ...) as env:
+      with EnvLogger(my_env, data_directory='/some/path/', ...) as env:
         # Use `env` just like `my_env`.
         # `.close()` is automatically called when the context is over.
 

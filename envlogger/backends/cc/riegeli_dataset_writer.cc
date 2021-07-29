@@ -63,11 +63,11 @@ std::string NewTimestampDirName(absl::Time time) {
   return absl::FormatTime("%Y%m%dT%H%M%S%E6f", time, absl::UTCTimeZone());
 }
 
-absl::Status CreateRiegeliShardWriter(absl::string_view tag_dir,
+absl::Status CreateRiegeliShardWriter(absl::string_view data_dir,
                                       absl::string_view writer_options,
                                       RiegeliShardWriter* writer) {
   const std::string dirname = NewTimestampDirName(absl::Now());
-  const std::string timestamp_dir = file::JoinPath(tag_dir, dirname);
+  const std::string timestamp_dir = file::JoinPath(data_dir, dirname);
   ENVLOGGER_RETURN_IF_ERROR(file::CreateDir(timestamp_dir));
   writer->Flush();  // Flush before creating a new one.
   ENVLOGGER_RETURN_IF_ERROR(writer->Init(
@@ -85,21 +85,21 @@ absl::Status CreateRiegeliShardWriter(absl::string_view tag_dir,
 
 }  // namespace
 
-absl::Status RiegeliDatasetWriter::Init(std::string tag_dir,
+absl::Status RiegeliDatasetWriter::Init(std::string data_dir,
                                         const Data& metadata,
                                         int64_t max_episodes_per_shard,
                                         std::string writer_options) {
-  if (tag_dir.empty()) return absl::NotFoundError("Empty tag_dir.");
+  if (data_dir.empty()) return absl::NotFoundError("Empty data_dir.");
 
-  tag_dir_ = tag_dir;
+  data_dir_ = data_dir;
   writer_options_ = writer_options;
   ENVLOGGER_RETURN_IF_ERROR(WriteSingleRiegeliRecord(
-      /*filepath=*/file::JoinPath(tag_dir, internal::kMetadataFilename),
+      /*filepath=*/file::JoinPath(data_dir, internal::kMetadataFilename),
       /*data=*/metadata));
   max_episodes_per_shard_ = max_episodes_per_shard;
   if (max_episodes_per_shard_ <= 0) {
     ENVLOGGER_RETURN_IF_ERROR(
-        CreateRiegeliShardWriter(tag_dir, writer_options_, &writer_));
+        CreateRiegeliShardWriter(data_dir, writer_options_, &writer_));
   }
 
   return absl::OkStatus();
@@ -111,7 +111,7 @@ void RiegeliDatasetWriter::AddStep(const google::protobuf::Message& data,
     if (max_episodes_per_shard_ > 0 &&
         episode_counter_++ % max_episodes_per_shard_ == 0) {
       ENVLOGGER_CHECK_OK(
-          CreateRiegeliShardWriter(tag_dir_, writer_options_, &writer_));
+          CreateRiegeliShardWriter(data_dir_, writer_options_, &writer_));
     }
   }
   writer_.AddStep(data, is_new_episode);

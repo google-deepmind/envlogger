@@ -28,7 +28,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/variant.h"
-#include <gmpxx.h>
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/converters/make_visitor.h"
 #include "envlogger/converters/xtensor_codec.h"
@@ -44,17 +43,6 @@ namespace envlogger {
 namespace {
 
 
-// Converts an arbitrary precision integer to int64.
-// Notice that narrowing can definitely occur, so this should only be used for
-// values that we know should fit in an int64.
-int64_t MpzToInt64(const mpz_class& z) {
-  int64_t result = 0;
-  mpz_export(/*rop=*/&result, /*countp=*/nullptr, /*order=*/-11,
-             /*size=*/sizeof(result), /*endian=*/-1, /*nails=*/0,
-             z.get_mpz_t());
-  return result;
-}
-
 absl::StatusOr<riegeli::RecordReader<RiegeliFileReader<>>> CreateReader(
     absl::string_view filepath) {
   VLOG(1) << "Creating the reader for filepath: " << filepath;
@@ -66,112 +54,6 @@ absl::StatusOr<riegeli::RecordReader<RiegeliFileReader<>>> CreateReader(
 
 }  // namespace
 
-absl::Status RiegeliShardReader::Init(absl::string_view index_filepath,
-                                      absl::string_view trajectories_filepath) {
-  if (index_filepath.empty()) {
-    return absl::NotFoundError(
-        absl::StrCat("Could not find index_filepath==", index_filepath));
-  }
-
-  std::vector<int64_t>* steps = &step_offsets_;
-  std::vector<int64_t>* episodes = &episode_starts_;
-  std::vector<int64_t> episode_offsets;
-  const auto steps_visitor = MakeVisitor(
-      [steps](const mpz_class& z) { steps->push_back(MpzToInt64(z)); },
-      [steps](const xt::xarray<int64_t>& a) {
-        steps->insert(std::end(*steps), std::begin(a), std::end(a));
-      },
-      [](const auto&) { /* catch all overload */ });
-  const auto episodes_visitor = MakeVisitor(
-      [episodes](const mpz_class& z) { episodes->push_back(MpzToInt64(z)); },
-      [episodes](const xt::xarray<int64_t>& a) {
-        episodes->insert(std::end(*episodes), std::begin(a), std::end(a));
-      },
-      [](const auto&) { /* catch all overload */ });
-  const auto episodes_offsets_visitor = MakeVisitor(
-      [&episode_offsets](const mpz_class& z) {
-        episode_offsets.push_back(MpzToInt64(z));
-      },
-      [&episode_offsets](const xt::xarray<int64_t>& a) {
-        episode_offsets.insert(std::end(episode_offsets), std::begin(a),
-                               std::end(a));
-      },
-      [](const auto&) { /* catch all overload */ });
-
-  ENVLOGGER_ASSIGN_OR_RETURN(riegeli::RecordReader index_reader,
-                             CreateReader(index_filepath));
-
-  Data value;
-  while (index_reader.ReadRecord(value)) {
-    DataView view(&value);
-    if (view.Type() != Data::kDict) continue;
-
-    // Read step offsets.
-    if (const Data* data = view["step_offsets_array"]; data != nullptr) {
-      const absl::optional<BasicType> decoded = Decode(data->datum());
-      if (decoded) absl::visit(steps_visitor, *decoded);
-    } else if (const Data* offsets = view["step_offsets"]; offsets != nullptr) {
-      // This is a legacy format that's much slower than the above.
-      for (const Data& data : offsets->array().values()) {
-        const absl::optional<BasicType> decoded = Decode(data.datum());
-        if (decoded) absl::visit(steps_visitor, *decoded);
-      }
-    }
-    // Read episode starts.
-    if (const Data* data = view["episode_starts_array"]; data != nullptr) {
-      const absl::optional<BasicType> decoded = Decode(data->datum());
-      if (decoded) absl::visit(episodes_visitor, *decoded);
-    } else if (const Data* data = view["episode_start_indices_array"];
-               data != nullptr) {
-      // This is a legacy format where the episode elements are stored as file
-      // offsets. This is slower than the version with "episode_starts_array".
-      const absl::optional<BasicType> decoded = Decode(data->datum());
-      if (decoded) absl::visit(episodes_offsets_visitor, *decoded);
-    } else if (const Data* indices = view["episode_start_indices"];
-               indices != nullptr) {
-      // This is another legacy format where the episode elements are stored as
-      // file offsets but is even slower than "episode_start_indices_array"
-      // because each episode element is store as a separate Datum instead of a
-      // dense array.
-      for (const Data& data : indices->array().values()) {
-        const absl::optional<BasicType> decoded = Decode(data.datum());
-        if (decoded) absl::visit(episodes_offsets_visitor, *decoded);
-      }
-    }
-  }
-
-  if (step_offsets_.empty()) {
-    return absl::NotFoundError(absl::StrCat("Empty steps in ", index_filepath));
-  }
-
-  VLOG(1) << "step_offsets_.size(): " << step_offsets_.size();
-  VLOG(1) << "Building episode_starts_...";
-  // Note: This is currently O(|steps| + |episodes|). We could do it in
-  //       O(|episodes| * log(|steps|)) but it requires more coding and we do
-  //       not know if the performance will be better. Depending on the actual
-  //       value of |episodes|, the latter could be much worse than 2 linear
-  //       passes (e.g. if most episodes have length 1).
-  for (auto step = step_offsets_.begin(), episode = episode_offsets.begin();
-       step != step_offsets_.end() && episode != episode_offsets.end();
-       ++episode) {
-    step = std::find_if(step, step_offsets_.end(),
-                        [episode](const int64_t step_offset) {
-                          return step_offset >= *episode;
-                        });
-    // Skip episode offsets that are not in the expected range.
-    if (step != step_offsets_.end()) {
-      episode_starts_.push_back(std::distance(step_offsets_.begin(), step));
-    }
-  }
-  VLOG(1) << "Done building episode_starts_...";
-
-  VLOG(1) << "episode_starts_.size(): " << episode_starts_.size();
-
-  ENVLOGGER_ASSIGN_OR_RETURN(steps_reader_,
-                             CreateReader(trajectories_filepath));
-
-  return absl::OkStatus();
-}
 
 RiegeliShardReader::~RiegeliShardReader() { Close(); }
 

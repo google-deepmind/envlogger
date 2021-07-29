@@ -83,7 +83,7 @@ PYBIND11_MODULE(riegeli_dataset_reader, m) {
   pybind11::class_<envlogger::RiegeliDatasetReader>(m, "RiegeliDatasetReader")
       .def(pybind11::init<>())
       .def("init", &envlogger::RiegeliDatasetReader::Init,
-           pybind11::arg("tag_dir"))
+           pybind11::arg("data_dir"))
       .def("metadata", &envlogger::RiegeliDatasetReader::Metadata)
       .def_property_readonly("num_steps",
                              &envlogger::RiegeliDatasetReader::NumSteps)

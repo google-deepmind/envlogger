@@ -81,19 +81,20 @@ TEST(RiegeliDatasetWriterTest, EmptyTagDir) {
   const int max_episodes_per_shard = 1000;
   RiegeliDatasetWriter writer;
   EXPECT_TRUE(absl::IsNotFound(
-      writer.Init(/*tag_dir=*/"", metadata, max_episodes_per_shard)));
+      writer.Init(/*data_dir=*/"", metadata, max_episodes_per_shard)));
 }
 
 TEST(RiegeliDatasetWriterTest, NonPositiveMaxEpisodesPerShard) {
-  const std::string tag_dir =
+  const std::string data_dir =
       file::JoinPath(getenv("TEST_TMPDIR"), "single_shard");
   const Data metadata;
   const int max_episodes_per_shard = -1;
 
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
   {
     RiegeliDatasetWriter writer;
-    ENVLOGGER_EXPECT_OK(writer.Init(tag_dir, metadata, max_episodes_per_shard));
+    ENVLOGGER_EXPECT_OK(
+        writer.Init(data_dir, metadata, max_episodes_per_shard));
     // Write "lots" of episodes.
     for (int i = 0; i < 1000; ++i) {
       Data data;
@@ -105,22 +106,23 @@ TEST(RiegeliDatasetWriterTest, NonPositiveMaxEpisodesPerShard) {
 
   // Check that there's only a single shard.
   ENVLOGGER_ASSERT_OK_AND_ASSIGN(const auto match_results,
-                                 file::GetSubdirectories(tag_dir));
+                                 file::GetSubdirectories(data_dir));
   EXPECT_THAT(match_results, SizeIs(1));
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
 TEST(RiegeliDatasetWriterTest, PositiveMaxEpisodesPerShard) {
-  const std::string tag_dir =
+  const std::string data_dir =
       file::JoinPath(getenv("TEST_TMPDIR"), "multi_shard");
   const Data metadata;
   const int max_episodes_per_shard = 5;
 
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
   {
     RiegeliDatasetWriter writer;
-    ENVLOGGER_EXPECT_OK(writer.Init(tag_dir, metadata, max_episodes_per_shard));
+    ENVLOGGER_EXPECT_OK(
+        writer.Init(data_dir, metadata, max_episodes_per_shard));
     // Write "lots" of episodes.
     for (int i = 0; i < 1000; ++i) {
       Data data;
@@ -132,28 +134,29 @@ TEST(RiegeliDatasetWriterTest, PositiveMaxEpisodesPerShard) {
 
   // Check that there are many shards.
   ENVLOGGER_ASSERT_OK_AND_ASSIGN(const auto match_results,
-                                 file::GetSubdirectories(tag_dir));
+                                 file::GetSubdirectories(data_dir));
   const int expected_num_shards = 1000 / max_episodes_per_shard;
   EXPECT_THAT(match_results, SizeIs(expected_num_shards))
       << "Expecting 1000/max_episodes_per_shard == 200 shards.";
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
 TEST(RiegeliDatasetWriterTest, EpisodeMetadata) {
-  const std::string tag_dir =
+  const std::string data_dir =
       file::JoinPath(getenv("TEST_TMPDIR"), "single_shard");
   const Data metadata;
   const int max_episodes_per_shard = -1;  // Single shard for entire trajectory.
 
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
   const Data episode0_metadata =
       ParseTextProtoOrDie(R"pb(datum: { values: { int64_values: 7 } })pb");
   const Data episode2_metadata =
       ParseTextProtoOrDie(R"pb(datum: { values: { int64_values: 8 } })pb");
   {
     RiegeliDatasetWriter writer;
-    ENVLOGGER_EXPECT_OK(writer.Init(tag_dir, metadata, max_episodes_per_shard));
+    ENVLOGGER_EXPECT_OK(
+        writer.Init(data_dir, metadata, max_episodes_per_shard));
     // Write 30 identical steps and 3 episodes of 10 steps each.
     // The metadata we write is:
     // episode 0: int64(7)
@@ -178,7 +181,7 @@ TEST(RiegeliDatasetWriterTest, EpisodeMetadata) {
 
   // Get single shard.
   ENVLOGGER_ASSERT_OK_AND_ASSIGN(const auto match_results,
-                                 file::GetSubdirectories(tag_dir));
+                                 file::GetSubdirectories(data_dir));
   EXPECT_THAT(match_results, SizeIs(1));
   const auto& shard_dir = match_results[0];
 
@@ -198,7 +201,7 @@ TEST(RiegeliDatasetWriterTest, EpisodeMetadata) {
                           // Second episode1 should have no metadata here.
                           EqualsProto(episode2_metadata)));
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
 // This test ensures that `writer_options` are not ignored and have an effect in

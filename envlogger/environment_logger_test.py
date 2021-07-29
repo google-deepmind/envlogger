@@ -162,18 +162,18 @@ class EnvLoggerTest(parameterized.TestCase):
         discount_spec=spec)
     env = environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         backend=backend_type.BackendType.RIEGELI)
     _train(env, num_episodes=1)
-    with reader.Reader(self.dataset_path) as tag_reader:
-      self.assertEqual(tag_reader.observation_spec(), spec)
-      self.assertEqual(type(tag_reader.observation_spec()), type(spec))
-      self.assertEqual(tag_reader.action_spec(), spec)
-      self.assertEqual(type(tag_reader.action_spec()), type(spec))
-      self.assertEqual(tag_reader.reward_spec(), spec)
-      self.assertEqual(type(tag_reader.reward_spec()), type(spec))
-      self.assertEqual(tag_reader.discount_spec(), spec)
-      self.assertEqual(type(tag_reader.discount_spec()), type(spec))
+    with reader.Reader(self.dataset_path) as data_reader:
+      self.assertEqual(data_reader.observation_spec(), spec)
+      self.assertEqual(type(data_reader.observation_spec()), type(spec))
+      self.assertEqual(data_reader.action_spec(), spec)
+      self.assertEqual(type(data_reader.action_spec()), type(spec))
+      self.assertEqual(data_reader.reward_spec(), spec)
+      self.assertEqual(type(data_reader.reward_spec()), type(spec))
+      self.assertEqual(data_reader.discount_spec(), spec)
+      self.assertEqual(type(data_reader.discount_spec()), type(spec))
 
   def test_different_specs_are_actually_different(self):
     """Ensures that different spec types are maintained."""
@@ -189,39 +189,39 @@ class EnvLoggerTest(parameterized.TestCase):
         discount_spec=spec4)
     env = environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         backend=backend_type.BackendType.RIEGELI)
     _train(env, num_episodes=1)
-    with reader.Reader(self.dataset_path) as tag_reader:
-      self.assertEqual(tag_reader.observation_spec(), spec1)
-      self.assertEqual(tag_reader.action_spec(), spec2)
-      self.assertEqual(tag_reader.reward_spec(), spec3)
-      self.assertEqual(tag_reader.discount_spec(), spec4)
-      self.assertNotEqual(tag_reader.observation_spec(),
-                          tag_reader.action_spec())
-      self.assertNotEqual(tag_reader.observation_spec(),
-                          tag_reader.reward_spec())
-      self.assertNotEqual(tag_reader.observation_spec(),
-                          tag_reader.discount_spec())
-      self.assertNotEqual(tag_reader.action_spec(), tag_reader.reward_spec())
-      self.assertNotEqual(tag_reader.action_spec(),
-                          tag_reader.discount_spec())
-      self.assertNotEqual(tag_reader.reward_spec(),
-                          tag_reader.discount_spec())
+    with reader.Reader(self.dataset_path) as data_reader:
+      self.assertEqual(data_reader.observation_spec(), spec1)
+      self.assertEqual(data_reader.action_spec(), spec2)
+      self.assertEqual(data_reader.reward_spec(), spec3)
+      self.assertEqual(data_reader.discount_spec(), spec4)
+      self.assertNotEqual(data_reader.observation_spec(),
+                          data_reader.action_spec())
+      self.assertNotEqual(data_reader.observation_spec(),
+                          data_reader.reward_spec())
+      self.assertNotEqual(data_reader.observation_spec(),
+                          data_reader.discount_spec())
+      self.assertNotEqual(data_reader.action_spec(), data_reader.reward_spec())
+      self.assertNotEqual(data_reader.action_spec(),
+                          data_reader.discount_spec())
+      self.assertNotEqual(data_reader.reward_spec(),
+                          data_reader.discount_spec())
 
   def test_metadata_is_available(self):
     """Ensures that if `metadata` is passed, it can be read."""
     env = catch_env.Catch()
     env = environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         metadata={'do_not_forget_me': 'i am important!'},
         max_episodes_per_file=973,
         writer_options='transpose,brotli:1,chunk_size:50M',
         backend=backend_type.BackendType.RIEGELI)
     _train(env, num_episodes=1)
-    with reader.Reader(tag_directory=self.dataset_path) as tag_reader:
-      metadata = tag_reader.metadata()
+    with reader.Reader(data_directory=self.dataset_path) as data_reader:
+      metadata = data_reader.metadata()
       environment_specs = metadata.pop('environment_specs')
       for k, v in spec_codec.encode_environment_specs(env).items():
         for spec_name, spec_value in v.items():
@@ -230,10 +230,10 @@ class EnvLoggerTest(parameterized.TestCase):
                 environment_specs[k][spec_name], spec_value)
           else:
             self.assertEqual(environment_specs[k][spec_name], spec_value)
-      self.assertDictEqual(tag_reader.metadata(),
+      self.assertDictEqual(data_reader.metadata(),
                            {'do_not_forget_me': 'i am important!'})
 
-  def test_tag_reader_get_timestep(self):
+  def test_data_reader_get_timestep(self):
     """Ensures that we can fetch single timesteps from a Reader."""
     num_episodes = 13
     num_steps_per_episode = 10
@@ -241,7 +241,7 @@ class EnvLoggerTest(parameterized.TestCase):
     env = catch_env.Catch()
     backend = in_memory_backend.InMemoryBackendWriter()
     env = environment_logger.EnvLogger(
-        env, tag_directory=self.dataset_path, backend=backend)
+        env, data_directory=self.dataset_path, backend=backend)
     expected_data = _train(env, num_episodes=num_episodes)
     self.assertLen(
         expected_data,
@@ -249,20 +249,20 @@ class EnvLoggerTest(parameterized.TestCase):
         msg=(f'We expect {num_steps} steps when running an actor for '
              f'{num_episodes} episodes of {num_steps_per_episode} steps each.'))
 
-    tag_reader = in_memory_backend.InMemoryBackendReader(backend)
+    data_reader = in_memory_backend.InMemoryBackendReader(backend)
     self.assertLen(
-        tag_reader.steps,
+        data_reader.steps,
         num_steps,
         msg=(f'We expect {num_steps} steps when running an actor for '
              f'{num_episodes} episodes of {num_steps_per_episode} steps each.'))
     # All 130 steps should be accessible with __getitem__().
     for i in range(num_steps):
-      np.testing.assert_equal(tag_reader.steps[i], expected_data[i])
+      np.testing.assert_equal(data_reader.steps[i], expected_data[i])
 
     # All 130 steps should be accessible with __iter__().
     step_index = 0
     for step_index, (actual, expected) in enumerate(
-        zip(tag_reader.steps, expected_data)):
+        zip(data_reader.steps, expected_data)):
       np.testing.assert_equal(actual, expected)
     self.assertEqual(step_index, num_steps - 1)  # step_index is 0-based
 
@@ -280,22 +280,22 @@ class EnvLoggerTest(parameterized.TestCase):
     env = catch_env.Catch()
     env = environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         step_fn=increment_fn,
         backend=backend_type.BackendType.RIEGELI)
     _train(env, num_episodes=2)
 
     actual_data = []
-    with reader.Reader(self.dataset_path) as tag_reader:
-      tag_data = list(tag_reader.steps)
+    with reader.Reader(self.dataset_path) as data_reader:
+      tag_data = list(data_reader.steps)
       actual_data += tag_data
       self.assertLen(
-          tag_reader.steps,
+          data_reader.steps,
           20,
           msg='Expected 20 steps in total from an actor running 2 episodes '
           'of 10 steps each.')
       self.assertLen(
-          tag_reader.episodes,
+          data_reader.episodes,
           2,
           msg='Expected 2 episodes in total from an actor running 2 '
           'episodes.')
@@ -316,14 +316,14 @@ class EnvLoggerTest(parameterized.TestCase):
     env = catch_env.Catch()
     env = environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         episode_fn=increment_fn,
         backend=backend_type.BackendType.RIEGELI)
     _train(env, num_episodes=11)
 
     actual_metadata = []
-    with reader.Reader(self.dataset_path) as tag_reader:
-      for metadata in tag_reader.episode_metadata():
+    with reader.Reader(self.dataset_path) as data_reader:
+      for metadata in data_reader.episode_metadata():
         actual_metadata.append(metadata)
     self.assertEqual(
         actual_metadata,
@@ -334,7 +334,7 @@ class EnvLoggerTest(parameterized.TestCase):
     env = catch_env.Catch()
     env = environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         max_episodes_per_file=2,
         backend=backend_type.BackendType.RIEGELI)
     expected_data = _train(env, num_episodes=5)
@@ -358,16 +358,16 @@ class EnvLoggerTest(parameterized.TestCase):
         f.truncate()
 
     actual_data = []
-    with reader.Reader(first_actor) as tag_reader:
-      tag_data = list(tag_reader.steps)
+    with reader.Reader(first_actor) as data_reader:
+      tag_data = list(data_reader.steps)
       actual_data += tag_data
       self.assertLen(
-          tag_reader.steps,
+          data_reader.steps,
           40,
           msg='Expected 40 steps in total from an actor running 4 episodes '
           'of 10 steps each (last shard should not be included).')
       self.assertLen(
-          tag_reader.episodes,
+          data_reader.episodes,
           4,
           msg='Expected 4 episodes in total from an actor running 4 '
           'episodes (last shard should not be included).')
@@ -378,7 +378,7 @@ class EnvLoggerTest(parameterized.TestCase):
     env = RandomDataEnvironment(data_size=100, prob_episode_end=0.01)
     env = environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         max_episodes_per_file=10_000_000_000,
         flush_scheduler=schedulers.bernoulli_step_scheduler(1.0 / 13),
         backend=backend_type.BackendType.RIEGELI)
@@ -415,7 +415,7 @@ class EnvLoggerTest(parameterized.TestCase):
     env = catch_env.Catch()
     env = environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         backend=backend_type.BackendType.RIEGELI,
     )
     _train(env, num_episodes=1)
@@ -428,7 +428,7 @@ class EnvLoggerTest(parameterized.TestCase):
     env = catch_env.Catch()
     with environment_logger.EnvLogger(
         env,
-        tag_directory=self.dataset_path,
+        data_directory=self.dataset_path,
         backend=backend_type.BackendType.RIEGELI) as env:
       _train(env, num_episodes=1)
 

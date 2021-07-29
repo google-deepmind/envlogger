@@ -108,53 +108,53 @@ class InMemoryBackendTest(parameterized.TestCase):
   def test_step_negative_indices(self):
     """Ensures that negative step indices are handled correctly."""
     _, backend = _collect_episode_data(num_episodes=6)
-    tag_reader = in_memory_backend.InMemoryBackendReader(backend)
-    np.testing.assert_equal(tag_reader.steps[-1],
-                            tag_reader.steps[len(tag_reader.steps) - 1])
-    np.testing.assert_equal(tag_reader.steps[-len(tag_reader.steps)],
-                            tag_reader.steps[0])
+    data_reader = in_memory_backend.InMemoryBackendReader(backend)
+    np.testing.assert_equal(data_reader.steps[-1],
+                            data_reader.steps[len(data_reader.steps) - 1])
+    np.testing.assert_equal(data_reader.steps[-len(data_reader.steps)],
+                            data_reader.steps[0])
 
   def test_step_out_of_bounds_indices(self):
     """Ensures that out of bounds step indices are handled correctly."""
     _, backend = _collect_episode_data(num_episodes=6)
-    tag_reader = in_memory_backend.InMemoryBackendReader(backend)
-    self.assertRaises(IndexError, operator.getitem, tag_reader.steps,
-                      len(tag_reader.steps))
-    self.assertRaises(IndexError, operator.getitem, tag_reader.steps,
-                      -len(tag_reader.steps) - 1)
+    data_reader = in_memory_backend.InMemoryBackendReader(backend)
+    self.assertRaises(IndexError, operator.getitem, data_reader.steps,
+                      len(data_reader.steps))
+    self.assertRaises(IndexError, operator.getitem, data_reader.steps,
+                      -len(data_reader.steps) - 1)
 
   def test_episode_negative_indices(self):
     """Ensures that negative episode indices are handled correctly."""
     _, backend = _collect_episode_data(num_episodes=6)
-    tag_reader = in_memory_backend.InMemoryBackendReader(backend)
+    data_reader = in_memory_backend.InMemoryBackendReader(backend)
     np.testing.assert_equal(
-        tag_reader.episodes[-1][:],
-        tag_reader.episodes[len(tag_reader.episodes) - 1][:])
-    np.testing.assert_equal(tag_reader.episodes[-len(tag_reader.episodes)][:],
-                            tag_reader.episodes[0][:])
+        data_reader.episodes[-1][:],
+        data_reader.episodes[len(data_reader.episodes) - 1][:])
+    np.testing.assert_equal(data_reader.episodes[-len(data_reader.episodes)][:],
+                            data_reader.episodes[0][:])
 
   def test_episode_out_of_bounds_indices(self):
     """Ensures that out of bounds episode indices are handled correctly."""
     _, backend = _collect_episode_data(num_episodes=6)
-    tag_reader = in_memory_backend.InMemoryBackendReader(backend)
-    self.assertRaises(IndexError, operator.getitem, tag_reader.episodes,
-                      len(tag_reader.episodes))
-    self.assertRaises(IndexError, operator.getitem, tag_reader.episodes,
-                      -len(tag_reader.episodes) - 1)
+    data_reader = in_memory_backend.InMemoryBackendReader(backend)
+    self.assertRaises(IndexError, operator.getitem, data_reader.episodes,
+                      len(data_reader.episodes))
+    self.assertRaises(IndexError, operator.getitem, data_reader.episodes,
+                      -len(data_reader.episodes) - 1)
 
   def test_episode_step_negative_indices(self):
     """Ensures that negative episode step indices are handled correctly."""
     _, backend = _collect_episode_data(num_episodes=6)
-    tag_reader = in_memory_backend.InMemoryBackendReader(backend)
-    for episode in tag_reader.episodes:
+    data_reader = in_memory_backend.InMemoryBackendReader(backend)
+    for episode in data_reader.episodes:
       np.testing.assert_equal(episode[-1], episode[len(episode) - 1])
       np.testing.assert_equal(episode[-len(episode)], episode[0])
 
   def test_episode_step_out_of_bounds_indices(self):
     """Ensures that out of bounds episode step indices are handled correctly."""
     _, backend = _collect_episode_data(num_episodes=6)
-    tag_reader = in_memory_backend.InMemoryBackendReader(backend)
-    for episode in tag_reader.episodes:
+    data_reader = in_memory_backend.InMemoryBackendReader(backend)
+    for episode in data_reader.episodes:
       self.assertRaises(IndexError, operator.getitem, episode, len(episode))
       self.assertRaises(IndexError, operator.getitem, episode,
                         -len(episode) - 1)

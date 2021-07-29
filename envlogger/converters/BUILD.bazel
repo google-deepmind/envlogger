@@ -67,10 +67,6 @@ cc_library(
     name = "xtensor_codec",
     srcs = ["xtensor_codec.cc"],
     hdrs = ["xtensor_codec.h"],
-    linkopts = [
-        "-lgmp",
-        "-lgmpxx",
-    ],
     deps = [
         "//envlogger/proto:storage_cc_proto",
         "@com_github_google_glog//:glog",

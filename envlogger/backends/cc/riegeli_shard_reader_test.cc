@@ -51,8 +51,9 @@ MATCHER_P2(EqualsEpisode, start_index, num_steps, "") {
 
 TEST(RiegeliShardReaderTest, EmptyIndexFilename) {
   RiegeliShardReader reader;
-  EXPECT_TRUE(absl::IsNotFound(
-      reader.Init(/*index_filepath=*/"", /*trajectories_filepath=*/"")));
+  EXPECT_TRUE(absl::IsNotFound(reader.Init(
+      /*steps_filepath=*/"", /*step_offsets_filepath=*/"",
+      /*episode_metadata_filepath=*/"", /*episode_index_filepath=*/"")));
   EXPECT_THAT(reader.NumSteps(), Eq(0));
   EXPECT_THAT(reader.NumEpisodes(), Eq(0));
   EXPECT_THAT(reader.Step(0), Eq(absl::nullopt));
@@ -171,147 +172,6 @@ TEST(RiegeliShardReaderTest, NonEmptySingleEpisode) {
   EXPECT_THAT(*episode0_opt->metadata, EqualsProto(expected_episode_metadata));
 }
 
-// This test case checks that the reader supports the
-// "episode_start_indices_array" index format.
-// Notice that this does NOT check for contents inside the Riegeli trajectories
-// file because that would require writing very specific values in the proto
-// which could change without warning by the Riegeli implementation.
-TEST(RiegeliShardReaderTest, NonEmptyIndexEpisodeOffsetsArray) {
-  const std::string index_filename =
-      file::JoinPath(getenv("TEST_TMPDIR"), "some_index.riegeli");
-
-  {
-    riegeli::RecordWriter writer(
-        RiegeliFileWriter<>(index_filename, "w"),
-        riegeli::RecordWriterBase::Options().set_transpose(true));
-    const Data data = ParseTextProtoOrDie(R"pb(
-      dict {
-        values {
-          key: "episode_start_indices_array"
-          value {
-            datum {
-              # Index 300 is out of the range and should be ignored.
-              # Notice that 79 is not a perfect match against 78, but it should
-              # still be used to mark the beginning of an episode.
-              shape { dim { size: 3 } }
-              values { int64_values: [ 28, 79, 300 ] }
-            }
-          }
-        }
-        values {
-          key: "step_offsets_array"
-          value {
-            datum {
-              shape { dim { size: 8 } }
-              values { int64_values: [ 28, 46, 78, 89, 110, 125, 150, 200 ] }
-            }
-          }
-        }
-      }
-    )pb");
-    EXPECT_THAT(writer.WriteRecord(data), IsTrue());
-    writer.Close();
-  }
-
-  RiegeliShardReader reader;
-  // Init() should fail because a trajectory file is not passed. This is fine
-  // here because the actual steps are not accessed, just the index.
-  EXPECT_FALSE(reader.Init(index_filename, "").ok());
-  EXPECT_THAT(reader.NumSteps(), Eq(8));
-  EXPECT_THAT(reader.NumEpisodes(), Eq(2));
-  const auto episode_0 = reader.Episode(0);
-  EXPECT_THAT(episode_0, Not(Eq(absl::nullopt)));
-  EXPECT_THAT(*episode_0, EqualsEpisode(0, 3));
-  const auto episode_1 = reader.Episode(1);
-  EXPECT_THAT(episode_1, Not(Eq(absl::nullopt)));
-  EXPECT_THAT(*episode_1, EqualsEpisode(3, 5));
-}
-
-// This test case checks that the reader supports the "episode_start_indices"
-// index format.
-// Notice that this does NOT check for contents inside the Riegeli trajectories
-// file because that would require writing very specific values in the proto
-// which could change without warning by the Riegeli implementation.
-TEST(RiegeliShardReaderTest, NonEmptyIndexEpisodeOffsetsDatums) {
-  const std::string index_filename =
-      file::JoinPath(getenv("TEST_TMPDIR"), "some_index.riegeli");
-
-  {
-    riegeli::RecordWriter writer(
-        RiegeliFileWriter<>(index_filename, "w"),
-        riegeli::RecordWriterBase::Options().set_transpose(true));
-    const Data data = ParseTextOrDie<Data>(R"pb(
-      dict {
-        values {
-          key: "episode_start_indices"
-          value {
-            array {
-              values {
-                datum {
-                  shape { dim { size: -438 } }
-                  values { bigint_values: "\001" }
-                }
-              }
-            }
-          }
-        }
-        values {
-          key: "step_offsets"
-          value {
-            array: {
-              values: {
-                datum {
-                  shape { dim { size: -438 } }
-                  values { bigint_values: "\001" }
-                }
-              }
-              values: {
-                datum {
-                  shape { dim { size: -438 } }
-                  values { bigint_values: "\002" }
-                }
-              }
-              values: {
-                datum {
-                  shape { dim { size: -438 } }
-                  values { bigint_values: "\003" }
-                }
-              }
-              values: {
-                datum {
-                  shape { dim { size: -438 } }
-                  values { bigint_values: "\004" }
-                }
-              }
-              values: {
-                datum {
-                  shape { dim { size: -438 } }
-                  values { bigint_values: "\005" }
-                }
-              }
-              values: {
-                datum {
-                  shape { dim { size: -438 } }
-                  values { bigint_values: "\006" }
-                }
-              }
-            }
-          }
-        }
-      }
-    )pb");
-    EXPECT_THAT(writer.WriteRecord(data), IsTrue());
-    writer.Close();
-  }
-
-  RiegeliShardReader reader;
-  // Init() should fail because a trajectory file is not passed. This is fine
-  // here because the actual steps are not accessed, just the index.
-  EXPECT_FALSE(reader.Init(index_filename, "").ok());
-  const auto episode_opt = reader.Episode(0);
-  EXPECT_THAT(episode_opt, Not(Eq(absl::nullopt)));
-  EXPECT_THAT(*episode_opt, EqualsEpisode(0, 6));
-}
 
 }  // namespace
 }  // namespace envlogger

@@ -52,16 +52,16 @@ MATCHER_P2(EqualsEpisode, start_index, num_steps, "") {
 }
 
 TEST(RiegeliDatasetTest, MetadataTest) {
-  const std::string tag_dir =
+  const std::string data_dir =
       file::JoinPath(getenv("TEST_TMPDIR"), "metadata");
   const Data metadata =
       ParseTextProtoOrDie("datum: { values: { int32_values: 1234 } }");
   const int max_episodes_per_shard = -1;
 
-  ENVLOGGER_EXPECT_OK(file::CreateDir(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
   {
     RiegeliDatasetWriter writer;
-    ENVLOGGER_EXPECT_OK(writer.Init(tag_dir, metadata, max_episodes_per_shard,
+    ENVLOGGER_EXPECT_OK(writer.Init(data_dir, metadata, max_episodes_per_shard,
                                     "transpose,brotli:6,chunk_size:1M"));
     // Write a single step to pass RiegeliDatasetReader::Init()'s strict checks.
     Data data;
@@ -71,12 +71,12 @@ TEST(RiegeliDatasetTest, MetadataTest) {
   }
 
   RiegeliDatasetReader reader;
-  ENVLOGGER_EXPECT_OK(reader.Init(tag_dir));
+  ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   const auto actual_metadata = reader.Metadata();
   EXPECT_THAT(actual_metadata, Not(Eq(absl::nullopt)));
   EXPECT_THAT(*actual_metadata, EqualsProto(metadata));
 
-  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(tag_dir));
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
 }  // namespace

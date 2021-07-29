@@ -38,15 +38,16 @@ class RiegeliDatasetWriter {
  public:
   RiegeliDatasetWriter() = default;
 
-  // Initializes this writer to the following `tag_dir`.
+  // Initializes this writer to the following `data_dir`.
   // `metadata` is a client-specific payload.
   // `max_episodes_per_shard` determines the maximum number of episodes a single
   // RiegeliShardWriter shard will hold. If non-positive, a single shard file
   // will hold all steps and episodes.
   //
-  // IMPORTANT: `tag_dir` MUST exist _before_ calling Init().
+  // IMPORTANT: `data_dir` MUST exist _before_ calling Init().
   absl::Status Init(
-      std::string tag_dir, const Data& metadata, int64_t max_episodes_per_shard,
+      std::string data_dir, const Data& metadata,
+      int64_t max_episodes_per_shard,
       std::string writer_options = "transpose,brotli:6,chunk_size:1M");
 
   void AddStep(const google::protobuf::Message& data, bool is_new_episode = false);
@@ -64,7 +65,7 @@ class RiegeliDatasetWriter {
   void Close();
 
  private:
-  std::string tag_dir_;
+  std::string data_dir_;
   std::string writer_options_;
   int64_t max_episodes_per_shard_ = 0;
   int episode_counter_ = 0;
