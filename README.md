@@ -31,8 +31,11 @@ import envlogger
 from envlogger.testing import catch_env
 
 env = catch_env.Catch()
-env = envlogger.EnvLogger(
-    env, data_directory='tmp/experiment_logs')
+with envlogger.EnvLogger(
+    env, root_directory='/tmp/experiment_logs') as env:
+  for step in range(num_steps):
+    action = np.random.randint(low=0, high=3)
+    timestep = env.step(action)
 ```
 
 ## Reading stored trajectories
@@ -51,18 +54,30 @@ with reader.Reader(directory) as reader:
 
 ## Getting Started
 
-### Installation
+> EnvLogger currently only supports Linux based OSes and Python 3.
 
-> EnvLogger currently only supports Linux based OSes.
+##### Via Docker
 
-You'll need Docker set up on your machine and then:
+You'll need [Docker](https://docs.docker.com/get-docker/) set up on your machine and then:
 
 ```
 git clone https://github.com/deepmind/envlogger/
 cd envlogger
 sh docker/build.sh  # may require sudo
 docker run -it envlogger bash  # may require sudo
-bazel test --test_output=errors //envlogger/...
+bazel test --test_output=errors envlogger/...
+```
+
+##### Via Bazel
+
+For this option you will need to [install Bazel](https://docs.bazel.build/versions/main/install.html).
+Please note that Bazel versions >4.0 are not supported. Our recommended version
+is [3.7.2](https://github.com/bazelbuild/bazel/releases/tag/3.7.2). Then:
+
+```
+git clone https://github.com/deepmind/envlogger/
+cd envlogger
+bazel test --test_output=errors envlogger/...
 ```
 
 ## Acknowledgements

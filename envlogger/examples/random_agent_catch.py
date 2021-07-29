@@ -42,7 +42,7 @@ def main(unused_argv):
     return {'timestamp': time.time()}
 
   logging.info('Wrapping environment with EnvironmentLogger...')
-  env = environment_logger.EnvLogger(
+  with environment_logger.EnvLogger(
       env,
       data_directory=FLAGS.trajectories_dir,
       max_episodes_per_file=1000,
@@ -51,18 +51,19 @@ def main(unused_argv):
           'env_type': type(env).__name__,
           'num_episodes': FLAGS.num_episodes,
       },
-      step_fn=step_fn)
-  logging.info('Done wrapping environment with EnvironmentLogger.')
+      step_fn=step_fn) as env:
+    logging.info('Done wrapping environment with EnvironmentLogger.')
 
-  logging.info('Training a random agent for %r episodes...', FLAGS.num_episodes)
-  for i in range(FLAGS.num_episodes):
-    logging.info('episode %r', i)
-    timestep = env.reset()
-    while not timestep.last():
-      action = np.random.randint(low=0, high=3)
-      timestep = env.step(action)
-  logging.info('Done training a random agent for %r episodes.',
-               FLAGS.num_episodes)
+    logging.info('Training a random agent for %r episodes...',
+                 FLAGS.num_episodes)
+    for i in range(FLAGS.num_episodes):
+      logging.info('episode %r', i)
+      timestep = env.reset()
+      while not timestep.last():
+        action = np.random.randint(low=0, high=3)
+        timestep = env.step(action)
+    logging.info('Done training a random agent for %r episodes.',
+                 FLAGS.num_episodes)
 
 
 if __name__ == '__main__':
