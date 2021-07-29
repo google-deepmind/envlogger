@@ -53,6 +53,8 @@ with reader.Reader(directory) as reader:
 
 ### Installation
 
+> EnvLogger currently only supports Linux based OSes.
+
 You'll need Docker set up on your machine and then:
 
 ```
@@ -60,14 +62,8 @@ git clone https://github.com/deepmind/envlogger/
 cd envlogger
 sh docker/build.sh  # may require sudo
 docker run -it envlogger bash  # may require sudo
-bazel test -c opt \
-    --copt=-mavx \
-    --cxxopt=-std=c++17 \
-    --cxxopt=-D_GLIBCXX_USE_CXX11_ABI=0 \
-    --test_output=errors \
-    //envlogger/...
+bazel test --test_output=errors //envlogger/...
 ```
-
 
 ## Acknowledgements
 
