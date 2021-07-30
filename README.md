@@ -56,19 +56,13 @@ with reader.Reader(directory) as reader:
 
 > EnvLogger currently only supports Linux based OSes and Python 3.
 
-##### Via Docker
-
-You'll need [Docker](https://docs.docker.com/get-docker/) set up on your machine and then:
+You can install EnvLogger via `pip`:
 
 ```
-git clone https://github.com/deepmind/envlogger/
-cd envlogger
-sh docker/build.sh  # may require sudo
-docker run -it envlogger bash  # may require sudo
-bazel test --test_output=errors envlogger/...
+pip install envlogger
 ```
 
-##### Via Bazel
+##### Compiling from source
 
 For this option you will need to [install Bazel](https://docs.bazel.build/versions/main/install.html).
 Please note that Bazel versions >4.0 are not supported. Our recommended version
