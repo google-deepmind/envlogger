@@ -141,10 +141,6 @@ def _set_datum_values_from_scalar(scalar: Union[ScalarNumber, bool, str, bytes],
   values = datum.values
   shape = datum.shape
 
-  if isinstance(scalar, bool):
-    values.bool_values.append(scalar)
-    shape.dim.add().size = _SCALAR_DIM_SIZE
-    return True
   if isinstance(scalar, str):
     values.string_values.append(scalar)
     shape.dim.add().size = _SCALAR_DIM_SIZE
@@ -210,6 +206,11 @@ def _set_datum_values_from_scalar(scalar: Union[ScalarNumber, bool, str, bytes],
       return True
   except ValueError:
     pass
+
+  if isinstance(scalar, bool) or isinstance(scalar, np.bool_):
+    values.bool_values.append(bool(scalar))
+    shape.dim.add().size = _SCALAR_DIM_SIZE
+    return True
 
   return False
 

@@ -296,6 +296,9 @@ class NumpyConvertersTest(parameterized.TestCase):
     datum.values.bool_values.append(True)
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode(True), expected)
+    # Numpy's booleans should also work.
+    self.assertEqual(codec.encode(np.bool(True)), expected)
+    self.assertEqual(codec.encode(np.bool_(True)), expected)
 
   def test_decode_bool_scalar(self):
     """Proto supports bool so we expect no precision loss in decoding."""
@@ -314,6 +317,13 @@ class NumpyConvertersTest(parameterized.TestCase):
   def test_identity_bool_scalar_true(self):
     """Encoding and decoding it back should not change its value."""
     decoded = codec.decode(codec.encode(True))
+    self.assertIsInstance(decoded, bool)
+    self.assertEqual(decoded, True)
+    # Numpy's booleans should also work, but they all become Python bools.
+    decoded = codec.decode(codec.encode(np.bool_(True)))
+    self.assertIsInstance(decoded, bool)
+    self.assertEqual(decoded, True)
+    decoded = codec.decode(codec.encode(np.bool(True)))
     self.assertIsInstance(decoded, bool)
     self.assertEqual(decoded, True)
 
