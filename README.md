@@ -29,11 +29,14 @@ Most of the time, it is just a one-liner wrapper, e.g.
 ```python
 import envlogger
 from envlogger.testing import catch_env
+import numpy as np
 
 env = catch_env.Catch()
 with envlogger.EnvLogger(
-    env, root_directory='/tmp/experiment_logs') as env:
-  for step in range(num_steps):
+    env, data_directory='/tmp/experiment_logs') as env:
+
+  env.reset()
+  for step in range(100):
     action = np.random.randint(low=0, high=3)
     timestep = env.step(action)
 ```
@@ -45,8 +48,9 @@ with envlogger.EnvLogger(
 ```python
 from envlogger import reader
 
-with reader.Reader(directory) as reader:
-  for episode in reader.episodes:
+with reader.Reader(
+    data_directory='/tmp/experiment_logs') as r:
+  for episode in r.episodes:
     for step in episode:
        # step is a step_data.StepData.
        # Use step.timestep.observation, step.timestep.reward, step.action etc...
