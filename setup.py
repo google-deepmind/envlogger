@@ -163,7 +163,7 @@ setuptools.setup(
         'dm_env',
         'mock',
         'numpy',
-        'protobuf',
+        'protobuf>=3.14',
         'setuptools!=50.0.0',  # https://github.com/pypa/setuptools/issues/2350
     ]
 )
