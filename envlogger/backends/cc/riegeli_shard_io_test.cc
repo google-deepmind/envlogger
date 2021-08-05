@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 
+#include "benchmark/benchmark.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/algorithm/container.h"
@@ -181,5 +182,61 @@ TEST(RiegeliShardIoTest, MultipleFlushes) {
   }
 }
 
+void BM_WriteRead(benchmark::State& state) {
+  const int num_steps = state.range(0);
+  absl::BitGen bitgen;
+  const std::string steps_filename = file::JoinPath(
+      getenv("TEST_TMPDIR"), "my_trajectories.riegeli");
+  const std::string step_offsets_filename =
+      file::JoinPath(getenv("TEST_TMPDIR"), "my_index.riegeli");
+  const std::string episode_metadata_filename = file::JoinPath(
+      getenv("TEST_TMPDIR"), "my_episodic_metadata.riegeli");
+  const std::string episode_index_filename = file::JoinPath(
+      getenv("TEST_TMPDIR"), "my_episodic_index.riegeli");
+  // Create the data once to avoid having malloc() measured in the main loop.
+  std::vector<std::pair<Data, bool>> payloads;
+  for (int i = 0; i < num_steps; ++i) {
+    Data payload;
+    payload.mutable_datum()->mutable_values()->add_float_values(
+        absl::Bernoulli(bitgen, 0.3f));
+    const bool is_new_episode = absl::Bernoulli(bitgen, 0.5f);
+    payloads.push_back({payload, is_new_episode});
+  }
+
+  auto fn = [&steps_filename, &step_offsets_filename,
+             &episode_metadata_filename, &episode_index_filename, &payloads]() {
+    {
+      RiegeliShardWriter writer;
+      ENVLOGGER_EXPECT_OK(writer.Init(
+          steps_filename, step_offsets_filename, episode_metadata_filename,
+          episode_index_filename, "transpose,brotli:6,chunk_size:1M"));
+
+      for (const auto& [payload, is_new_episode] : payloads) {
+        writer.AddStep(payload, is_new_episode);
+      }
+    }
+
+    RiegeliShardReader reader;
+    ENVLOGGER_EXPECT_OK(reader.Init(steps_filename, step_offsets_filename,
+                                    episode_metadata_filename,
+                                    episode_index_filename));
+    for (int64_t i = 0; i < reader.NumSteps(); ++i) {
+      absl::optional<Data> payload = reader.Step(i);
+    }
+  };
+
+  for (auto s : state) {
+    fn();
+  }
+}
+
+BENCHMARK(BM_WriteRead)->Range(1, 2 << 23);
+
 }  // namespace
 }  // namespace envlogger
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  ::benchmark::RunSpecifiedBenchmarks();
+  return RUN_ALL_TESTS();
+}

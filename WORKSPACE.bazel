@@ -218,3 +218,10 @@ git_repository(
     patch_args = ["-p0"],
     patches = ["//third_party:proto_utils.cc.diff"],
 )
+
+git_repository(
+    name = "com_google_benchmark",
+    commit = "e991355c02b93fe17713efe04cbc2e278e00fdbd",  # v.1.5.5
+    shallow_since = "1623228732 +0300",
+    remote = "https://github.com/google/benchmark.git",
+)
