@@ -184,6 +184,7 @@ TEST(RiegeliShardIoTest, MultipleFlushes) {
 
 void BM_WriteRead(benchmark::State& state) {
   const int num_steps = state.range(0);
+  const int num_values = state.range(1);
   absl::BitGen bitgen;
   const std::string steps_filename = file::JoinPath(
       getenv("TEST_TMPDIR"), "my_trajectories.riegeli");
@@ -197,8 +198,10 @@ void BM_WriteRead(benchmark::State& state) {
   std::vector<std::pair<Data, bool>> payloads;
   for (int i = 0; i < num_steps; ++i) {
     Data payload;
-    payload.mutable_datum()->mutable_values()->add_float_values(
-        absl::Bernoulli(bitgen, 0.3f));
+    auto* values = payload.mutable_datum()->mutable_values();
+    for (int j = 0; j < num_values; ++j) {
+      values->add_float_values(absl::Uniform(bitgen, 0.0f, 1.0f));
+    }
     const bool is_new_episode = absl::Bernoulli(bitgen, 0.5f);
     payloads.push_back({payload, is_new_episode});
   }
@@ -230,7 +233,9 @@ void BM_WriteRead(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_WriteRead)->Range(1, 2 << 23);
+BENCHMARK(BM_WriteRead)
+    ->RangePair(/*num_steps-min*/ 1, /*num_steps-max*/ 2 << 15,
+                /*num_values-min*/ 1, /*num_values-max*/ 2 << 10);
 
 }  // namespace
 }  // namespace envlogger
