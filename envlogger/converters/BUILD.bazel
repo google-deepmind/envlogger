@@ -76,6 +76,7 @@ cc_library(
         "@com_google_absl//absl/types:variant",
         "@com_google_riegeli//riegeli/endian:endian_reading",
         "@com_google_riegeli//riegeli/endian:endian_writing",
+        "@gmp",
         "@xtensor",
     ],
 )
@@ -91,6 +92,7 @@ cc_test(
         "//envlogger/proto:storage_cc_proto",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+        "@gmp",
     ],
 )
 

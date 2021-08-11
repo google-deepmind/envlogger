@@ -172,6 +172,13 @@ http_archive(
     build_file = "//third_party:xtensor.BUILD.bazel",
 )
 
+# GMP.
+new_local_repository(
+    name = "gmp",
+    path = "/usr/include/",
+    build_file = "//third_party:gmp.BUILD.bazel",
+)
+
 # Google Logging library.
 http_archive(
     name = "com_github_gflags_gflags",

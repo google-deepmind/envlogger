@@ -68,7 +68,7 @@ pip install envlogger
 
 ##### Compiling from source
 
-For this option you will need to [install Bazel](https://docs.bazel.build/versions/main/install.html).
+For this option you will need to [install Bazel](https://docs.bazel.build/versions/main/install.html) and [GMP](https://gmplib.org/) (`libgmp-dev` on Debian-based systems).
 Please note that Bazel versions >4.0 are not supported. Our recommended version
 is [3.7.2](https://github.com/bazelbuild/bazel/releases/tag/3.7.2). Then:
 

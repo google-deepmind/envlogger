@@ -18,6 +18,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <gmpxx.h>
 #include "envlogger/converters/make_visitor.h"
 #include "envlogger/platform/parse_text_proto.h"
 #include "envlogger/platform/proto_testutil.h"
@@ -352,6 +353,40 @@ TEST(XtensorCodecTest, BytesIdentity) {
   absl::visit(CheckVisitor(value), *decoded);
 }
 
+// big ints.
+
+TEST(XtensorCodecTest, BigIntEncodeScalar) {
+  const Datum positive_expected_proto = ParseTextProtoOrDie(R"pb(
+    shape: { dim: { size: -438 } }
+    values: { bigint_values: '\x03' }
+  )pb");
+  EXPECT_THAT(Encode(mpz_class(3)), EqualsProto(positive_expected_proto));
+  const Datum negative_expected_proto = ParseTextProtoOrDie(R"pb(
+    shape: { dim: { size: -438 } }
+    values: { bigint_values: '\xfd' }
+  )pb");
+  EXPECT_THAT(Encode(mpz_class(-3)), EqualsProto(negative_expected_proto));
+}
+
+TEST(XtensorCodecTest, BigIntDecodeScalar) {
+  const Datum datum = ParseTextProtoOrDie(R"pb(
+    shape: { dim: { size: -438 } }
+    values: { bigint_values: '\x01\x8e\xe9\x0f\xf6\xc3s\xe0\xeeN?\n\xd2' }
+  )pb");
+  const mpz_class value("123456789012345678901234567890", /*base=*/10);
+  const absl::optional<BasicType> decoded = Decode(datum);
+  absl::visit(CheckVisitor(value), *decoded);
+  // Directly checking for the value and getting it should also be supported.
+  EXPECT_THAT(absl::holds_alternative<mpz_class>(*decoded), IsTrue);
+  EXPECT_THAT(absl::get<mpz_class>(*decoded), Eq(value));
+}
+
+TEST(XtensorCodecTest, BigIntIdentity) {
+  const mpz_class value("-98765432109876543210", /*base=*/10);
+  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  EXPECT_THAT(decoded, Optional(value));
+  absl::visit(CheckVisitor(value), *decoded);
+}
 
 // int8.
 
@@ -717,6 +752,32 @@ TEST(XtensorCodecTest, BytesDecodeXtarray) {
   EXPECT_THAT(absl::get<xt::xarray<absl::Cord>>(*decoded), Eq(value));
 }
 
+// big int.
+
+TEST(XtensorCodecTest, BigIntEncodeXtarray) {
+  const Datum expected_proto = ParseTextProtoOrDie(R"pb(
+    shape: { dim: { size: 1 } }
+    values: { bigint_values: '\000\253T\251\214\353\037\n\322' }
+  )pb");
+  const xt::xarray<mpz_class> value{
+      mpz_class("12345678901234567890", /*base=*/10)};
+  EXPECT_THAT(Encode(value), EqualsProto(expected_proto));
+}
+
+TEST(XtensorCodecTest, BigIntDecodeXtarray) {
+  const Datum datum = ParseTextProtoOrDie(R"pb(
+    shape: { dim: { size: 1 } }
+    values: { bigint_values: '\000\253T\251\214\353\037\n\322' }
+  )pb");
+  const xt::xarray<mpz_class> value{
+      mpz_class("12345678901234567890", /*base=*/10)};
+  const absl::optional<BasicType> decoded = Decode(datum);
+  EXPECT_THAT(decoded, Optional(value));
+  absl::visit(CheckVisitor(value), *decoded);
+  // Directly checking for the value and getting it should also be supported.
+  EXPECT_THAT(absl::holds_alternative<xt::xarray<mpz_class>>(*decoded), IsTrue);
+  EXPECT_THAT(absl::get<xt::xarray<mpz_class>>(*decoded), Eq(value));
+}
 
 // int8.
 

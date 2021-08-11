@@ -38,6 +38,7 @@
 #include "absl/strings/cord.h"
 #include "absl/types/optional.h"
 #include "absl/types/variant.h"
+#include <gmpxx.h>
 #include "envlogger/proto/storage.pb.h"
 #include "xtensor/xarray.hpp"
 
@@ -47,11 +48,11 @@ namespace envlogger {
 
 using BasicType = absl::variant<
     float, double, int32_t, int64_t, uint32_t, uint64_t, bool, std::string,
-    absl::Cord, int8_t, int16_t, uint8_t, uint16_t,
+    absl::Cord, mpz_class, int8_t, int16_t, uint8_t, uint16_t,
     xt::xarray<float>, xt::xarray<double>, xt::xarray<int32_t>,
     xt::xarray<int64_t>, xt::xarray<uint32_t>, xt::xarray<uint64_t>,
     xt::xarray<bool>, xt::xarray<std::string>, xt::xarray<absl::Cord>,
-    xt::xarray<int8_t>, xt::xarray<int16_t>,
+    xt::xarray<mpz_class>, xt::xarray<int8_t>, xt::xarray<int16_t>,
     xt::xarray<uint8_t>, xt::xarray<uint16_t>>;
 
 // Encode() transforms a C++ object into a Datum that can be serialized to disk.
@@ -70,6 +71,8 @@ Datum Encode(const std::string& value);
 Datum Encode(const char* value);
 // We use Cord to represent bytes.
 Datum Encode(absl::Cord value);
+// GNU gmp's mpz_class is used to represent arbitrary precision ints.
+Datum Encode(mpz_class value);
 Datum Encode(const int8_t value);
 Datum Encode(const int16_t value);
 Datum Encode(const uint8_t value);
@@ -84,6 +87,7 @@ Datum Encode(const xt::xarray<uint64_t>& value);
 Datum Encode(const xt::xarray<bool>& value);
 Datum Encode(const xt::xarray<std::string>& value);
 Datum Encode(const xt::xarray<absl::Cord>& value);
+Datum Encode(const xt::xarray<mpz_class>& value);
 Datum Encode(const xt::xarray<int8_t>& value);
 Datum Encode(const xt::xarray<int16_t>& value);
 Datum Encode(const xt::xarray<uint8_t>& value);
