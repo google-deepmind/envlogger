@@ -51,7 +51,7 @@ class RiegeliDatasetReader {
   absl::Status Init(absl::string_view data_dir);
 
   // Returns metadata associated with this tag directory.
-  absl::optional<Data> Metadata();
+  absl::optional<Data> Metadata() const;
 
   int64_t NumSteps() const;
   int64_t NumEpisodes() const;

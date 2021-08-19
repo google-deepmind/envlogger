@@ -139,7 +139,9 @@ absl::Status RiegeliDatasetReader::Init(absl::string_view data_dir) {
   return absl::OkStatus();
 }
 
-absl::optional<Data> RiegeliDatasetReader::Metadata() { return metadata_; }
+absl::optional<Data> RiegeliDatasetReader::Metadata() const {
+  return metadata_;
+}
 
 int64_t RiegeliDatasetReader::NumSteps() const { return total_num_steps_; }
 
