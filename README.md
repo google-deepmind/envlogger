@@ -78,6 +78,17 @@ cd envlogger
 bazel test --test_output=errors envlogger/...
 ```
 
+##### Running inside Docker
+
+We provide a Docker image that can be used to run tests in a more controlled
+environment. You can run it as follows:
+
+```
+sh docker/build.sh
+docker run -it envlogger bash
+bazel test --test_output=errors envlogger/...
+```
+
 ## Acknowledgements
 
 We greatly appreciate all the support from the
