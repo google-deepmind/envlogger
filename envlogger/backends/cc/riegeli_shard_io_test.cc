@@ -21,6 +21,7 @@
 #include "gtest/gtest.h"
 #include "absl/algorithm/container.h"
 #include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "absl/random/random.h"
 #include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
@@ -31,6 +32,8 @@
 #include "envlogger/platform/proto_testutil.h"
 #include "envlogger/platform/test_macros.h"
 #include "envlogger/proto/storage.pb.h"
+
+ABSL_FLAG(bool, run_benchmarks, false, "Whether to run benchmarks.");
 
 namespace envlogger {
 namespace {
@@ -241,7 +244,10 @@ BENCHMARK(BM_WriteRead)
 }  // namespace envlogger
 
 int main(int argc, char **argv) {
+  absl::ParseCommandLine(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
-  ::benchmark::RunSpecifiedBenchmarks();
+  if (absl::GetFlag(FLAGS_run_benchmarks)) {
+    ::benchmark::RunSpecifiedBenchmarks();
+  }
   return RUN_ALL_TESTS();
 }
