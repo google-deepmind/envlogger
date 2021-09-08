@@ -23,7 +23,7 @@ py_binary(
     srcs = ["random_agent_catch.py"],
     python_version = "PY3",
     deps = [
-        "//envlogger:environment_logger",
+        "//envlogger",
         "//envlogger/testing:catch_env",
         requirement("absl-py"),
         requirement("numpy"),

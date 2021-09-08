@@ -21,7 +21,7 @@ import time
 from absl import app
 from absl import flags
 from absl import logging
-from envlogger import environment_logger
+import envlogger
 from envlogger.testing import catch_env
 import numpy as np
 
@@ -42,7 +42,7 @@ def main(unused_argv):
     return {'timestamp': time.time()}
 
   logging.info('Wrapping environment with EnvironmentLogger...')
-  with environment_logger.EnvLogger(
+  with envlogger.EnvLogger(
       env,
       data_directory=FLAGS.trajectories_dir,
       max_episodes_per_file=1000,
