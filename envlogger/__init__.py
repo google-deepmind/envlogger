@@ -19,10 +19,15 @@ from envlogger import environment_logger
 from envlogger import reader
 from envlogger import step_data
 from envlogger.backends import backend_type
+from envlogger.backends import riegeli_backend_writer
 from envlogger.backends import schedulers
+from envlogger.proto import storage_pb2
 
 EnvLogger = environment_logger.EnvLogger
 Reader = reader.Reader
 BackendType = backend_type.BackendType
 StepData = step_data.StepData
 Scheduler = schedulers.Scheduler
+RiegeliBackendWriter = riegeli_backend_writer.RiegeliBackendWriter
+Data = storage_pb2.Data
+Datum = storage_pb2.Datum

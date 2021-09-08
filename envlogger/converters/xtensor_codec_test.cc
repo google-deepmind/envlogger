@@ -528,7 +528,16 @@ TEST(XtensorCodecTest, Float32EncodeXtarray) {
     values: { float_values: 1.23 }
   )pb");
   const xt::xarray<float> value{1.23f};
-  EXPECT_THAT(Encode(value), EqualsProto(expected_proto));
+  EXPECT_THAT(Encode(value, /*as_bytes=*/false), EqualsProto(expected_proto));
+}
+
+TEST(XtensorCodecTest, Float32EncodeXtarrayAsBytes) {
+  const Datum expected_proto = ParseTextProtoOrDie(R"pb(
+    shape: { dim: { size: 1 } }
+    values: { float_values_buffer: "?\235p\244" }
+  )pb");
+  const xt::xarray<float> value{1.23f};
+  EXPECT_THAT(Encode(value, /*as_bytes=*/true), EqualsProto(expected_proto));
 }
 
 TEST(XtensorCodecTest, Float32DecodeXtarray) {
@@ -543,6 +552,21 @@ TEST(XtensorCodecTest, Float32DecodeXtarray) {
   // Directly checking for the value and getting it should also be supported.
   EXPECT_THAT(absl::holds_alternative<xt::xarray<float>>(*decoded), IsTrue);
   EXPECT_THAT(absl::get<xt::xarray<float>>(*decoded), Eq(value));
+}
+
+TEST(XtensorCodecTest, Float32XtarrayIdentity) {
+  const xt::xarray<float> value{3.14f};
+  const absl::optional<BasicType> decoded =
+      Decode(Encode(value, /*as_bytes=*/false));
+  EXPECT_THAT(decoded, Optional(value));
+  absl::visit(CheckVisitor(value), *decoded);
+}
+
+TEST(XtensorCodecTest, Float32XtarrayIdentityAsBytes) {
+  const xt::xarray<float> value{3.14f};
+  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  EXPECT_THAT(decoded, Optional(value));
+  absl::visit(CheckVisitor(value), *decoded);
 }
 
 // double.

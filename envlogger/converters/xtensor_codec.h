@@ -78,7 +78,11 @@ Datum Encode(const int16_t value);
 Datum Encode(const uint8_t value);
 Datum Encode(const uint16_t value);
 // xt::xarrays.
-Datum Encode(const xt::xarray<float>& value);
+// as_bytes indicates that `value` will be written as a big chunk of big-endian
+// floats. This is much faster than individually writing float entries in the
+// proto field, but the output is (obviously) not human-readable. This is the
+// native format for Numpy's `frombuffer` method.
+Datum Encode(const xt::xarray<float>& value, bool as_bytes = true);
 Datum Encode(const xt::xarray<double>& value);
 Datum Encode(const xt::xarray<int32_t>& value);
 Datum Encode(const xt::xarray<int64_t>& value);

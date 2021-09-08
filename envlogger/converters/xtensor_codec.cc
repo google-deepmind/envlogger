@@ -20,6 +20,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "absl/strings/string_view.h"
 #include <gmpxx.h>
+#include "riegeli/bytes/string_writer.h"
 #include "riegeli/endian/endian_reading.h"
 #include "riegeli/endian/endian_writing.h"
 #include "xtensor/xview.hpp"
@@ -116,7 +117,7 @@ xt::xarray<T> FillXarrayValues(const google::protobuf::RepeatedPtrField<T>& valu
 }
 
 template <typename T>
-inline T LoadInteger(const char* p) {
+inline T LoadScalar(const char* p) {
   constexpr int kSize = sizeof(T);
   static_assert(std::is_integral<T>::value &&
                     (kSize == 1 || kSize == 2 || kSize == 4 || kSize == 8),
@@ -135,6 +136,14 @@ inline T LoadInteger(const char* p) {
       return 0;
     }
   }
+}
+
+// Specialization of the above for floats.
+// This basically reverses the byte order from little-endian to big-endian.
+template <>
+inline float LoadScalar(const char* p) {
+  const char buffer[4] = {*(p + 3), *(p + 2), *(p + 1), *p};
+  return *reinterpret_cast<const float*>(buffer);
 }
 
 template <typename T>
@@ -169,7 +178,7 @@ xt::xarray<T> FillXarrayValuesBigEndian(const absl::string_view values,
   xt::xarray<T> output;
   output.resize({num_elements});
   for (uint64_t i = 0; i < num_elements * sizeof(T); i += sizeof(T)) {
-    output(i / sizeof(T)) = LoadInteger<T>(values.substr(i, sizeof(T)).data());
+    output(i / sizeof(T)) = LoadScalar<T>(values.substr(i, sizeof(T)).data());
   }
   output.reshape(shape);
   return output;
@@ -230,7 +239,7 @@ absl::optional<BasicType> DecodeValuesBigEndian(const std::string& values,
   if (values.empty()) return absl::nullopt;
 
   if (is_scalar) {
-    return LoadInteger<T>(values.data());
+    return LoadScalar<T>(values.data());
   } else {
     return FillXarrayValuesBigEndian<T>(values, shape);
   }
@@ -366,14 +375,25 @@ Datum Encode(const uint16_t value) {
 
 // xt::xarrays.
 
-Datum Encode(const xt::xarray<float>& value) {
+Datum Encode(const xt::xarray<float>& value, bool as_bytes) {
   Datum datum;
   auto* shape = datum.mutable_shape();
   for (const auto& dim : value.shape()) {
     shape->add_dim()->set_size(dim);
   }
-  for (const auto x : xt::ravel<xt::layout_type::row_major>(value)) {
-    datum.mutable_values()->add_float_values(x);
+  if (as_bytes) {
+    riegeli::StringWriter writer(
+        datum.mutable_values()->mutable_float_values_buffer(),
+        riegeli::StringWriterBase::Options().set_size_hint(value.size() *
+                                                           sizeof(float)));
+    for (const float f : xt::ravel<xt::layout_type::row_major>(value)) {
+      riegeli::WriteBigEndian32(absl::bit_cast<uint32_t>(f), writer);
+    }
+    writer.Close();
+  } else {
+    for (const auto x : xt::ravel<xt::layout_type::row_major>(value)) {
+      datum.mutable_values()->add_float_values(x);
+    }
   }
   return datum;
 }
@@ -544,6 +564,10 @@ absl::optional<BasicType> Decode(const Datum& datum) {
   const std::vector<int> shape = ShapeVector(datum.shape());
   const bool is_scalar = IsScalar(shape);
   const auto& values = datum.values();
+
+  absl::optional<BasicType> float_buffer = DecodeValuesBigEndian<float>(
+      values.float_values_buffer(), shape, is_scalar);
+  if (float_buffer) return float_buffer;
 
   absl::optional<BasicType> floats =
       DecodeValues(values.float_values(), shape, is_scalar);

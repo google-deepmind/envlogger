@@ -27,7 +27,9 @@ py_library(
         ":reader",
         ":step_data",
         "//envlogger/backends:backend_type",
+        "//envlogger/backends:riegeli_backend_writer",
         "//envlogger/backends:schedulers",
+        "//envlogger/proto:storage_py_pb2",
     ],
 )
 
