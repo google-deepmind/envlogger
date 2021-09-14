@@ -24,13 +24,14 @@
 #include "gtest/gtest.h"
 #include "absl/flags/flag.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
-#include "envlogger/backends/cc/riegeli_shard_writer.h"
 #include "envlogger/backends/cc/riegeli_dataset_io_constants.h"
+#include "envlogger/backends/cc/riegeli_shard_writer.h"
 #include "envlogger/platform/filesystem.h"
 #include "envlogger/platform/parse_text_proto.h"
 #include "envlogger/platform/proto_testutil.h"
@@ -347,6 +348,74 @@ TEST(DataDirectoryIndex, TwoShards) {
   }
   EXPECT_THAT(episodes, ElementsAre(EqualsEpisode(0, 3), EqualsEpisode(3, 2),
                                     EqualsEpisode(5, 1), EqualsEpisode(6, 3)));
+
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
+}
+
+TEST(DataDirectoryIndex, EpisodeReader) {
+  const std::string data_dir =
+      file::JoinPath(getenv("TEST_TMPDIR"), "my_data_dir");
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
+
+  // Write metadata and specs.
+  Data episode0_metadata = ParseTextProtoOrDie(R"pb(
+    datum: { values: { int32_values: 12345 } }
+  )pb");
+  Data dummy;
+  {
+    riegeli::RecordWriter writer(
+        RiegeliFileWriter<>(
+            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
+        riegeli::RecordWriterBase::Options().set_transpose(true));
+    EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
+    writer.Flush(riegeli::FlushType::kFromMachine);
+  }
+  CreateTimestampDirs(data_dir, {{absl::Now() - absl::Minutes(60),
+                                  {{1.0f, true},
+                                   {2.0f, false},
+                                   {3.0f, false, episode0_metadata},
+                                   {4.0f, true},
+                                   {5.0f, false}}}});
+  RiegeliDatasetReader reader;
+  ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
+  EXPECT_THAT(reader.NumSteps(), Eq(5));
+  EXPECT_THAT(reader.NumEpisodes(), Eq(2));
+
+  absl::StatusOr<RiegeliEpisodeReader> episode0 = reader.CreateEpisodeReader(0);
+  absl::StatusOr<RiegeliEpisodeReader> episode1 = reader.CreateEpisodeReader(1);
+  ENVLOGGER_EXPECT_OK(episode0.status());
+  ENVLOGGER_EXPECT_OK(episode1.status());
+  EXPECT_THAT(episode0->NumSteps(), Eq(3));
+  EXPECT_THAT(episode1->NumSteps(), Eq(2));
+
+  // Check for some invalid operations.
+  EXPECT_THAT(episode0->Step(-1), Eq(absl::nullopt));
+  EXPECT_THAT(episode0->Step(3), Eq(absl::nullopt));
+  EXPECT_THAT(episode1->Step(-1), Eq(absl::nullopt));
+  EXPECT_THAT(episode1->Step(2), Eq(absl::nullopt));
+
+  // Check steps.
+  std::vector<Data> episode0_steps;
+  for (int i = 0; i < episode0->NumSteps(); ++i) {
+    const auto step = episode0->Step(i);
+    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    episode0_steps.push_back(*step);
+  }
+  std::vector<Data> episode1_steps;
+  for (int i = 0; i < episode1->NumSteps(); ++i) {
+    const auto step = episode1->Step(i);
+    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    episode1_steps.push_back(*step);
+  }
+  EXPECT_THAT(
+      episode0_steps,
+      ElementsAre(EqualsProto("datum: { values: { float_values: 1.0}}"),
+                  EqualsProto("datum: { values: { float_values: 2.0}}"),
+                  EqualsProto("datum: { values: { float_values: 3.0}}")));
+  EXPECT_THAT(
+      episode1_steps,
+      ElementsAre(EqualsProto("datum: { values: { float_values: 4.0}}"),
+                  EqualsProto("datum: { values: { float_values: 5.0}}")));
 
   ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }

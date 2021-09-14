@@ -16,11 +16,14 @@
 #define THIRD_PARTY_PY_ENVLOGGER_BACKENDS_CC_RIEGELI_SHARD_READER_H_
 
 #include <cstdint>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "glog/logging.h"
 #include "google/protobuf/message.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -39,6 +42,12 @@ namespace envlogger {
 // This class reads the data from one of these index files and returns
 // information for accessing individual steps and episodes in the trajectories
 // file.
+// RiegeliShardReader is not thread-safe (i.e. multiple threads should not
+// concurrently call `Step()` or `Episode()`). However, it is possible to create
+// cheap copies of RiegeliShardReader using the Clone function, creating a new
+// reader which will share with the original reader the relatively expensive
+// in-memory index but will contain their individual Riegeli file handlers.
+// These copies can then be safely passed to threads.
 //
 // Note on nomenclature:
 //   - The term "index" when used in an array refers to the position in the
@@ -51,13 +60,12 @@ class RiegeliShardReader {
  public:
   RiegeliShardReader() = default;
 
-  // Dummy copy constructor to allow preallocating vectors of TrajectoryReader.
-  RiegeliShardReader(const RiegeliShardReader&) {}
+  RiegeliShardReader(RiegeliShardReader&&) = default;
 
   ~RiegeliShardReader();
 
 
-  // Reads trajectory data written by TrajectoryWriter.
+  // Reads trajectory data written by RiegeliShardWriter.
   //
   // If `step_offsets_filepath` is empty the constructor will return early
   // leaving the object members empty. All methods should fail if called on a
@@ -69,10 +77,16 @@ class RiegeliShardReader {
                     absl::string_view episode_metadata_filepath,
                     absl::string_view episode_index_filepath);
 
-  // Returns the number of steps indexed by this TrajectoryReader.
+  // Clones a RiegeliShardReader.
+  // The cloned reader owns its own file handles but shares the ShardData
+  // with the original reader.
+  // The cloned reader can safely be used in a different thread.
+  absl::StatusOr<RiegeliShardReader> Clone();
+
+  // Returns the number of steps indexed by this RiegeliShardReader.
   int64_t NumSteps() const;
 
-  // Returns the number of episodes indexed by this TrajectoryReader.
+  // Returns the number of episodes indexed by this RiegeliShardReader.
   int64_t NumEpisodes() const;
 
   // Returns step data at index `step_index`.
@@ -89,14 +103,24 @@ class RiegeliShardReader {
   void Close();
 
  private:
-  // Riegeli offsets for quickly accessing steps.
-  std::vector<int64_t> step_offsets_;
-  // Riegeli offsets for quickly accessing episodic metadata.
-  std::vector<int64_t> episode_metadata_offsets_;
+  struct ShardData {
+    std::string steps_filepath;
+    std::string episode_metadata_filepath;
 
-  // The first steps of each episodes.
-  // Episode index -> Step index.
-  std::vector<int64_t> episode_starts_;
+    // Riegeli offsets for quickly accessing steps.
+    std::vector<int64_t> step_offsets;
+
+    // Riegeli offsets for quickly accessing episodic metadata.
+    std::vector<int64_t> episode_metadata_offsets;
+
+    // The first steps of each episodes.
+    // Episode index -> Step index.
+    std::vector<int64_t> episode_starts;
+  };
+
+  // Structure of the shard.
+  // Note that all instances created with Clone() will share that information.
+  std::shared_ptr<ShardData> shard_;
 
   riegeli::RecordReader<RiegeliFileReader<>> steps_reader_;
   riegeli::RecordReader<RiegeliFileReader<>> episode_metadata_reader_;
@@ -108,12 +132,13 @@ class RiegeliShardReader {
 
 template <typename T>
 absl::optional<T> RiegeliShardReader::Step(int64_t step_index) {
+  const auto& step_offsets = shard_->step_offsets;
   if (step_index < 0 ||
-      step_index >= static_cast<int64_t>(step_offsets_.size())) {
+      step_index >= static_cast<int64_t>(step_offsets.size())) {
     return absl::nullopt;
   }
 
-  const int64_t offset = step_offsets_[step_index];
+  const int64_t offset = step_offsets[step_index];
   if (!steps_reader_.Seek(offset)) {
     VLOG(0) << absl::StrCat("Failed to seek to offset ", offset,
                             " status: ", steps_reader_.status().ToString());
