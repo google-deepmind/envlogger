@@ -14,6 +14,8 @@
 
 #include "envlogger/backends/cc/riegeli_dataset_reader.h"
 
+#include <string>
+
 #include "absl/types/optional.h"
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
@@ -91,12 +93,38 @@ PYBIND11_MODULE(riegeli_dataset_reader, m) {
                              &envlogger::RiegeliDatasetReader::NumEpisodes)
       .def("step", &envlogger::RiegeliDatasetReader::Step<envlogger::Data>,
            pybind11::arg("step_index"))
+      .def(
+          "step",
+          [](envlogger::RiegeliDatasetReader* self, int64_t step_index,
+             pybind11::object* data) -> pybind11::object {
+            if (!pybind11::hasattr(*data, "FromString")) {
+              VLOG(0)
+                  << "`data` must have a method `FromString()` which "
+                     "parses bytes. For example, protobufs have this method.";
+              return pybind11::none();
+            }
+
+            absl::optional<std::string> record =
+                self->Step<std::string>(step_index);
+            if (!record) {
+              VLOG(0) << "Failed to read record at step_index: " << step_index;
+              return pybind11::none();
+            }
+
+            pybind11::memoryview view = pybind11::memoryview::from_memory(
+                record->data(), record->size());
+            return data->attr("FromString")(view);
+          },
+          pybind11::arg("step_index"), pybind11::arg("data"),
+          "Same as step(), but allows passing an object that defines "
+          "`FromString()` (e.g. protobufs) that will be used for parsing the "
+          "(binary) payload.\nExample usage: reader.step(123, MyProtoMessage)")
       // Same as step() except that it returns a serialized envlogger::Data
       // proto. Return type is 'bytes' or None.
       .def("serialized_step",
-           [](envlogger::RiegeliDatasetReader* reader,
-              int64_t step_index) -> std::optional<pybind11::bytes> {
-             std::optional<envlogger::Data> data = reader->Step(step_index);
+           [](envlogger::RiegeliDatasetReader* self,
+              int64_t step_index) -> absl::optional<pybind11::bytes> {
+             absl::optional<envlogger::Data> data = self->Step(step_index);
              OptimizeDataProto(&*data);
              if (!data) return absl::nullopt;
              return pybind11::bytes(data->SerializeAsString());

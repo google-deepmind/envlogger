@@ -83,9 +83,10 @@ PYBIND11_MODULE(riegeli_dataset_writer, m) {
   pybind11::class_<envlogger::RiegeliDatasetWriter>(m, "RiegeliDatasetWriter")
       .def(pybind11::init<>())
       .def("init", &envlogger::RiegeliDatasetWriter::Init,
-           pybind11::arg("data_dir"), pybind11::arg("metadata"),
-           pybind11::arg("max_episodes_per_shard"),
-           pybind11::arg("writer_options"))
+           pybind11::arg("data_dir"),
+           pybind11::arg("metadata") = envlogger::Data(),
+           pybind11::arg("max_episodes_per_shard") = 0,
+           pybind11::arg("writer_options") = "transpose,brotli:6,chunk_size:1M")
       .def("add_step", &envlogger::RiegeliDatasetWriter::AddStep,
            pybind11::arg("data"), pybind11::arg("is_new_episode") = false)
       .def("set_episode_metadata",

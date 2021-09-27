@@ -46,8 +46,8 @@ class RiegeliDatasetWriter {
   //
   // IMPORTANT: `data_dir` MUST exist _before_ calling Init().
   absl::Status Init(
-      std::string data_dir, const Data& metadata,
-      int64_t max_episodes_per_shard,
+      std::string data_dir, const Data& metadata = Data(),
+      int64_t max_episodes_per_shard = 0,
       std::string writer_options = "transpose,brotli:6,chunk_size:1M");
 
   void AddStep(const google::protobuf::Message& data, bool is_new_episode = false);
