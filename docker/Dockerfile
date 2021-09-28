@@ -21,10 +21,10 @@ RUN chmod +x /bazel-3.7.2-linux-x86_64
 RUN mv /bazel-3.7.2-linux-x86_64 /usr/bin/bazel
 
 # Add python alternatives.
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.6 1
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.7 2
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 3
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 4
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 2
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 3
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 4
 # Override gcc/g++.
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8
 
@@ -32,21 +32,21 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /us
 RUN apt-get install -y tmux vim
 
 # Install some basic things for all python versions.
-RUN echo 1 | update-alternatives --config python
-RUN python -m pip install --upgrade pip setuptools grpcio-tools
+RUN echo 1 | update-alternatives --config python3
+RUN python3 -m pip install --upgrade pip setuptools grpcio-tools
 
-RUN echo 2 | update-alternatives --config python
-RUN python -m pip install --upgrade pip setuptools grpcio-tools
+RUN echo 2 | update-alternatives --config python3
+RUN python3 -m pip install --upgrade pip setuptools grpcio-tools
 
-RUN echo 3 | update-alternatives --config python
-RUN python -m pip install --upgrade pip setuptools grpcio-tools
+RUN echo 3 | update-alternatives --config python3
+RUN python3 -m pip install --upgrade pip setuptools grpcio-tools
 
 # Python3.9 has a breaking change in the HTML Parser, so we need to upgrade
 # these one at a time.
-RUN echo 4 | update-alternatives --config python
-RUN python -m pip install --upgrade pip
-RUN python -m pip install --upgrade setuptools
-RUN python -m pip install --upgrade grpcio-tools
+RUN echo 4 | update-alternatives --config python3
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade setuptools
+RUN python3 -m pip install --upgrade grpcio-tools
 
 ADD . /envlogger/
 WORKDIR /envlogger
