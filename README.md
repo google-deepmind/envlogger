@@ -89,6 +89,19 @@ docker run -it envlogger bash
 bazel test --test_output=errors envlogger/...
 ```
 
+## Benchmarks
+
+Wrapping your environment with EnvLogger adds an approximately 2 millisecond overhead per environment step.
+See the following difference in distributions in the case of random agent on a 100 steps per second Catch environment (measured in milliseconds).
+
+Percentiles      | 50th      | 95th       | 99th      | 99.9th     | mean (± std)
+---------------- | --------- | -----------| ----------| -----------| -----------
+w/o EnvLogger    | 10.15     | 10.23      | 11.51     | 14.70      | 10.19 (± 1.06)
+w/ EnvLogger     | 12.65     | 14.39      | 15.94     | 19.43      | 12.88 (± 0.34)
+
+<img src="docs/images/timings.png" width="40%">
+
+
 ## Acknowledgements
 
 We greatly appreciate all the support from the
