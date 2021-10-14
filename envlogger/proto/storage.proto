@@ -117,12 +117,19 @@ message Data {
     repeated Data values = 1;
   }
 
-  // Dict represents a mapping from strings to elements.
+  // Dict represents a mapping from elements to elements.
   //
   // A Dict corresponds to a Python dict() and to a C++
   // std::{unordered_}map<T, U>.
   message Dict {
+    // Specialization for string keys.
     map<string, Data> values = 1;
+
+    // A list of key-value pairs.
+    // This field is used for arbitrary key types.
+    // NOTE: This is currently only used by the Python codec. C++ support will
+    // be added in a future change and this note will be removed.
+    Array kvs = 2;
   }
 
   // Notice that the format does NOT differentiate between empty values, that

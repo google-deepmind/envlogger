@@ -1496,6 +1496,74 @@ class NumpyConvertersTest(parameterized.TestCase):
         np.array([[-1, -4], [-9, -16], [-25, -2], [-8, -18], [-32, -50]],
                  dtype=np.int64))
 
+  def test_encode_dict_int_keys(self):
+    """Dict with Python int keys."""
+    expected = storage_pb2.Data()
+    d = expected.dict.kvs
+    t1 = d.values.add().tuple
+    k1 = t1.values.add().datum
+    k1.shape.dim.add().size = -438
+    k1.values.bigint_values.append(b'{')  # 123 == b'{'
+    v1 = t1.values.add().datum
+    v1.shape.dim.add().size = -438
+    v1.values.int64_values.append(456)
+    self.assertEqual(codec.encode({123: np.int64(456)}), expected)
+
+  def test_decode_dict_int_keys(self):
+    """Dict with Python int keys."""
+    user_data = storage_pb2.Data()
+    d = user_data.dict.kvs
+    t1 = d.values.add().tuple
+    k1 = t1.values.add().datum
+    k1.shape.dim.add().size = -438
+    k1.values.bigint_values.append(b'{')  # 123 == b'{'
+    v1 = t1.values.add().datum
+    v1.shape.dim.add().size = -438
+    v1.values.int64_values.append(456)
+    self.assertEqual(codec.decode(user_data), {123: np.int64(456)})
+
+  def test_identity_dict_int_keys(self):
+    """Dict with Python int keys."""
+    self.assertEqual(
+        codec.decode(codec.encode({123: np.int64(456)})), {123: np.int64(456)})
+
+  def test_encode_dict_int64_keys(self):
+    """Dict with Python int64 keys."""
+    expected = storage_pb2.Data()
+    d = expected.dict.kvs
+    t1 = d.values.add().tuple
+    k1 = t1.values.add().datum
+    k1.shape.dim.add().size = -438
+    k1.values.int64_values.append(np.int64(1729))
+    v1 = t1.values.add().datum
+    v1.shape.dim.add().size = -438
+    v1.values.int32_values.append(12345)
+    self.assertEqual(codec.encode({np.int64(1729): np.int32(12345)}), expected)
+
+  def test_decode_dict_int64_keys(self):
+    """Dict with Python int64 keys."""
+    user_data = storage_pb2.Data()
+    d = user_data.dict.kvs
+    t1 = d.values.add().tuple
+    k1 = t1.values.add().datum
+    k1.shape.dim.add().size = -438
+    k1.values.int64_values.append(np.int64(1729))
+    v1 = t1.values.add().datum
+    v1.shape.dim.add().size = -438
+    v1.values.int32_values.append(12345)
+    self.assertEqual(codec.decode(user_data), {np.int64(1729): np.int32(12345)})
+
+  def test_identity_dict_int64_keys(self):
+    """Dict with Python int keys."""
+    self.assertEqual(
+        codec.decode(codec.encode({np.int64(1729): np.int32(12345)})),
+        {np.int64(1729): np.int32(12345)})
+
+  def test_identity_dict_mixed_keytypes(self):
+    """Dict with Python mixed key types."""
+    data = {123: np.int64(456), np.int64(1729): np.int32(12345), 'hello': True}
+    self.assertEqual(codec.decode(codec.encode(data)), data)
+
   ##############################################################################
   #
   # Unsupported types tests

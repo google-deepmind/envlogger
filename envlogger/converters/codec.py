@@ -317,7 +317,12 @@ def encode(
     return output
   if isinstance(user_data, dict):
     for k, v in user_data.items():
-      output.dict.values[k].CopyFrom(encode(v))
+      if isinstance(k, str):
+        output.dict.values[k].CopyFrom(encode(v))
+      else:
+        t = output.dict.kvs.values.add().tuple
+        t.values.add().CopyFrom(encode(k))
+        t.values.add().CopyFrom(encode(v))
     return output
   if isinstance(user_data, np.ndarray):
     pass  # The "base" ndarray case.
@@ -444,5 +449,11 @@ def decode(
   if user_data.HasField('tuple'):
     return tuple((decode(x) for x in user_data.tuple.values))
   if user_data.HasField('dict'):
-    return {k: decode(x) for k, x in user_data.dict.values.items()}
+    string_dict = {k: decode(x) for k, x in user_data.dict.values.items()}
+    kvs_dict = {
+        decode(t.tuple.values[0]): decode(t.tuple.values[1])
+        for t in user_data.dict.kvs.values
+    }
+    string_dict.update(kvs_dict)
+    return string_dict
   return None
