@@ -48,5 +48,8 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade setuptools
 RUN python3 -m pip install --upgrade grpcio-tools
 
+# Add `python` so that `/usr/bin/env` finds it. This is used by `bazel`.
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
 ADD . /envlogger/
 WORKDIR /envlogger
