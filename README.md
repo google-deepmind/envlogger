@@ -22,7 +22,7 @@ env = envlogger.EnvLogger(
         'agent_type': 'D4PG'
     })
 ```
-## Examples
+## How to use Envlogger
 
 Most of the time, it is just a one-liner wrapper, e.g.
 
@@ -39,6 +39,60 @@ with envlogger.EnvLogger(
   for step in range(100):
     action = np.random.randint(low=0, high=3)
     timestep = env.step(action)
+```
+
+Full example of random agent in Catch is available here:
+[random_agent_catch.py](https://github.com/deepmind/envlogger/tree/main/envloggerexamples/random_agent_catch.py)
+
+
+### Step metadata
+
+Envlogger also allows to record custom metadata per step by defining a function
+that can be passed to the wrapper. In this example, we want to record the
+timestamp of when each step was produced:
+
+```python
+
+  def step_fn(unused_timestep, unused_action, unused_env):
+    return {'timestamp': time.time()}
+
+  ...
+
+  with envlogger.Envlogger(
+    env,
+    data_directory='/tmp/experiment_logs',
+    step_fn=step_fn) as env:
+
+  ...
+
+```
+
+### Episode metadata
+
+Recording custom episode metadata is also possible by providing a callback. This
+callback is invoked at every step but only the last value returned that is not
+`None` (if any) is stored.
+
+In the following example, we only store the timestamp of the first step of the
+episode.
+
+```python
+
+  def episode_fn(timestep, unused_action, unused_env):
+    if timestemp.first:
+      return {'timestamp': time.time()}
+    else:
+      return None
+
+  ...
+
+  with envlogger.Envlogger(
+    env,
+    data_directory=FLAGS.trajectories_dir,
+    episode_fn=episode_fn) as env:
+
+  ...
+
 ```
 
 ## Reading stored trajectories
