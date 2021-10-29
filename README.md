@@ -110,6 +110,14 @@ with reader.Reader(
        # Use step.timestep.observation, step.timestep.reward, step.action etc...
 ```
 
+### Reading the dataset with RLDS
+
+Datasets generated with Envlogger are compatible with [RLDS] and you can use
+them with [TFDS](http://www.tensorflow.org/datasets) (learn how in the [RLDS]
+documentation).
+
+[RLDS]: http://github.com/google-research/rlds
+
 ## Getting Started
 
 > EnvLogger currently only supports Linux based OSes and Python 3.
