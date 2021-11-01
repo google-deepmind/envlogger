@@ -30,6 +30,7 @@
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/platform/riegeli_file_reader.h"
 #include "envlogger/proto/storage.pb.h"
+#include "riegeli/base/object.h"
 #include "riegeli/records/record_reader.h"
 
 namespace envlogger {
@@ -122,8 +123,9 @@ class RiegeliShardReader {
   // Note that all instances created with Clone() will share that information.
   std::shared_ptr<ShardData> shard_;
 
-  riegeli::RecordReader<RiegeliFileReader<>> steps_reader_;
-  riegeli::RecordReader<RiegeliFileReader<>> episode_metadata_reader_;
+  riegeli::RecordReader<RiegeliFileReader<>> steps_reader_{riegeli::kClosed};
+  riegeli::RecordReader<RiegeliFileReader<>> episode_metadata_reader_{
+      riegeli::kClosed};
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -25,6 +25,7 @@
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/platform/riegeli_file_writer.h"
 #include "envlogger/proto/storage.pb.h"
+#include "riegeli/base/object.h"
 #include "riegeli/records/record_writer.h"
 
 namespace envlogger {
@@ -102,10 +103,13 @@ class RiegeliShardWriter {
   absl::optional<Data> episode_metadata_;
 
   // Steps, episodes and their riegeli numeric offsets.
-  riegeli::RecordWriter<RiegeliFileWriter<>> steps_writer_;
-  riegeli::RecordWriter<RiegeliFileWriter<>> step_offsets_writer_;
-  riegeli::RecordWriter<RiegeliFileWriter<>> episode_metadata_writer_;
-  riegeli::RecordWriter<RiegeliFileWriter<>> episode_index_writer_;
+  riegeli::RecordWriter<RiegeliFileWriter<>> steps_writer_{riegeli::kClosed};
+  riegeli::RecordWriter<RiegeliFileWriter<>> step_offsets_writer_{
+      riegeli::kClosed};
+  riegeli::RecordWriter<RiegeliFileWriter<>> episode_metadata_writer_{
+      riegeli::kClosed};
+  riegeli::RecordWriter<RiegeliFileWriter<>> episode_index_writer_{
+      riegeli::kClosed};
 
 };
 
