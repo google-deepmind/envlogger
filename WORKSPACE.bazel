@@ -90,9 +90,9 @@ http_archive(
 # Riegeli.
 http_archive(
     name = "com_google_riegeli",
-    sha256 = "0e2abe5eea18eba5df0b259c3a830ec673c01b46144873b3470c57649c21470f",
-    strip_prefix = "riegeli-313fa1fea5c7b73001f4536dbafc26503a81b440",
-    url = "https://github.com/google/riegeli/archive/313fa1fea5c7b73001f4536dbafc26503a81b440.tar.gz",  # 2021-07-01
+    sha256 = "d88cfc939a04cc1686a8c62d0700515a9eda799b67796655b86152093126a14e",
+    strip_prefix = "riegeli-dfc5798738503227fadfb8186429fede6e440f84",
+    url = "https://github.com/google/riegeli/archive/dfc5798738503227fadfb8186429fede6e440f84.tar.gz",  # 2021-11-01
 )
 
 # Dependencies needed by Riegeli.
@@ -114,15 +114,9 @@ http_archive(
 
 http_archive(
     name = "org_brotli",
-    sha256 = "6e69be238ff61cef589a3fa88da11b649c7ff7a5932cb12d1e6251c8c2e17a2f",
-    strip_prefix = "brotli-1.0.7",
-    url = "https://github.com/google/brotli/archive/v1.0.7.zip",  # 2018-10-23
-    patches = [
-        "@//third_party:org_brotli_no_wconversion.diff"
-    ],
-    patch_args = [
-        "-p1",
-    ],
+    sha256 = "fec5a1d26f3dd102c542548aaa704f655fecec3622a24ec6e97768dcb3c235ff",
+    strip_prefix = "brotli-68f1b90ad0d204907beb58304d0bd06391001a4d",
+    url = "https://github.com/google/brotli/archive/68f1b90ad0d204907beb58304d0bd06391001a4d.zip",  # 2021-08-18
 )
 
 http_archive(
