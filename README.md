@@ -95,6 +95,13 @@ episode.
 
 ```
 
+### Recording human-generated data
+
+Please see [RLDS Creator] if you want to record data from a human interacting
+with an environment.
+
+[RLDS Creator]: http://github.com/google-research/rlds-creator
+
 ## Reading stored trajectories
 
 `Reader` can read stored trajectories. Example:
