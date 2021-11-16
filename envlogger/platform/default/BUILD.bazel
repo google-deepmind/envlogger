@@ -57,6 +57,7 @@ cc_library(
     deps = [
         ":filesystem",
         "@com_google_absl//absl/strings",
+        "@com_google_riegeli//riegeli/base",
         "@com_google_riegeli//riegeli/bytes:fd_reader",
     ],
 )
@@ -67,6 +68,7 @@ cc_library(
     deps = [
         ":filesystem",
         "@com_google_absl//absl/strings",
+        "@com_google_riegeli//riegeli/base",
         "@com_google_riegeli//riegeli/bytes:fd_writer",
     ],
 )

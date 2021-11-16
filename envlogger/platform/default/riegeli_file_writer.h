@@ -17,6 +17,7 @@
 
 #include "absl/strings/string_view.h"
 #include "envlogger/platform/default/filesystem.h"
+#include "riegeli/base/object.h"
 #include "riegeli/bytes/fd_writer.h"
 
 namespace envlogger {
@@ -26,7 +27,8 @@ template <typename Dest = ::riegeli::OwnedFd>
 class RiegeliFileWriter : public ::riegeli::FdWriter<Dest> {
  public:
   // Creates a closed `FileWriter`.
-  RiegeliFileWriter() noexcept {}
+  explicit RiegeliFileWriter(riegeli::Closed) noexcept
+      : ::riegeli::FdWriter<Dest>(riegeli::kClosed) {}
 
   explicit RiegeliFileWriter(absl::string_view filename, absl::string_view mode)
       : ::riegeli::FdWriter<Dest>(filename, file::GetFileMode(mode)) {}

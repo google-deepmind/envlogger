@@ -18,6 +18,7 @@
 
 #include "glog/logging.h"
 #include "google/protobuf/repeated_field.h"
+#include "absl/base/casts.h"
 #include "absl/strings/string_view.h"
 #include <gmpxx.h>
 #include "riegeli/bytes/string_writer.h"
@@ -122,28 +123,13 @@ inline T LoadScalar(const char* p) {
   static_assert(std::is_integral<T>::value &&
                     (kSize == 1 || kSize == 2 || kSize == 4 || kSize == 8),
                 "T needs to be an integral type with byte size 1, 2, 4, or 8.");
-  switch (kSize) {
-    case 1:
-      return *reinterpret_cast<const T*>(p);
-    case 2:
-      return riegeli::ReadBigEndian16(p);
-    case 4:
-      return riegeli::ReadBigEndian32(p);
-    case 8:
-      return riegeli::ReadBigEndian64(p);
-    default: {
-      LOG(FATAL) << "Should not reach! " << p;
-      return 0;
-    }
-  }
+  return riegeli::ReadBigEndian<T>(p);
 }
 
 // Specialization of the above for floats.
-// This basically reverses the byte order from little-endian to big-endian.
 template <>
 inline float LoadScalar(const char* p) {
-  const char buffer[4] = {*(p + 3), *(p + 2), *(p + 1), *p};
-  return *reinterpret_cast<const float*>(buffer);
+  return absl::bit_cast<float>(riegeli::ReadBigEndian32(p));
 }
 
 template <typename T>
@@ -152,23 +138,7 @@ inline void StoreInteger(T value, char* p) {
   static_assert(std::is_integral<T>::value &&
                     (kSize == 1 || kSize == 2 || kSize == 4 || kSize == 8),
                 "T needs to be an integral type with byte size 1, 2, 4, or 8.");
-  switch (kSize) {
-    case 1:
-      *reinterpret_cast<T*>(p) = value;
-      break;
-    case 2:
-      riegeli::WriteBigEndian16(value, p);
-      break;
-    case 4:
-      riegeli::WriteBigEndian32(value, p);
-      break;
-    case 8:
-      riegeli::WriteBigEndian64(value, p);
-      break;
-    default: {
-      LOG(FATAL) << "Should not reach! " << value;
-    }
-  }
+  riegeli::WriteBigEndian<T>(value, p);
 }
 
 template <typename T>

@@ -17,6 +17,7 @@
 
 #include "absl/strings/string_view.h"
 #include "envlogger/platform/default/filesystem.h"
+#include "riegeli/base/object.h"
 #include "riegeli/bytes/fd_reader.h"
 
 namespace envlogger {
@@ -26,7 +27,8 @@ template <typename Src = ::riegeli::OwnedFd>
 class RiegeliFileReader : public ::riegeli::FdReader<Src> {
  public:
   // Creates a closed `FileReader`.
-  RiegeliFileReader() noexcept {}
+  explicit RiegeliFileReader(riegeli::Closed) noexcept
+      : ::riegeli::FdReader<Src>(riegeli::kClosed) {}
 
   explicit RiegeliFileReader(absl::string_view filename, absl::string_view mode)
       : ::riegeli::FdReader<Src>(filename, file::GetFileMode(mode)) {}
