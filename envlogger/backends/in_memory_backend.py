@@ -24,6 +24,7 @@ from envlogger.backends import backend_writer
 from envlogger.backends.python import episode_info
 
 
+
 class InMemoryBackendWriter(backend_writer.BackendWriter):
   """Backend that stores trajectory data in memory."""
 
