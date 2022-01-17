@@ -30,7 +30,7 @@ import tensorflow_datasets as tfds
 DatasetConfig = tfds.rlds.rlds_base.DatasetConfig
 
 
-class RLDSBuilder(tfds.core.GeneratorBasedBuilder):
+class RLDSEnvloggerBuilder(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for RLDS datasets generated with TFDS BackendWriter."""
 
   def _info(self) -> tfds.core.DatasetInfo:
@@ -107,7 +107,7 @@ class Split(object):
   info: tfds.core.splits.SplitInfo
   complete_shards: int = 0
   # The dataset name is taken from the builder class.
-  ds_name: str = 'rlds_builder'
+  ds_name: str = 'rlds_envlogger_builder'
 
   def update(self, shard: Shard) -> None:
     self.info = tfds.core.SplitInfo(
@@ -152,7 +152,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
     """
     super().__init__(**base_kwargs)
     self._data_directory = data_directory
-    builder_cls = RLDSBuilder
+    builder_cls = RLDSEnvloggerBuilder
     builder_cls.VERSION = version
     builder_cls.BUILDER_CONFIGS = [ds_config]
     self._builder = builder_cls(data_dir=data_directory, config=ds_config.name)

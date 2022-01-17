@@ -150,7 +150,7 @@ class TfdsBackendWriterSplitTest(absltest.TestCase):
     split.update(shard)
 
     self.assertEqual(split.complete_shards, 1)
-    self.assertEqual(split.ds_name, 'rlds_builder')
+    self.assertEqual(split.ds_name, 'rlds_envlogger_builder')
     self.assertEqual(split.info.name, 'split_name')
     self.assertEqual(split.info.shard_lengths, [3, 10])
     self.assertEqual(split.info.num_bytes, 2)
@@ -162,7 +162,7 @@ class TfdsBackendWriterSplitTest(absltest.TestCase):
         complete_shards=10)
     path = split.get_shard_path()
 
-    self.assertEqual(path, 'rlds_builder-split_name.tfrecord-00010')
+    self.assertEqual(path, 'rlds_envlogger_builder-split_name.tfrecord-00010')
 
   def test_get_split_dict(self):
     split_info = tfds.core.splits.SplitInfo(
