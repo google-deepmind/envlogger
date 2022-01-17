@@ -111,13 +111,13 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
   """Backend that writes trajectory data in TFDS format (and RLDS structure)."""
 
 
-  def __init__(
-      self,
-      data_directory: str,
-      ds_config: tfds.rlds.rlds_base.DatasetConfig,
-      max_episodes_per_file: int = 1000,
-      split_name: Optional[str] = None,
-      **base_kwargs):
+  def __init__(self,
+               data_directory: str,
+               ds_config: tfds.rlds.rlds_base.DatasetConfig,
+               max_episodes_per_file: int = 1000,
+               split_name: Optional[str] = None,
+               version: str = '0.0.1',
+               **base_kwargs):
     """Constructor.
 
     Args:
@@ -126,12 +126,13 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
       max_episodes_per_file: Number of episodes to store per shard.
       split_name: Name to be used by the split. If None, the name of the parent
         directory will be used.
+      version: version (major.minor.patch) of the dataset.
       **base_kwargs: arguments for the base class.
     """
     super().__init__(**base_kwargs)
     self._data_directory = data_directory
     builder_cls = rlds_builder.RLDSBuilder
-    builder_cls.VERSION = '0.0.0'
+    builder_cls.VERSION = version
     builder_cls.BUILDER_CONFIGS = [ds_config]
     self._builder = builder_cls(data_dir=data_directory, config=ds_config.name)
     self._ds_info = tfds.rlds.rlds_base.build_info(ds_config, self._builder)
