@@ -16,19 +16,22 @@
 """Utils to convert Envlogger data into RLDS."""
 
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from absl import logging
 from envlogger import step_data
 import numpy as np
-from rlds import rlds_types
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
+Step = Dict[str, Any]
+
 
 def to_rlds_step(prev_step: step_data.StepData,
-                 step: Optional[step_data.StepData]) -> rlds_types.Step:
+                 step: Optional[step_data.StepData]) -> Step:
   """Builds an RLDS step from two Envlogger steps.
+
+  Steps follow the RLDS convention from https://github.com/google-research/rlds.
 
   Args:
     prev_step: previous step.
@@ -43,20 +46,20 @@ def to_rlds_step(prev_step: step_data.StepData,
   if isinstance(prev_step.custom_data, dict):
     metadata = prev_step.custom_data
   return {
-      rlds_types.ACTION:
+      'action':
           step.action if step else np.zeros_like(prev_step.action),
-      rlds_types.DISCOUNT:
+      'discount':
           step.timestep.discount
           if step else np.zeros_like(prev_step.timestep.discount),
-      rlds_types.IS_FIRST:
+      'is_first':
           prev_step.timestep.first(),
-      rlds_types.IS_LAST:
+      'is_last':
           prev_step.timestep.last(),
-      rlds_types.IS_TERMINAL: (prev_step.timestep.last() and
-                               prev_step.timestep.discount == 0.0),
-      rlds_types.OBSERVATION:
+      'is_terminal': (prev_step.timestep.last() and
+                      prev_step.timestep.discount == 0.0),
+      'observation':
           prev_step.timestep.observation,
-      rlds_types.REWARD:
+      'reward':
           step.timestep.reward
           if step else np.zeros_like(prev_step.timestep.reward),
       **metadata,

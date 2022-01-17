@@ -22,7 +22,6 @@ import dm_env
 import envlogger
 from envlogger.backends import rlds_utils
 from envlogger.backends import tfds_backend_testlib
-from rlds import rlds_types
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
@@ -58,14 +57,15 @@ class RldsUtilsTest(absltest.TestCase):
             discount=7),
         action=8)
 
-    expected_step = rlds_types.build_step(
-        observation=2,
-        action=8,
-        reward=5,
-        discount=7,
-        is_terminal=False,
-        is_first=True,
-        is_last=False)
+    expected_step = {
+        'observation': 2,
+        'action': 8,
+        'reward': 5,
+        'discount': 7,
+        'is_terminal': False,
+        'is_first': True,
+        'is_last': False,
+    }
 
     rlds_step = rlds_utils.to_rlds_step(prev_step, step)
 
@@ -77,14 +77,15 @@ class RldsUtilsTest(absltest.TestCase):
             step_type=dm_env.StepType.LAST, reward=1, observation=2,
             discount=1),
         action=4)
-    expected_step = rlds_types.build_step(
-        observation=2,
-        action=0,
-        reward=0,
-        discount=0,
-        is_terminal=False,
-        is_first=False,
-        is_last=True)
+    expected_step = {
+        'observation': 2,
+        'action': 0,
+        'reward': 0,
+        'discount': 0,
+        'is_terminal': False,
+        'is_first': False,
+        'is_last': True,
+    }
 
     rlds_step = rlds_utils.to_rlds_step(prev_step, None)
 
@@ -96,14 +97,15 @@ class RldsUtilsTest(absltest.TestCase):
             step_type=dm_env.StepType.LAST, reward=1, observation=2,
             discount=0),
         action=4)
-    expected_step = rlds_types.build_step(
-        observation=2,
-        action=0,
-        reward=0,
-        discount=0,
-        is_terminal=True,
-        is_first=False,
-        is_last=True)
+    expected_step = {
+        'observation': 2,
+        'action': 0,
+        'reward': 0,
+        'discount': 0,
+        'is_terminal': True,
+        'is_first': False,
+        'is_last': True,
+    }
 
     rlds_step = rlds_utils.to_rlds_step(prev_step, None)
 
@@ -124,15 +126,16 @@ class RldsUtilsTest(absltest.TestCase):
             discount=7),
         action=8)
 
-    expected_step = rlds_types.build_step(
-        observation=2,
-        action=8,
-        reward=5,
-        discount=7,
-        is_terminal=False,
-        is_first=True,
-        is_last=False,
-        metadata={'extra_data': 10})
+    expected_step = {
+        'observation': 2,
+        'action': 8,
+        'reward': 5,
+        'discount': 7,
+        'is_terminal': False,
+        'is_first': True,
+        'is_last': False,
+        'extra_data': 10,
+    }
 
     rlds_step = rlds_utils.to_rlds_step(prev_step, step)
 

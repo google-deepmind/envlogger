@@ -25,7 +25,6 @@ from envlogger.backends import rlds_utils
 from envlogger.backends import tfds_backend_testlib
 from envlogger.backends import tfds_backend_writer
 import numpy as np
-from rlds import rlds_types
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
@@ -37,15 +36,15 @@ def _create_step(value: int, step_type: dm_env.StepType) -> step_data.StepData:
 
 def _tfds_features() -> tfds.features.FeaturesDict:
   return tfds.features.FeaturesDict({
-      rlds_types.STEPS:
+      'steps':
           tfds.features.Dataset({
-              rlds_types.OBSERVATION: tf.int64,
-              rlds_types.ACTION: tf.int64,
-              rlds_types.REWARD: tf.int64,
-              rlds_types.IS_TERMINAL: tf.bool,
-              rlds_types.IS_FIRST: tf.bool,
-              rlds_types.IS_LAST: tf.bool,
-              rlds_types.DISCOUNT: tf.int64,
+              'observation': tf.int64,
+              'action': tf.int64,
+              'reward': tf.int64,
+              'is_terminal': tf.bool,
+              'is_first': tf.bool,
+              'is_last': tf.bool,
+              'discount': tf.int64,
           }),
   })
 
@@ -95,14 +94,15 @@ class TfdsBackendWriterEpisodeTest(absltest.TestCase):
     self.assertEqual(episode.prev_step, step)
     self.assertLen(episode.steps, 1)
 
-    expected_rlds_step = rlds_types.build_step(
-        observation=0,
-        action=1,
-        reward=1,
-        discount=1,
-        is_first=True,
-        is_last=False,
-        is_terminal=False)
+    expected_rlds_step = {
+        'observation': 0,
+        'action': 1,
+        'reward': 1,
+        'discount': 1,
+        'is_first': True,
+        'is_last': False,
+        'is_terminal': False,
+    }
 
     self.assertEqual(episode.steps[0], expected_rlds_step)
 
@@ -122,18 +122,18 @@ class TfdsBackendWriterEpisodeTest(absltest.TestCase):
     episode = parser.parse_example(serialized_example)
 
     self.assertIsInstance(episode, dict)
-    self.assertIn(rlds_types.STEPS, episode)
+    self.assertIn('steps', episode)
 
-    steps = tf.data.Dataset.from_tensor_slices(episode[rlds_types.STEPS])
+    steps = tf.data.Dataset.from_tensor_slices(episode['steps'])
 
     steps_counter = 0
     for index, step in enumerate(steps):
-      self.assertEqual(index, step[rlds_types.OBSERVATION])
-      self.assertFalse(step[rlds_types.IS_TERMINAL])
-      self.assertEqual(index == 0, step[rlds_types.IS_FIRST])
-      self.assertEqual(index == 2, step[rlds_types.IS_LAST])
+      self.assertEqual(index, step['observation'])
+      self.assertFalse(step['is_terminal'])
+      self.assertEqual(index == 0, step['is_first'])
+      self.assertEqual(index == 2, step['is_last'])
       next_value = 0 if index == 2 else index + 1
-      for key in [rlds_types.ACTION, rlds_types.REWARD, rlds_types.DISCOUNT]:
+      for key in ['action', 'reward', 'discount']:
         self.assertEqual(next_value, step[key])
       steps_counter += 1
     self.assertEqual(steps_counter, 3)
@@ -201,7 +201,7 @@ class TfdsBackendWriterTest(absltest.TestCase):
 
     num_episodes = 0
     for index, episode in enumerate(ds):
-      self._assert_steps(expected_episodes[index], episode[rlds_types.STEPS])
+      self._assert_steps(expected_episodes[index], episode['steps'])
       self.assertEqual(episode['episode_id'], index)
       num_episodes += 1
 
@@ -223,7 +223,7 @@ class TfdsBackendWriterTest(absltest.TestCase):
 
     num_episodes = 0
     for index, episode in enumerate(ds):
-      self._assert_steps(expected_episodes[index], episode[rlds_types.STEPS])
+      self._assert_steps(expected_episodes[index], episode['steps'])
       self.assertEqual(episode['episode_id'], index)
       num_episodes += 1
 

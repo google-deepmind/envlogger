@@ -22,11 +22,32 @@ from absl import logging
 from envlogger import step_data
 from envlogger.backends import backend_writer
 from envlogger.backends import rlds_utils
-from rlds import rlds_types
-from rlds.tfds import rlds_base as rlds_builder
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
+
+
+DatasetConfig = tfds.rlds.rlds_base.DatasetConfig
+
+
+class RLDSBuilder(tfds.core.GeneratorBasedBuilder):
+  """DatasetBuilder for RLDS datasets generated with TFDS BackendWriter."""
+
+  def _info(self) -> tfds.core.DatasetInfo:
+    """Returns the dataset metadata."""
+    return tfds.rlds.rlds_base.build_info(self.builder_config, self)
+
+  def _split_generators(self, dl_manager: tfds.download.DownloadManager):
+    """Returns SplitGenerators."""
+    # This builder is only used to write data from envlogger. Examples are
+    # generated with the tfds_backend_writer module.
+    raise NotImplementedError
+
+  def _generate_examples(self, path):
+    """Yields examples."""
+    # This builder is only used to write data from envlogger. Examples are
+    # generated with the tfds_backend_writer module.
+    raise NotImplementedError
 
 
 @dataclasses.dataclass
@@ -50,7 +71,7 @@ class Shard(object):
 class Episode(object):
   """Episode that is being constructed."""
   prev_step: step_data.StepData
-  steps: Optional[List[rlds_types.Step]] = None
+  steps: Optional[List[rlds_utils.Step]] = None
   metadata: Optional[Dict[str, Any]] = None
 
   def add_step(self, step: step_data.StepData) -> None:
@@ -70,7 +91,7 @@ class Episode(object):
     if self.metadata is None:
       self.metadata = {}
 
-    episode = {rlds_types.STEPS: self.steps + [last_step], **self.metadata}
+    episode = {'steps': self.steps + [last_step], **self.metadata}
     try:
       example = features.encode_example(episode)
     except Exception as e:
@@ -131,7 +152,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
     """
     super().__init__(**base_kwargs)
     self._data_directory = data_directory
-    builder_cls = rlds_builder.RLDSBuilder
+    builder_cls = RLDSBuilder
     builder_cls.VERSION = version
     builder_cls.BUILDER_CONFIGS = [ds_config]
     self._builder = builder_cls(data_dir=data_directory, config=ds_config.name)
