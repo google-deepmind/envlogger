@@ -146,3 +146,84 @@ py_test(
         requirement("numpy"),
     ],
 )
+
+
+py_library(
+    name = "rlds_utils",
+    srcs = ["rlds_utils.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//envlogger:step_data",
+        requirement("absl-py"),
+        requirement("numpy"),
+        requirement("tensorflow"),
+        requirement("tfds-nightly"),
+    ],
+)
+
+
+py_library(
+    name = "tfds_backend_writer",
+    srcs = ["tfds_backend_writer.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":backend_writer",
+        ":rlds_utils",
+        "//envlogger:step_data",
+        requirement("absl-py"),
+        requirement("tensorflow"),
+        requirement("tfds-nightly"),
+    ],
+)
+
+
+py_library(
+    name = "tfds_backend_testlib",
+    srcs = ["tfds_backend_testlib.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":backend_writer",
+        ":schedulers",
+        ":tfds_backend_writer",
+        "//envlogger:step_data",
+        "//envlogger/testing:catch_env",
+        requirement("absl-py"),
+        requirement("numpy"),
+        requirement("tensorflow"),
+        requirement("tfds-nightly"),
+    ],
+)
+
+
+py_test(
+    name = "rlds_utils_test",
+    srcs = ["rlds_utils_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":rlds_utils",
+        ":tfds_backend_testlib",
+        "//envlogger:step_data",
+        requirement("absl-py"),
+        requirement("dm_env"),
+        requirement("tensorflow"),
+        requirement("tfds-nightly"),
+    ],
+)
+
+py_test(
+    name = "tfds_backend_writer_test",
+    srcs = ["tfds_backend_writer_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":rlds_utils",
+        ":backend_writer",
+        ":tfds_backend_writer",
+        ":tfds_backend_testlib",
+        "//envlogger:step_data",
+        requirement("absl-py"),
+        requirement("dm_env"),
+        requirement("numpy"),
+        requirement("tensorflow"),
+        requirement("tfds-nightly"),
+    ],
+)

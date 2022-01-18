@@ -29,3 +29,17 @@ py_binary(
         requirement("numpy"),
     ],
 )
+
+py_binary(
+    name = "tfds_random_agent_catch",
+    srcs = ["tfds_random_agent_catch.py"],
+    deps = [
+        "//envlogger",
+        "//envlogger/backends:tfds_backend_writer",
+        "//envlogger/testing:catch_env",
+        requirement("absl-py"),
+        requirement("numpy"),
+        requirement("tensorflow"),
+        requirement("tfds-nightly"),
+    ],
+)

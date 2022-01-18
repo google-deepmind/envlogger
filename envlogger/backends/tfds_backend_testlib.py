@@ -48,7 +48,7 @@ def generate_episode_data(
   for index in range(num_episodes):
     episode = []
     timestep = env.reset()
-    data = step_data.StepData(timestep, None, {'timestamp_ns': time.time_ns()})
+    data = step_data.StepData(timestep, None, {'timestamp': int(time.time())})
     episode.append(data)
     backend.record_step(data, is_new_episode=True)
 
@@ -56,7 +56,7 @@ def generate_episode_data(
       action = np.random.randint(low=0, high=3)
       timestep = env.step(action)
       data = step_data.StepData(timestep, action,
-                                {'timestamp_ns': time.time_ns()})
+                                {'timestamp': int(time.time())})
       episode.append(data)
       backend.record_step(data, is_new_episode=False)
     backend.set_episode_metadata({'episode_id': index})
@@ -94,6 +94,6 @@ def tfds_backend_catch_env(
           action_info=tf.int64,
           reward_info=tf.float64,
           discount_info=tf.float64,
-          step_metadata_info={'timestamp_ns': tf.int64},
+          step_metadata_info={'timestamp': tf.int64},
           episode_metadata_info={'episode_id': tf.int64}),
       max_episodes_per_file=max_episodes_per_file)

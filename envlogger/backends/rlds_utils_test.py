@@ -19,7 +19,7 @@ import os
 
 from absl.testing import absltest
 import dm_env
-import envlogger
+from envlogger import step_data
 from envlogger.backends import rlds_utils
 from envlogger.backends import tfds_backend_testlib
 import tensorflow as tf
@@ -44,14 +44,14 @@ def _remove_shard_prefix(builder: tfds.core.DatasetBuilder, split_name: str,
 class RldsUtilsTest(absltest.TestCase):
 
   def test_build_step(self):
-    prev_step = envlogger.StepData(
+    prev_step = step_data.StepData(
         timestep=dm_env.TimeStep(
             step_type=dm_env.StepType.FIRST,
             reward=1,
             observation=2,
             discount=3),
         action=4)
-    step = envlogger.StepData(
+    step = step_data.StepData(
         timestep=dm_env.TimeStep(
             step_type=dm_env.StepType.LAST, reward=5, observation=6,
             discount=7),
@@ -72,7 +72,7 @@ class RldsUtilsTest(absltest.TestCase):
     self.assertEqual(rlds_step, expected_step)
 
   def test_build_last_step(self):
-    prev_step = envlogger.StepData(
+    prev_step = step_data.StepData(
         timestep=dm_env.TimeStep(
             step_type=dm_env.StepType.LAST, reward=1, observation=2,
             discount=1),
@@ -92,7 +92,7 @@ class RldsUtilsTest(absltest.TestCase):
     self.assertEqual(rlds_step, expected_step)
 
   def test_build_terminal_step(self):
-    prev_step = envlogger.StepData(
+    prev_step = step_data.StepData(
         timestep=dm_env.TimeStep(
             step_type=dm_env.StepType.LAST, reward=1, observation=2,
             discount=0),
@@ -112,7 +112,7 @@ class RldsUtilsTest(absltest.TestCase):
     self.assertEqual(rlds_step, expected_step)
 
   def test_build_step_with_metadata(self):
-    prev_step = envlogger.StepData(
+    prev_step = step_data.StepData(
         timestep=dm_env.TimeStep(
             step_type=dm_env.StepType.FIRST,
             reward=1,
@@ -120,7 +120,7 @@ class RldsUtilsTest(absltest.TestCase):
             discount=3),
         action=4,
         custom_data={'extra_data': 10})
-    step = envlogger.StepData(
+    step = step_data.StepData(
         timestep=dm_env.TimeStep(
             step_type=dm_env.StepType.LAST, reward=5, observation=6,
             discount=7),

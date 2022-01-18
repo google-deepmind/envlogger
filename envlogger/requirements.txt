@@ -3,3 +3,5 @@ dm_env
 mock
 numpy
 protobuf
+tensorflow
+tfds-nightly
