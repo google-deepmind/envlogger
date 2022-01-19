@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2021 DeepMind Technologies Limited..
+# Copyright 2022 DeepMind Technologies Limited..
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ from setuptools.command import build_py
 
 PROJECT_NAME = 'envlogger'
 
-__version__ = '1.0.5'
+__version__ = '1.0.6'
 
 _ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 

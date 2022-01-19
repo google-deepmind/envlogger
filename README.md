@@ -95,10 +95,52 @@ episode.
 
 ```
 
-### Recording human-generated data
+### TFDS backend
 
-Please see [RLDS Creator] if you want to record data from a human interacting
-with an environment.
+Envlogger supports writing data that is directly compatible with
+[TFDS](http://www.tensorflow.org/datasets) and [RLDS].
+
+For that, you need to indicate the specs of your environment in terms of [TFDS
+Features](https://www.tensorflow.org/datasets/features) using an RLDS [DatasetConfig] like in the example
+(note that the config can include `step_metadata_info`and `episode metadata_info`).
+
+```
+  dataset_config = tfds.rlds.rlds_base.DatasetConfig(
+      name='catch_example',
+      observation_info=tfds.features.Tensor(
+          shape=(10, 5), dtype=tf.float32,
+          encoding=tfds.features.Encoding.ZLIB),
+      action_info=tf.int64,
+      reward_info=tf.float64,
+      discount_info=tf.float64)
+```
+
+And then use the [TFDS Backend] when instantiating the Envlogger:
+
+```
+envlogger.EnvLogger(
+      env,
+      backend = tfds_backend_writer.TFDSBackendWriter(
+        data_directory=FLAGS.trajectories_dir,
+        split_name='train',
+        max_episodes_per_file=500,
+        ds_config=dataset_config),
+  )
+```
+
+A full example is available here [random_agent_catch.py](https://github.com/deepmind/envlogger/tree/main/envloggerexamples/tfds_random_agent_catch.py)
+
+
+[RLDS]: http://github.com/google-research/rlds
+[DatasetConfig]: https://github.com/tensorflow/datasets/blob/fdad1d9e8f1cb34389a336132b2f842cbc7aca57/tensorflow_datasets/rlds/rlds_base.py#L29
+[TFDS Backend]:https://github.com/deepmind/envlogger/blob/main/envlogger/backends/tfds_backend_writer.py
+
+Note: If you are installing Envlogger via pip, remember to install the extra
+dependencies:
+
+```
+pip install envlogger[tfds]
+```
 
 [RLDS Creator]: http://github.com/google-research/rlds-creator
 
@@ -117,11 +159,16 @@ with reader.Reader(
        # Use step.timestep.observation, step.timestep.reward, step.action etc...
 ```
 
-### Reading the dataset with RLDS
+### Reading the dataset with TFDS/RLDS
 
-Datasets generated with Envlogger are compatible with [RLDS] and you can use
-them with [TFDS](http://www.tensorflow.org/datasets) (learn how in the [RLDS]
-documentation).
+Datasets generated with Envlogger are compatible with [RLDS].
+
+If you used the [TFDS backend](#tfds_backend), you can read your data directly
+with `tfds.builder_from_directory`. Check the [RLDS] website for colabs and
+tools to manipulate your datasets.
+
+Otherwise, you can transform them into a [TFDS](http://www.tensorflow.org/datasets)
+compatible dataset (learn how in the [RLDS] documentation).
 
 [RLDS]: http://github.com/google-research/rlds
 
@@ -133,6 +180,13 @@ You can install EnvLogger via `pip`:
 
 ```
 pip install envlogger
+```
+
+If you want to use the TFDS backend, you need to install the package with
+extra dependencies:
+
+```
+pip install envlogger[tfds]
 ```
 
 ##### Compiling from source
