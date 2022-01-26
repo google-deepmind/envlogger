@@ -368,7 +368,7 @@ def decode_datum(
                     (values.int64_values, np.int64),
                     (values.uint32_values, np.uint32),
                     (values.uint64_values, np.uint64),
-                    (values.bool_values, np.bool)]:
+                    (values.bool_values, bool)]:
     if vs:
       if is_scalar:
         return dtype(vs[0])
