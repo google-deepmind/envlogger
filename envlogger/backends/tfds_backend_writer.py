@@ -26,7 +26,6 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
-
 DatasetConfig = tfds.rlds.rlds_base.DatasetConfig
 
 
@@ -113,7 +112,8 @@ class Split(object):
     self.info = tfds.core.SplitInfo(
         name=self.info.name,
         shard_lengths=self.info.shard_lengths + [shard.num_episodes],
-        num_bytes=self.info.num_bytes + shard.num_bytes)
+        num_bytes=self.info.num_bytes + shard.num_bytes,
+        filename_template=self.info.filename_template)
     self.complete_shards += 1
 
   def get_shard_path(self) -> str:
@@ -125,7 +125,7 @@ class Split(object):
     return filename
 
   def get_split_dict(self) -> tfds.core.splits.SplitDict:
-    return tfds.core.splits.SplitDict([self.info], dataset_name=self.ds_name)
+    return tfds.core.splits.SplitDict([self.info])
 
 
 class TFDSBackendWriter(backend_writer.BackendWriter):
@@ -172,9 +172,17 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
         data_dir = data_dir[:-1]
       split_name = os.path.basename(data_dir)
 
+    filename_template = tfds.core.ShardedFileTemplate(
+        dataset_name=self._builder.name,
+        data_dir=self._builder.data_dir,
+        split=split_name,
+        filetype_suffix='tfrecord')
     self._split = Split(
         info=tfds.core.splits.SplitInfo(
-            name=split_name, shard_lengths=[], num_bytes=0))
+            name=split_name,
+            shard_lengths=[],
+            num_bytes=0,
+            filename_template=filename_template))
     # We write the empty metadata so, when reading, we can always build the
     # dataset even if it's empty.
     self._write_split_metadata()

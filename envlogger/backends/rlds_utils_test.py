@@ -15,8 +15,6 @@
 
 """Tests for rlds_utils."""
 
-import os
-
 from absl.testing import absltest
 import dm_env
 from envlogger import step_data
@@ -28,17 +26,16 @@ import tensorflow_datasets as tfds
 
 def _remove_shard_prefix(builder: tfds.core.DatasetBuilder, split_name: str,
                          num_shards: int) -> None:
-  filenames = tfds.core.naming.filenames_for_dataset_split(
+  filenames = tfds.core.naming.filepaths_for_dataset_split(
       dataset_name=builder.name,
       split=split_name,
       num_shards=num_shards,
-      filetype_suffix='tfrecord')
+      filetype_suffix='tfrecord',
+      data_dir=builder.data_dir)
   suffix = f'-of-{num_shards:05d}'
   for f in filenames:
     no_suffix = f[:-len(suffix)]
-    old_path = os.path.join(builder.data_dir, f)
-    new_path = os.path.join(builder.data_dir, no_suffix)
-    tf.io.gfile.rename(old_path, new_path, overwrite=False)
+    tf.io.gfile.rename(f, no_suffix, overwrite=False)
 
 
 class RldsUtilsTest(absltest.TestCase):
@@ -180,9 +177,17 @@ class RldsUtilsTest(absltest.TestCase):
     expected_splits = builder.info.splits
     # Remove info from the metadata
     builder.info.set_splits(
-        tfds.core.splits.SplitDict(
-            [tfds.core.SplitInfo(name='split', shard_lengths=[], num_bytes=0)],
-            dataset_name=builder.name))
+        tfds.core.splits.SplitDict([
+            tfds.core.SplitInfo(
+                name='split',
+                shard_lengths=[],
+                num_bytes=0,
+                filename_template=tfds.core.ShardedFileTemplate(
+                    dataset_name=builder.name,
+                    split='split',
+                    filetype_suffix='tfrecord',
+                    data_dir=data_dir))
+        ]))
     builder.info.write_to_directory(data_dir)
     _remove_shard_prefix(builder, 'split', 1)
 
@@ -220,9 +225,14 @@ class RldsUtilsTest(absltest.TestCase):
             tfds.core.SplitInfo(
                 name='split',
                 shard_lengths=[expected_splits['split'].shard_lengths[0]],
-                num_bytes=expected_splits['split'].num_bytes)
-        ],
-                                   dataset_name=builder.name))
+                num_bytes=expected_splits['split'].num_bytes,
+                filename_template=tfds.core.ShardedFileTemplate(
+                    dataset_name=builder.name,
+                    split='split',
+                    filetype_suffix='tfrecord',
+                    data_dir=data_dir),
+            )
+        ]))
     builder.info.write_to_directory(data_dir)
     _remove_shard_prefix(builder, 'split', 2)
 

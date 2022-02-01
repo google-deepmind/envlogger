@@ -144,7 +144,14 @@ class TfdsBackendWriterSplitTest(absltest.TestCase):
   def test_update_split(self):
     split = tfds_backend_writer.Split(
         tfds.core.splits.SplitInfo(
-            name='split_name', shard_lengths=[3], num_bytes=1))
+            name='split_name',
+            shard_lengths=[3],
+            num_bytes=1,
+            filename_template=tfds.core.ShardedFileTemplate(
+                dataset_name='rlds_envlogger_builder',
+                split='split_name',
+                data_dir='',
+                filetype_suffix='tfrecord')))
 
     shard = tfds_backend_writer.Shard(writer=None, num_episodes=10, num_bytes=1)
     split.update(shard)
@@ -158,7 +165,14 @@ class TfdsBackendWriterSplitTest(absltest.TestCase):
   def test_get_shard_path(self):
     split = tfds_backend_writer.Split(
         tfds.core.splits.SplitInfo(
-            name='split_name', shard_lengths=[3], num_bytes=1),
+            name='split_name',
+            shard_lengths=[3],
+            num_bytes=1,
+            filename_template=tfds.core.ShardedFileTemplate(
+                dataset_name='rlds_envlogger_builder',
+                split='split_name',
+                data_dir='',
+                filetype_suffix='tfrecord')),
         complete_shards=10)
     path = split.get_shard_path()
 
@@ -166,7 +180,14 @@ class TfdsBackendWriterSplitTest(absltest.TestCase):
 
   def test_get_split_dict(self):
     split_info = tfds.core.splits.SplitInfo(
-        name='split_name', shard_lengths=[3], num_bytes=1)
+        name='split_name',
+        shard_lengths=[3],
+        num_bytes=1,
+        filename_template=tfds.core.ShardedFileTemplate(
+            dataset_name='rlds_envlogger_builder',
+            split='split_name',
+            data_dir='',
+            filetype_suffix='tfrecord'))
     split = tfds_backend_writer.Split(split_info, complete_shards=10)
     split_dict = split.get_split_dict()
 

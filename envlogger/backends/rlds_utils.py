@@ -75,7 +75,8 @@ def _find_extra_shard(data_dir: str, dataset_name: str, split_name: str,
       dataset_name=dataset_name,
       split=split_name,
       num_shards=extra_shards,
-      filetype_suffix='tfrecord')
+      filetype_suffix='tfrecord',
+      data_dir=data_dir)
   suffix = f'-of-{extra_shards:05d}'
   # The extra shard file doesn't have the shards suffix. Otherwise, it means
   # that this shard is already accounted for in the metadata.
@@ -125,16 +126,20 @@ def maybe_recover_last_shard(builder: tfds.core.DatasetBuilder):
       num_examples += 1
       num_bytes += len(ex.numpy())
 
+    filename_template = tfds.core.ShardedFileTemplate(
+        dataset_name=builder.name,
+        data_dir=builder.data_dir,
+        split=split_info.name,
+        filetype_suffix='tfrecord')
     new_split_info = tfds.core.SplitInfo(
         name=split_info.name,
         shard_lengths=split_info.shard_lengths + [num_examples],
-        num_bytes=split_info.num_bytes + num_bytes)
+        num_bytes=split_info.num_bytes + num_bytes,
+        filename_template=filename_template)
     old_splits = [
         v for k, v in builder.info.splits.items() if k != new_split_info.name
     ]
-    builder.info.set_splits(
-        tfds.core.SplitDict(
-            old_splits + [new_split_info], dataset_name=builder.name))
+    builder.info.set_splits(tfds.core.SplitDict(old_splits + [new_split_info]))
   if splits_to_update > 0:
     builder.info.write_to_directory(builder.data_dir)
     # If we recover a shard, shard files have to be renamed
@@ -174,7 +179,8 @@ def rename_shards(data_dir: str,
         dataset_name=ds_name,
         split=split_name,
         num_shards=split_info.num_shards,
-        filetype_suffix='tfrecord')
+        filetype_suffix='tfrecord',
+        data_dir=data_dir)
     suffix = f'-of-{split_info.num_shards:05d}'
     wrong_suffix = f'-of-{(split_info.num_shards-1):05d}'
     for f in filenames:
