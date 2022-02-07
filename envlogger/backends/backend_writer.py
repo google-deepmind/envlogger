@@ -36,7 +36,9 @@ class BackendWriter(metaclass=abc.ABCMeta):
         action, the environment itself and returns True if the current step
         should be logged, False otherwise. This function is called _before_
         `step_fn`, meaning that if it returns False, `step_fn` will not be
-        called at all.
+        called at all. NOTE: This scheduler should NEVER skip the first timestep
+        in the episode, otherwise `EnvLogger` will not know that such episode
+        really exists.
     """
     self._scheduler = scheduler
     self._metadata = metadata

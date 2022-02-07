@@ -81,7 +81,10 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
   def _record_step(self, data: step_data.StepData,
                    is_new_episode: bool) -> None:
     encoded_data = codec.encode(data)
-    self._data_writer.add_step(encoded_data, is_new_episode)
+    if not self._data_writer.add_step(encoded_data, is_new_episode):
+      raise RuntimeError(
+          'Failed to write `data`. Please see logs for more details.')
+
     if self._flush_scheduler is not None and not self._flush_scheduler(data):
       return
     self._data_writer.flush()

@@ -432,6 +432,51 @@ class EnvLoggerTest(parameterized.TestCase):
         backend=backend_type.BackendType.RIEGELI) as env:
       _train(env, num_episodes=1)
 
+  def test_scheduler_skips_first_timestep(self):
+    """Checks that a scheduler that skips the first timestep raises an exception."""
+
+    def no_first_step(data: step_data.StepData) -> bool:
+      return not data.timestep.first()
+
+    with environment_logger.EnvLogger(
+        catch_env.Catch(),
+        data_directory=self.dataset_path,
+        scheduler=no_first_step,
+        backend=backend_type.BackendType.RIEGELI) as env:
+      _ = env.reset()
+      # On a subsequent step, it'll try to write to an episode that has not been
+      # initialized so it should raise an exception.
+      self.assertRaises(RuntimeError, env.step, 1)
+
+  def test_only_episodic_metadata(self):
+    """Episodic metadata can be stored by storing only first steps."""
+
+    def only_first_step(data: step_data.StepData) -> bool:
+      return data.timestep.first()
+
+    def my_episode_fn(timestep, unused_action, unused_env):
+      if timestep.last():
+        my_episode_fn.x += 1
+      return my_episode_fn.x
+
+    my_episode_fn.x = 0
+
+    with environment_logger.EnvLogger(
+        catch_env.Catch(),
+        data_directory=self.dataset_path,
+        episode_fn=my_episode_fn,
+        scheduler=only_first_step,
+        backend=backend_type.BackendType.RIEGELI) as env:
+      for _ in range(3):
+        ts = env.reset()
+        while not ts.last():
+          ts = env.step(1)
+
+    with reader.Reader(self.dataset_path) as data_reader:
+      self.assertLen(data_reader.episodes, 3)
+      self.assertLen(data_reader.episode_metadata(), 3)
+      self.assertEqual(list(data_reader.episode_metadata()), [1, 2, 3])
+
 
 
 if __name__ == '__main__':

@@ -105,7 +105,7 @@ absl::Status RiegeliDatasetWriter::Init(std::string data_dir,
   return absl::OkStatus();
 }
 
-void RiegeliDatasetWriter::AddStep(const google::protobuf::Message& data,
+bool RiegeliDatasetWriter::AddStep(const google::protobuf::Message& data,
                                    bool is_new_episode) {
   if (is_new_episode) {
     if (max_episodes_per_shard_ > 0 &&
@@ -114,7 +114,7 @@ void RiegeliDatasetWriter::AddStep(const google::protobuf::Message& data,
           CreateRiegeliShardWriter(data_dir_, writer_options_, &writer_));
     }
   }
-  writer_.AddStep(data, is_new_episode);
+  return writer_.AddStep(data, is_new_episode);
 }
 
 void RiegeliDatasetWriter::SetEpisodeMetadata(const Data& data) {

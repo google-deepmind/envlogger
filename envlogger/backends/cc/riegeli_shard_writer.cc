@@ -178,7 +178,7 @@ void RiegeliShardWriter::Close() {
     VLOG(1) << "episode_offsets_close_status: " << episode_offsets_close_status;
 }
 
-void RiegeliShardWriter::AddStep(const google::protobuf::Message& data,
+bool RiegeliShardWriter::AddStep(const google::protobuf::Message& data,
                                  bool is_new_episode) {
   if (is_new_episode) {
     // Write episode metadata for the just-finished episode.
@@ -197,10 +197,23 @@ void RiegeliShardWriter::AddStep(const google::protobuf::Message& data,
     episode_starts_.push_back(start);
   }
 
-  if (steps_writer_.is_open() && !steps_writer_.WriteRecord(data)) {
-    VLOG(0) << "steps_writer_.status(): " << steps_writer_.status();
+  if (!steps_writer_.is_open()) {
+    LOG(ERROR)
+        << "steps_writer_ has not been opened yet! Please ensure that "
+           "`Init()` has been called and that the first step of the episode "
+           "has been added.";
+    return false;
   }
+
+  if (!steps_writer_.WriteRecord(data)) {
+    LOG(ERROR) << "Failed to write record! steps_writer_.status(): "
+               << steps_writer_.status()
+               << ". `data`: " << data.Utf8DebugString();
+    return false;
+  }
+
   step_offsets_.push_back(steps_writer_.LastPos().get().numeric());
+  return true;
 }
 
 void RiegeliShardWriter::SetEpisodeMetadata(const Data& data) {

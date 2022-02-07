@@ -72,7 +72,10 @@ class RiegeliShardWriter {
                     absl::string_view episode_index_filepath,
                     absl::string_view writer_options);
 
-  void AddStep(const google::protobuf::Message& data, bool is_new_episode = false);
+  // Adds `data` to the trajectory and marks it as a new episode if
+  // `is_new_episode==true`.
+  // Returns true if `data` has been written, false otherwise.
+  bool AddStep(const google::protobuf::Message& data, bool is_new_episode = false);
 
   // Sets episodic metadata for the _current_ episode.
   // This can be called multiple times but the value will be written only when a
