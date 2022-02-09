@@ -157,6 +157,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
     builder_cls.BUILDER_CONFIGS = [ds_config]
     self._builder = builder_cls(data_dir=data_directory, config=ds_config.name)
     self._ds_info = tfds.rlds.rlds_base.build_info(ds_config, self._builder)
+    self._ds_info.set_file_format('tfrecord')
 
     self._serializer = tfds.core.example_serializer.ExampleSerializer(
         self._ds_info.features.get_serialized_info())
