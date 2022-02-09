@@ -177,7 +177,9 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
         dataset_name=self._builder.name,
         data_dir=self._builder.data_dir,
         split=split_name,
-        filetype_suffix='tfrecord')
+        filetype_suffix='tfrecord',
+        template='{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}',
+    )
     self._split = Split(
         info=tfds.core.splits.SplitInfo(
             name=split_name,
@@ -220,11 +222,6 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
 
     if is_last_episode or self._current_shard.num_episodes >= self._max_episodes_per_shard:
       self._finalize_shard_and_update_split()
-    if is_last_episode:
-      rlds_utils.rename_shards(
-          data_dir=self._data_directory,
-          split_infos=self._ds_info.splits,
-          ds_name=self._builder.name)
 
   def _record_step(self, data: step_data.StepData,
                    is_new_episode: bool) -> None:

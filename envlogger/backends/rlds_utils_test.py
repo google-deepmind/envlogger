@@ -20,22 +20,7 @@ import dm_env
 from envlogger import step_data
 from envlogger.backends import rlds_utils
 from envlogger.backends import tfds_backend_testlib
-import tensorflow as tf
 import tensorflow_datasets as tfds
-
-
-def _remove_shard_prefix(builder: tfds.core.DatasetBuilder, split_name: str,
-                         num_shards: int) -> None:
-  filenames = tfds.core.naming.filepaths_for_dataset_split(
-      dataset_name=builder.name,
-      split=split_name,
-      num_shards=num_shards,
-      filetype_suffix='tfrecord',
-      data_dir=builder.data_dir)
-  suffix = f'-of-{num_shards:05d}'
-  for f in filenames:
-    no_suffix = f[:-len(suffix)]
-    tf.io.gfile.rename(f, no_suffix, overwrite=False)
 
 
 class RldsUtilsTest(absltest.TestCase):
@@ -186,10 +171,11 @@ class RldsUtilsTest(absltest.TestCase):
                     dataset_name=builder.name,
                     split='split',
                     filetype_suffix='tfrecord',
-                    data_dir=data_dir))
+                    data_dir=data_dir,
+                    template='{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}',
+                ))
         ]))
     builder.info.write_to_directory(data_dir)
-    _remove_shard_prefix(builder, 'split', 1)
 
     new_builder = rlds_utils.maybe_recover_last_shard(builder)
 
@@ -230,11 +216,12 @@ class RldsUtilsTest(absltest.TestCase):
                     dataset_name=builder.name,
                     split='split',
                     filetype_suffix='tfrecord',
-                    data_dir=data_dir),
+                    data_dir=data_dir,
+                    template='{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}',
+                ),
             )
         ]))
     builder.info.write_to_directory(data_dir)
-    _remove_shard_prefix(builder, 'split', 2)
 
     new_builder = rlds_utils.maybe_recover_last_shard(builder)
 
