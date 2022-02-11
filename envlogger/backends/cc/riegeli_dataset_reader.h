@@ -63,13 +63,14 @@ class RiegeliEpisodeReader {
   RiegeliShardReader shard_reader_;
 };
 
-// A tag directory contains trajectory information for the entire lifetime of a
-// single Reinforcement Learning (RL) actor. Each tag directory represents a
-// one dimensional trajectory composed of 0 or more steps. Steps can be grouped
-// into non-overlapping, contiguous episodes for episodic RL environments.
+// A RiegeliDatasetReader contains trajectory information for the entire
+// lifetime of a single Reinforcement Learning (RL) actor. Each
+// RiegeliDatasetReader represents a one dimensional trajectory composed of 0 or
+// more steps. Steps can be grouped into non-overlapping, contiguous episodes
+// for episodic RL environments.
 //
-// Internally, a tag directory is sharded into chronologically ordered sub
-// directories called "timestamp directories". Each of these sub directories
+// Internally, a RiegeliDatasetReader is sharded into chronologically ordered
+// sub directories called "timestamp directories". Each of these sub directories
 // contain their own trajectories and indexes, so in order to find a specific
 // step or episode we first need to determine the sub directory and then their
 // internal index. An episode is never split between two shards.
@@ -80,7 +81,7 @@ class RiegeliDatasetReader {
 
   absl::Status Init(absl::string_view data_dir);
 
-  // Returns metadata associated with this tag directory.
+  // Returns metadata associated with this RiegeliDatasetReader.
   absl::optional<Data> Metadata() const;
 
   int64_t NumSteps() const;
@@ -142,7 +143,7 @@ class RiegeliDatasetReader {
 
   absl::optional<Data> metadata_;
 
-  // The list of all shards in this tag directory.
+  // The list of all shards in this RiegeliDatasetReader.
   std::vector<Shard> shards_;
 };
 
