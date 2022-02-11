@@ -134,7 +134,7 @@ class RldsUtilsTest(absltest.TestCase):
             split_name='split'),
         num_episodes=num_episodes)
 
-    builder = tfds.core.builder_from_directory(data_dir)
+    builder = tfds.builder_from_directory(data_dir)
 
     self.assertEqual(list(builder.info.splits.keys()), ['split'])
     self.assertEqual(builder.info.splits['split'].num_examples, 3)
@@ -158,7 +158,7 @@ class RldsUtilsTest(absltest.TestCase):
             split_name='split'),
         num_episodes=num_episodes)
 
-    builder = tfds.core.builder_from_directory(data_dir)
+    builder = tfds.builder_from_directory(data_dir)
     expected_splits = builder.info.splits
     # Remove info from the metadata
     builder.info.set_splits(
@@ -201,7 +201,7 @@ class RldsUtilsTest(absltest.TestCase):
             split_name='split'),
         num_episodes=num_episodes)
 
-    builder = tfds.core.builder_from_directory(data_dir)
+    builder = tfds.builder_from_directory(data_dir)
     expected_splits = builder.info.splits
     # Remove info from the metadata
     # Since we don't know how many bytes each shard has, we let it as it was.

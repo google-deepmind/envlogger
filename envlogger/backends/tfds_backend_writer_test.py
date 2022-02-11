@@ -217,7 +217,7 @@ class TfdsBackendWriterTest(absltest.TestCase):
             max_episodes_per_file=max_episodes_per_file),
         num_episodes=num_episodes)
 
-    builder = tfds.core.builder_from_directory(data_dir)
+    builder = tfds.builder_from_directory(data_dir)
     ds = builder.as_dataset(split='my_data_dir')
 
     num_episodes = 0
@@ -239,7 +239,7 @@ class TfdsBackendWriterTest(absltest.TestCase):
             split_name='split'),
         num_episodes=num_episodes)
 
-    builder = tfds.core.builder_from_directory(data_dir)
+    builder = tfds.builder_from_directory(data_dir)
     ds = builder.as_dataset(split='split')
 
     num_episodes = 0
