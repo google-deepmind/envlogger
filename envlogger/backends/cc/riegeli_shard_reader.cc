@@ -44,12 +44,12 @@ namespace envlogger {
 namespace {
 
 
-absl::StatusOr<riegeli::RecordReader<RiegeliFileReader<>>> CreateReader(
+absl::StatusOr<riegeli::RecordReader<RiegeliFileReader>> CreateReader(
     absl::string_view filepath) {
   VLOG(1) << "Creating the reader for filepath: " << filepath;
   std::string reader_filepath(filepath);
-  riegeli::RecordReader reader(RiegeliFileReader<>(reader_filepath, "r"));
-  if (!reader.healthy()) return reader.status();
+  riegeli::RecordReader reader{RiegeliFileReader(reader_filepath)};
+  if (!reader.ok()) return reader.status();
   return reader;
 }
 

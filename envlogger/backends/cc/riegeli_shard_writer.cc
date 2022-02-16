@@ -36,11 +36,10 @@ namespace {
 
 // Writes any remaining episodic information which can only be written once an
 // episode is finalized.
-void WriteLastEpisodeIndex(
-    std::vector<int64_t>* episode_starts,
-    absl::optional<Data>* episode_metadata,
-    riegeli::RecordWriter<RiegeliFileWriter<>>* episode_metadata_writer,
-    riegeli::RecordWriter<RiegeliFileWriter<>>* episode_index_writer) {
+void WriteLastEpisodeIndex(std::vector<int64_t>* episode_starts,
+                           absl::optional<Data>* episode_metadata,
+                           riegeli::RecordWriterBase* episode_metadata_writer,
+                           riegeli::RecordWriterBase* episode_index_writer) {
   if (episode_starts->empty()) return;
 
   int64_t episode_offset = -1;
@@ -82,15 +81,14 @@ absl::Status RiegeliShardWriter::Init(
   num_steps_at_flush_ = 0;
   riegeli::RecordWriterBase::Options options;
   ENVLOGGER_RETURN_IF_ERROR(options.FromString(writer_options));
-  steps_writer_.Reset(RiegeliFileWriter<>(steps_filepath, "w"), options);
+  steps_writer_.Reset(RiegeliFileWriter(steps_filepath), options);
   ENVLOGGER_RETURN_IF_ERROR(steps_writer_.status());
-  step_offsets_writer_.Reset(RiegeliFileWriter<>(step_offsets_filepath, "w"),
-                             options);
+  step_offsets_writer_.Reset(RiegeliFileWriter(step_offsets_filepath), options);
   ENVLOGGER_RETURN_IF_ERROR(step_offsets_writer_.status());
-  episode_metadata_writer_.Reset(
-      RiegeliFileWriter<>(episode_metadata_filepath, "w"), options);
+  episode_metadata_writer_.Reset(RiegeliFileWriter(episode_metadata_filepath),
+                                 options);
   ENVLOGGER_RETURN_IF_ERROR(episode_metadata_writer_.status());
-  episode_index_writer_.Reset(RiegeliFileWriter<>(episode_index_filepath, "w"),
+  episode_index_writer_.Reset(RiegeliFileWriter(episode_index_filepath),
                               options);
   ENVLOGGER_RETURN_IF_ERROR(episode_index_writer_.status());
   return absl::OkStatus();

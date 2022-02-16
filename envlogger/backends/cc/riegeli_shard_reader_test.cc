@@ -85,8 +85,7 @@ TEST(RiegeliShardReaderTest, NonEmptySingleEpisode) {
   std::vector<int64_t> expected_step_offsets;
   {
     // Write steps and record their riegeli offsets.
-    riegeli::RecordWriter steps_writer(RiegeliFileWriter<>(steps_filename, "w"),
-                                       riegeli::RecordWriterBase::Options());
+    riegeli::RecordWriter steps_writer{RiegeliFileWriter(steps_filename)};
     ENVLOGGER_EXPECT_OK(steps_writer.status());
 
     for (const Data& data : expected_steps) {
@@ -94,9 +93,8 @@ TEST(RiegeliShardReaderTest, NonEmptySingleEpisode) {
       expected_step_offsets.push_back(steps_writer.LastPos().get().numeric());
     }
 
-    riegeli::RecordWriter step_offsets_writer(
-        RiegeliFileWriter<>(step_offsets_filename, "w"),
-        riegeli::RecordWriterBase::Options());
+    riegeli::RecordWriter step_offsets_writer{
+        RiegeliFileWriter(step_offsets_filename)};
     ENVLOGGER_EXPECT_OK(step_offsets_writer.status());
     xt::xarray<int64_t> step_offsets =
         xt::adapt(expected_step_offsets, {expected_steps.size()});
@@ -104,9 +102,8 @@ TEST(RiegeliShardReaderTest, NonEmptySingleEpisode) {
     EXPECT_THAT(step_offsets_writer.WriteRecord(step_offsets_datum), IsTrue());
 
     // Write episode metadata and record their riegeli offsets.
-    riegeli::RecordWriter episode_metadata_writer(
-        RiegeliFileWriter<>(episode_metadata_filename, "w"),
-        riegeli::RecordWriterBase::Options());
+    riegeli::RecordWriter episode_metadata_writer{
+        RiegeliFileWriter(episode_metadata_filename)};
     ENVLOGGER_EXPECT_OK(episode_metadata_writer.status());
     EXPECT_THAT(episode_metadata_writer.WriteRecord(expected_episode_metadata),
                 IsTrue());
@@ -114,9 +111,8 @@ TEST(RiegeliShardReaderTest, NonEmptySingleEpisode) {
     xt::xarray<int64_t> episode_index = {
         {0, static_cast<int64_t>(
                 episode_metadata_writer.LastPos().get().numeric())}};
-    riegeli::RecordWriter episode_index_writer(
-        RiegeliFileWriter<>(episode_index_filename, "w"),
-        riegeli::RecordWriterBase::Options());
+    riegeli::RecordWriter episode_index_writer{
+        RiegeliFileWriter(episode_index_filename)};
     ENVLOGGER_EXPECT_OK(episode_index_writer.status());
     const Datum episode_index_datum = Encode(episode_index);
     EXPECT_THAT(episode_index_writer.WriteRecord(episode_index_datum),

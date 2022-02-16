@@ -50,7 +50,7 @@ namespace {
 absl::Status WriteSingleRiegeliRecord(const absl::string_view filepath,
                                       const Data& data) {
   riegeli::RecordWriter writer(
-      RiegeliFileWriter<>(filepath, "w"),
+      RiegeliFileWriter(filepath),
       riegeli::RecordWriterBase::Options().set_transpose(true));
   if (!writer.WriteRecord(data)) return writer.status();
   if (!writer.Flush(riegeli::FlushType::kFromMachine)) return writer.status();

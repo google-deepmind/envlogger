@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef THIRD_PARTY_PY_ENVLOGGER_PLATFORM_PATH_H_
-#define THIRD_PARTY_PY_ENVLOGGER_PLATFORM_PATH_H_
+#ifndef THIRD_PARTY_PY_ENVLOGGER_PLATFORM_FILESYSTEM_H_
+#define THIRD_PARTY_PY_ENVLOGGER_PLATFORM_FILESYSTEM_H_
 
-#include <sys/stat.h>
-
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -50,4 +49,4 @@ absl::StatusOr<int64_t> GetSize(absl::string_view path);
 }  // namespace file
 }  // namespace envlogger
 
-#endif  // THIRD_PARTY_PY_ENVLOGGER_PLATFORM_PATH_H_
+#endif  // THIRD_PARTY_PY_ENVLOGGER_PLATFORM_FILESYSTEM_H_

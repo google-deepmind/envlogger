@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "envlogger/platform/default/filesystem.h"
-
-#include <fcntl.h>
-
+#include <cstdint>
 #include <filesystem>
+#include <string>
+#include <vector>
 
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
-#include "envlogger/platform/status_macros.h"
+#include "absl/strings/string_view.h"
 
 namespace envlogger {
 namespace file {
@@ -67,16 +67,6 @@ absl::StatusOr<int64_t> GetSize(absl::string_view path) {
     return absl::NotFoundError(absl::StrCat("Could not find file ", path));
   }
   return static_cast<int64_t>(size);
-}
-
-int GetFileMode(absl::string_view mode) {
-  if (mode == "r") {
-    return O_RDONLY;
-  }
-  if (mode == "w") {
-    return O_WRONLY | O_CREAT | O_TRUNC;
-  }
-  return 0;
 }
 
 }  // namespace file

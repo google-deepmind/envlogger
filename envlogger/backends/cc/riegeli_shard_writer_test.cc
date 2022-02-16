@@ -91,7 +91,7 @@ TEST(RiegeliShardWriterTest, KStepsIndex) {
 
   // Check step data.
   std::vector<float> steps;
-  riegeli::RecordReader steps_reader(RiegeliFileReader<>(steps_filename, "r"));
+  riegeli::RecordReader steps_reader{RiegeliFileReader(steps_filename)};
   Data step_data;
   while (steps_reader.ReadRecord(step_data)) {
     const auto step_decoded = Decode(step_data.datum());
@@ -106,8 +106,8 @@ TEST(RiegeliShardWriterTest, KStepsIndex) {
                                  FloatEq(4.0f), FloatEq(5.0f)));
 
   // Check step offsets.
-  riegeli::RecordReader step_offsets_reader(
-      RiegeliFileReader<>(step_offsets_filename, "r"));
+  riegeli::RecordReader step_offsets_reader{
+      RiegeliFileReader(step_offsets_filename)};
   Datum step_offsets_datum;
   EXPECT_THAT(step_offsets_reader.ReadRecord(step_offsets_datum), IsTrue);
   const auto step_offsets_decoded = Decode(step_offsets_datum);
@@ -135,8 +135,8 @@ TEST(RiegeliShardWriterTest, KStepsIndex) {
 
   // Check episode metadata.
   std::vector<int32_t> episode_metadata;
-  riegeli::RecordReader episode_metadata_reader(
-      RiegeliFileReader<>(episode_metadata_filename, "r"));
+  riegeli::RecordReader episode_metadata_reader{
+      RiegeliFileReader(episode_metadata_filename)};
   Data episode_data;
   while (episode_metadata_reader.ReadRecord(episode_data)) {
     const auto episode_decoded = Decode(episode_data.datum());
@@ -152,8 +152,8 @@ TEST(RiegeliShardWriterTest, KStepsIndex) {
   // Check episode index.
   std::vector<int64_t> episode_starts;
   std::vector<int64_t> episode_offsets;
-  riegeli::RecordReader episode_index_reader(
-      RiegeliFileReader<>(episode_index_filename, "r"));
+  riegeli::RecordReader episode_index_reader{
+      RiegeliFileReader(episode_index_filename)};
   Datum episode_index_datum;
   while (episode_index_reader.ReadRecord(episode_index_datum)) {
     const auto episode_index_decoded = Decode(episode_index_datum);

@@ -188,8 +188,8 @@ TEST(RiegeliDatasetWriterTest, EpisodeMetadata) {
   // Open episode metadata file and read contents into vector.
   const std::string episode_metadata_riegeli_file =
       file::JoinPath(shard_dir, internal::kEpisodeMetadataFilename);
-  riegeli::RecordReader episode_metadata_reader(
-      RiegeliFileReader<>(episode_metadata_riegeli_file, "r"));
+  riegeli::RecordReader episode_metadata_reader{
+      RiegeliFileReader(episode_metadata_riegeli_file)};
   ENVLOGGER_EXPECT_OK(episode_metadata_reader.status());
   std::vector<Data> actual_episode_metadata;
   Data value;

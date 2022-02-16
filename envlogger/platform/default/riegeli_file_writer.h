@@ -15,24 +15,11 @@
 #ifndef THIRD_PARTY_PY_ENVLOGGER_PLATFORM_DEFAULT_RIEGELI_FILE_WRITER_H_
 #define THIRD_PARTY_PY_ENVLOGGER_PLATFORM_DEFAULT_RIEGELI_FILE_WRITER_H_
 
-#include "absl/strings/string_view.h"
-#include "envlogger/platform/default/filesystem.h"
-#include "riegeli/base/object.h"
 #include "riegeli/bytes/fd_writer.h"
 
 namespace envlogger {
 
-// Helper class for writing Riegeli files.
-template <typename Dest = ::riegeli::OwnedFd>
-class RiegeliFileWriter : public ::riegeli::FdWriter<Dest> {
- public:
-  // Creates a closed `FileWriter`.
-  explicit RiegeliFileWriter(riegeli::Closed) noexcept
-      : ::riegeli::FdWriter<Dest>(riegeli::kClosed) {}
-
-  explicit RiegeliFileWriter(absl::string_view filename, absl::string_view mode)
-      : ::riegeli::FdWriter<Dest>(filename, file::GetFileMode(mode)) {}
-};
+using RiegeliFileWriter = ::riegeli::FdWriter<>;
 
 }  // namespace envlogger
 

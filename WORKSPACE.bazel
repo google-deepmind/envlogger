@@ -18,9 +18,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Import protobuf dependencies.
 http_archive(
     name = "com_google_protobuf",
-    url = "https://github.com/protocolbuffers/protobuf/archive/v3.9.0.zip",
-    strip_prefix = "protobuf-3.9.0",
     patch_cmds = [r"sed -i -e 's/\/\/external:six/@six_archive\/\/:six/g' BUILD"],
+    strip_prefix = "protobuf-3.9.0",
+    url = "https://github.com/protocolbuffers/protobuf/archive/v3.9.0.zip",
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
@@ -63,6 +63,7 @@ http_archive(
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
 rules_proto_dependencies()
+
 rules_proto_toolchains()
 
 # abseil-cpp.
@@ -90,9 +91,9 @@ http_archive(
 # Riegeli.
 http_archive(
     name = "com_google_riegeli",
-    sha256 = "4a6062197672d5624c1ec1d161a7e273f608fad34c0d68bf4f0767e175dbf7cd",
-    strip_prefix = "riegeli-587c7921700a58f53fbd2b47fcf9c6dc38477a32",
-    url = "https://github.com/google/riegeli/archive/587c7921700a58f53fbd2b47fcf9c6dc38477a32.tar.gz",  # 2021-11-16
+    sha256 = "a54dafa634db87723db106bc44ef365b1b442d8862aafbeb5f1d2e922049e587",
+    strip_prefix = "riegeli-934428f44a6d120cb6c065315c788aa3a1be6b66",
+    url = "https://github.com/google/riegeli/archive/934428f44a6d120cb6c065315c788aa3a1be6b66.tar.gz",  # 2022-02-16
 )
 
 # Dependencies needed by Riegeli.
@@ -152,25 +153,25 @@ http_archive(
 # Xtensor and dependencies.
 http_archive(
     name = "xtl",
-    urls = ["https://github.com/xtensor-stack/xtl/archive/e0f00666d90086bb245ae73abb6123d0e2c1b30b.zip"],
+    build_file = "//third_party:xtl.BUILD.bazel",
     sha256 = "7c517db8a652a965c02a9e37ca3c3a8c7f5ba87868a02fe5a678eb4256b42d0b",
     strip_prefix = "xtl-e0f00666d90086bb245ae73abb6123d0e2c1b30b",
-    build_file = "//third_party:xtl.BUILD.bazel",
+    urls = ["https://github.com/xtensor-stack/xtl/archive/e0f00666d90086bb245ae73abb6123d0e2c1b30b.zip"],
 )
 
 http_archive(
     name = "xtensor",
-    urls = ["https://github.com/xtensor-stack/xtensor/archive/54dbb8223d5a874261e8e988b487054d2e50710e.zip"],
+    build_file = "//third_party:xtensor.BUILD.bazel",
     sha256 = "63ae5657e14f28a2375cc70b6dd0deb10247cb2010055a74fb6de93511735999",
     strip_prefix = "xtensor-54dbb8223d5a874261e8e988b487054d2e50710e",
-    build_file = "//third_party:xtensor.BUILD.bazel",
+    urls = ["https://github.com/xtensor-stack/xtensor/archive/54dbb8223d5a874261e8e988b487054d2e50710e.zip"],
 )
 
 # GMP.
 new_local_repository(
     name = "gmp",
-    path = "/usr/include/",
     build_file = "//third_party:gmp.BUILD.bazel",
+    path = "/usr/include/",
 )
 
 # Google Logging library.
@@ -197,14 +198,18 @@ http_archive(
 
 http_archive(
     name = "pybind11",
-    sha256 = "4828cd4b5b637ac5bc1106655931e5fe8dd6b56db6c24ccf7b44d3b2c55f49c2",
     build_file = "@pybind11_bazel//:pybind11.BUILD",
+    sha256 = "4828cd4b5b637ac5bc1106655931e5fe8dd6b56db6c24ccf7b44d3b2c55f49c2",
     strip_prefix = "pybind11-0c93a0f3fcf6bf26be584558d7426564720cea6f",
     urls = ["https://github.com/pybind/pybind11/archive/0c93a0f3fcf6bf26be584558d7426564720cea6f.tar.gz"],
 )
 
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
-python_configure(name = "local_config_python", python_version = "3")
+
+python_configure(
+    name = "local_config_python",
+    python_version = "3",
+)
 
 git_repository(
     name = "pybind11_abseil",
@@ -215,14 +220,14 @@ git_repository(
 git_repository(
     name = "pybind11_protobuf",
     commit = "0f9d7e967cb20e3875be04115e7340ab3211ffe2",
-    remote = "https://github.com/scal444/pybind11_protobuf.git",
     patch_args = ["-p0"],
     patches = ["//third_party:proto_utils.cc.diff"],
+    remote = "https://github.com/scal444/pybind11_protobuf.git",
 )
 
 git_repository(
     name = "com_google_benchmark",
     commit = "e991355c02b93fe17713efe04cbc2e278e00fdbd",  # v.1.5.5
-    shallow_since = "1623228732 +0300",
     remote = "https://github.com/google/benchmark.git",
+    shallow_since = "1623228732 +0300",
 )

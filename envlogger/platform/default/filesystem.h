@@ -15,16 +15,6 @@
 #ifndef THIRD_PARTY_PY_ENVLOGGER_PLATFORM_DEFAULT_FILESYSTEM_H_
 #define THIRD_PARTY_PY_ENVLOGGER_PLATFORM_DEFAULT_FILESYSTEM_H_
 
-#include "absl/strings/string_view.h"
-
-namespace envlogger {
-namespace file {
-
-// Converts the text form of file mode, e.g. "r" to the corresponding flag form,
-// e.g. O_RDONLY.
-int GetFileMode(absl::string_view mode);
-
-}  // namespace file
-}  // namespace envlogger
+// Intentionally empty.
 
 #endif  // THIRD_PARTY_PY_ENVLOGGER_PLATFORM_DEFAULT_FILESYSTEM_H_

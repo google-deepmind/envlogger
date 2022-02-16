@@ -124,8 +124,8 @@ TEST(DataDirectoryIndex, BadRiegeliProtoFormatFile) {
   datum.mutable_values()->add_float_values(123.456f);
   {
     riegeli::RecordWriter writer(
-        RiegeliFileWriter<>(
-            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
+        RiegeliFileWriter(
+            file::JoinPath(data_dir, internal::kMetadataFilename)),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(datum), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
@@ -148,8 +148,8 @@ TEST(DataDirectoryIndex, SimpleMetadataAndSpec) {
   metadata.mutable_datum()->mutable_values()->add_float_values(123.456f);
   {
     riegeli::RecordWriter writer(
-        RiegeliFileWriter<>(
-            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
+        RiegeliFileWriter(
+            file::JoinPath(data_dir, internal::kMetadataFilename)),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(metadata), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
@@ -176,8 +176,8 @@ TEST(DataDirectoryIndex, OneShard) {
   Data dummy;
   {
     riegeli::RecordWriter writer(
-        RiegeliFileWriter<>(
-            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
+        RiegeliFileWriter(
+            file::JoinPath(data_dir, internal::kMetadataFilename)),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
@@ -241,8 +241,8 @@ TEST(DataDirectoryIndex, OneShardNonDmDataPayload) {
   Datum::Shape::Dim dummy = ParseTextProtoOrDie("size: 17");
   {
     riegeli::RecordWriter writer(
-        RiegeliFileWriter<>(
-            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
+        RiegeliFileWriter(
+            file::JoinPath(data_dir, internal::kMetadataFilename)),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
@@ -299,8 +299,8 @@ TEST(DataDirectoryIndex, TwoShards) {
   Data dummy;
   {
     riegeli::RecordWriter writer(
-        RiegeliFileWriter<>(
-            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
+        RiegeliFileWriter(
+            file::JoinPath(data_dir, internal::kMetadataFilename)),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
@@ -364,8 +364,8 @@ TEST(DataDirectoryIndex, EpisodeReader) {
   Data dummy;
   {
     riegeli::RecordWriter writer(
-        RiegeliFileWriter<>(
-            file::JoinPath(data_dir, internal::kMetadataFilename), "w"),
+        RiegeliFileWriter(
+            file::JoinPath(data_dir, internal::kMetadataFilename)),
         riegeli::RecordWriterBase::Options().set_transpose(true));
     EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);

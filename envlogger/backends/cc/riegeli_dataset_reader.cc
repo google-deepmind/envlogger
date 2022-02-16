@@ -50,7 +50,7 @@ namespace {
 
 // Returns the first Data record in the file pointed by `filepath`.
 absl::StatusOr<Data> ReadFirstRiegeliRecord(const absl::string_view filepath) {
-  riegeli::RecordReader reader(RiegeliFileReader<>(filepath, "r"));
+  riegeli::RecordReader reader{RiegeliFileReader(filepath)};
   ENVLOGGER_RETURN_IF_ERROR(reader.status());
 
   Data data;
