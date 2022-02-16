@@ -35,34 +35,6 @@
 
 namespace envlogger {
 
-class RiegeliEpisodeReader {
- public:
-  RiegeliEpisodeReader(const EpisodeInfo& episode_info,
-                       RiegeliShardReader&& shard_reader);
-  RiegeliEpisodeReader(RiegeliEpisodeReader&&) = default;
-  ~RiegeliEpisodeReader();
-
-  // Returns step data at index `step_index`.
-  // step_index is the local step index and must be in [0, EpisodeLength()).
-  // Returns nullopt if `step_index` is out of range.
-  template <typename T = Data>
-  absl::optional<T> Step(int64_t step_index);
-
-  // Number of steps within the episode.
-  int64_t NumSteps() const;
-
-  // Releases resources and closes the underlying files.
-  void Close();
-
- private:
-  // Episode info which contains the step index within the shard
-  // and the number of steps of this episode.
-  EpisodeInfo episode_info_;
-
-  // The index internal to the timestamp directory holding this episode.
-  RiegeliShardReader shard_reader_;
-};
-
 // A RiegeliDatasetReader contains trajectory information for the entire
 // lifetime of a single Reinforcement Learning (RL) actor. Each
 // RiegeliDatasetReader represents a one dimensional trajectory composed of 0 or
@@ -102,9 +74,8 @@ class RiegeliDatasetReader {
   absl::optional<EpisodeInfo> Episode(int64_t episode_index,
                                       bool include_metadata = false);
 
-  // Returns a reader for the specified episode index.
-  absl::StatusOr<RiegeliEpisodeReader> CreateEpisodeReader(
-      int64_t episode_index);
+  // Returns a shard reader for the specified episode index.
+  absl::StatusOr<RiegeliShardReader> GetShard(int64_t episode_index);
 
   // Releases resources and closes the underlying files.
   void Close();
@@ -162,13 +133,6 @@ absl::optional<T> RiegeliDatasetReader::Step(int64_t step_index) {
         return shard.cumulative_steps;
       });
   return shard->index.Step<T>(local_step_index);
-}
-
-template <typename T>
-absl::optional<T> RiegeliEpisodeReader::Step(int64_t step_index) {
-  if (step_index < 0 || step_index >= episode_info_.num_steps)
-    return absl::nullopt;
-  return shard_reader_.Step(episode_info_.start + step_index);
 }
 
 }  // namespace envlogger

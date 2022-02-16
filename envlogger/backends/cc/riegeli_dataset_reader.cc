@@ -65,18 +65,6 @@ absl::StatusOr<Data> ReadFirstRiegeliRecord(const absl::string_view filepath) {
 
 }  // namespace
 
-RiegeliEpisodeReader::RiegeliEpisodeReader(const EpisodeInfo& episode_info,
-                                           RiegeliShardReader&& shard_reader)
-    : episode_info_(episode_info), shard_reader_(std::move(shard_reader)) {}
-
-int64_t RiegeliEpisodeReader::NumSteps() const {
-  return episode_info_.num_steps;
-}
-
-RiegeliEpisodeReader::~RiegeliEpisodeReader() { Close(); }
-
-void RiegeliEpisodeReader::Close() { shard_reader_.Close(); }
-
 absl::Status RiegeliDatasetReader::Init(absl::string_view data_dir) {
   ENVLOGGER_ASSIGN_OR_RETURN(
       std::vector<std::string> matches,
@@ -179,7 +167,7 @@ absl::optional<EpisodeInfo> RiegeliDatasetReader::Episode(
   return *episode;
 }
 
-absl::StatusOr<RiegeliEpisodeReader> RiegeliDatasetReader::CreateEpisodeReader(
+absl::StatusOr<RiegeliShardReader> RiegeliDatasetReader::GetShard(
     int64_t episode_index) {
   if (episode_index < 0 || episode_index >= NumEpisodes()) {
     return absl::OutOfRangeError(
@@ -193,10 +181,7 @@ absl::StatusOr<RiegeliEpisodeReader> RiegeliDatasetReader::CreateEpisodeReader(
         return shard.cumulative_episodes;
       });
 
-  auto episode = shard->index.Episode(local_episode_index, false);
-  ENVLOGGER_ASSIGN_OR_RETURN(RiegeliShardReader shard_reader,
-                             shard->index.Clone());
-  return RiegeliEpisodeReader(*episode, std::move(shard_reader));
+  return shard->index.Clone();
 }
 
 RiegeliDatasetReader::~RiegeliDatasetReader() { Close(); }

@@ -352,7 +352,7 @@ TEST(DataDirectoryIndex, TwoShards) {
   ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
-TEST(DataDirectoryIndex, EpisodeReader) {
+TEST(DataDirectoryIndex, GetShardTest) {
   const std::string data_dir =
       file::JoinPath(getenv("TEST_TMPDIR"), "my_data_dir");
   ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
@@ -370,19 +370,21 @@ TEST(DataDirectoryIndex, EpisodeReader) {
     EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
     writer.Flush(riegeli::FlushType::kFromMachine);
   }
-  CreateTimestampDirs(data_dir, {{absl::Now() - absl::Minutes(60),
-                                  {{1.0f, true},
-                                   {2.0f, false},
-                                   {3.0f, false, episode0_metadata},
-                                   {4.0f, true},
-                                   {5.0f, false}}}});
+  const absl::Time now = absl::Now();
+  CreateTimestampDirs(
+      data_dir,
+      {{now - absl::Minutes(60),
+        {{1.0f, true}, {2.0f, false}, {3.0f, false, episode0_metadata}}},
+       {now - absl::Minutes(30), {{4.0f, true}, {5.0f, false}}}});
   RiegeliDatasetReader reader;
   ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   EXPECT_THAT(reader.NumSteps(), Eq(5));
   EXPECT_THAT(reader.NumEpisodes(), Eq(2));
 
-  absl::StatusOr<RiegeliEpisodeReader> episode0 = reader.CreateEpisodeReader(0);
-  absl::StatusOr<RiegeliEpisodeReader> episode1 = reader.CreateEpisodeReader(1);
+  absl::StatusOr<RiegeliShardReader> episode0 =
+      reader.GetShard(/*episode_index=*/0);
+  absl::StatusOr<RiegeliShardReader> episode1 =
+      reader.GetShard(/*episode_index=*/1);
   ENVLOGGER_EXPECT_OK(episode0.status());
   ENVLOGGER_EXPECT_OK(episode1.status());
   EXPECT_THAT(episode0->NumSteps(), Eq(3));
