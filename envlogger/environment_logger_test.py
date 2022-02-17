@@ -21,6 +21,7 @@ import os
 import tempfile
 import threading
 from typing import List, Optional
+from unittest import mock
 import uuid
 
 from absl import logging
@@ -38,7 +39,6 @@ from envlogger.converters import codec
 from envlogger.converters import spec_codec
 from envlogger.proto import storage_pb2
 from envlogger.testing import catch_env
-import mock
 import numpy as np
 import riegeli
 

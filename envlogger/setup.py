@@ -161,7 +161,6 @@ setuptools.setup(
     install_requires=[
         'absl-py',
         'dm_env',
-        'mock',
         'numpy',
         'protobuf>=3.14',
         'setuptools!=50.0.0',  # https://github.com/pypa/setuptools/issues/2350
