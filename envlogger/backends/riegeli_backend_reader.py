@@ -15,6 +15,7 @@
 
 """For reading trajectory data from riegeli files."""
 
+import copy
 from typing import Any, Dict, Tuple
 
 from absl import logging
@@ -61,10 +62,18 @@ class RiegeliBackendReader(backend_reader.BackendReader):
                       ****                          ***
                       *********************************""")
       else:
-        raise ValueError(f'Reader init fails: {e}, {type(e)}')
+        raise
 
     self._metadata = codec.decode(self._reader.metadata()) or {}
     super().__init__()
+
+  def _copy(self) -> 'RiegeliBackendReader':
+    c = copy.copy(self)
+
+    c._metadata = copy.deepcopy(self._metadata)
+    c._reader = self._reader.clone()
+
+    return c
 
   def close(self):
     if self._reader is not None:

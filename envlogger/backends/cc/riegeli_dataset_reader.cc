@@ -65,6 +65,33 @@ absl::StatusOr<Data> ReadFirstRiegeliRecord(const absl::string_view filepath) {
 
 }  // namespace
 
+RiegeliDatasetReader::~RiegeliDatasetReader() { Close(); }
+
+absl::StatusOr<RiegeliDatasetReader> RiegeliDatasetReader::Clone() {
+  RiegeliDatasetReader cloned;
+  cloned.total_num_steps_ = total_num_steps_;
+  cloned.total_num_episodes_ = total_num_episodes_;
+  cloned.metadata_ = metadata_;
+  cloned.shards_.resize(shards_.size());
+  for (int i = 0; i < shards_.size(); ++i) {
+    auto& shard = shards_[i];
+    auto& cloned_shard = cloned.shards_[i];
+
+    cloned_shard.timestamp_dir = shard.timestamp_dir;
+    ENVLOGGER_ASSIGN_OR_RETURN(absl::StatusOr<RiegeliShardReader> shard_reader,
+                               shard.index.Clone());
+    cloned_shard.index = std::move(*shard_reader);
+    cloned_shard.global_step_index = shard.global_step_index;
+    cloned_shard.cumulative_steps = shard.cumulative_steps;
+    cloned_shard.cumulative_episodes = shard.cumulative_episodes;
+  }
+  return cloned;
+}
+
+void RiegeliDatasetReader::Close() {
+  for (auto& shard : shards_) shard.index.Close();
+}
+
 absl::Status RiegeliDatasetReader::Init(absl::string_view data_dir) {
   ENVLOGGER_ASSIGN_OR_RETURN(
       std::vector<std::string> matches,
@@ -182,12 +209,6 @@ absl::StatusOr<RiegeliShardReader> RiegeliDatasetReader::GetShard(
       });
 
   return shard->index.Clone();
-}
-
-RiegeliDatasetReader::~RiegeliDatasetReader() { Close(); }
-
-void RiegeliDatasetReader::Close() {
-  for (auto& shard : shards_) shard.index.Close();
 }
 
 std::pair<RiegeliDatasetReader::Shard*, int64_t>

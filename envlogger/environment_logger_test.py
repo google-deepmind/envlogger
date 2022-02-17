@@ -15,6 +15,7 @@
 
 """EnvLogger Tests."""
 
+import concurrent.futures
 import glob
 import os
 import tempfile
@@ -476,6 +477,39 @@ class EnvLoggerTest(parameterized.TestCase):
       self.assertLen(data_reader.episodes, 3)
       self.assertLen(data_reader.episode_metadata(), 3)
       self.assertEqual(list(data_reader.episode_metadata()), [1, 2, 3])
+
+  def test_parallel_readers(self):
+    """Ensures that multiple Readers can be used simultaneously."""
+
+    # Record a trajectory.
+    env = catch_env.Catch()
+    with environment_logger.EnvLogger(
+        env,
+        data_directory=self.dataset_path,
+        backend=backend_type.BackendType.RIEGELI) as env:
+      _train(env, num_episodes=10)
+
+    # Read data and create `n` Reader copies.
+    n = 50
+    with reader.Reader(self.dataset_path) as original_reader:
+      original_reader = reader.Reader(self.dataset_path)
+      steps = list(original_reader.steps)
+      copies = [original_reader.copy() for _ in range(n)]
+
+    # Check the data in parallel with `n` workers.
+    def _check_data(r: reader.Reader):
+      np.testing.assert_equal(list(r.steps), steps)
+
+    futures = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=n) as executor:
+      for copy in copies:
+        futures.append(executor.submit(lambda c=copy: _check_data(c)))
+    for f in futures:
+      f.result(timeout=5)  # Wait for up to 5 seconds.
+
+    # Close the copies.
+    for copy in copies:
+      copy.close()
 
 
 

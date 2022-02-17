@@ -62,6 +62,7 @@ class RiegeliShardReader {
   RiegeliShardReader() = default;
 
   RiegeliShardReader(RiegeliShardReader&&) = default;
+  RiegeliShardReader& operator=(RiegeliShardReader&&) = default;
 
   ~RiegeliShardReader();
 

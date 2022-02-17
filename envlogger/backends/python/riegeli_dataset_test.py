@@ -121,6 +121,38 @@ class RiegeliDatasetTest(absltest.TestCase):
       self.assertAlmostEqual(step2.float_values[0], 3.14 + i, places=3)
     reader.close()
 
+  def test_clone(self):
+    """Ensures that we can read the same data with a cloned reader."""
+    writer = riegeli_dataset_writer.RiegeliDatasetWriter()
+    try:
+      writer.init(data_dir=self._directory)
+    except status.StatusNotOk:
+      logging.exception('Failed to initialize writer')
+
+    for i in range(10):
+      writer.add_step(codec.encode(i))
+    writer.close()
+
+    reader = riegeli_dataset_reader.RiegeliDatasetReader()
+    try:
+      reader.init(data_dir=self._directory)
+    except status.StatusNotOk:
+      logging.exception('Failed to initialize reader')
+
+    cloned = reader.clone()
+    self.assertEqual(cloned.num_steps, reader.num_steps)
+
+    for i in range(reader.num_steps):
+      step = reader.step(i)
+      self.assertEqual(codec.decode(step), i)
+    reader.close()
+
+    # Even after closing the original `reader`, the cloned reader should still
+    # work just like it.
+    for i in range(cloned.num_steps):
+      step = cloned.step(i)
+      self.assertEqual(codec.decode(step), i)
+    cloned.close()
 
 if __name__ == '__main__':
   absltest.main()

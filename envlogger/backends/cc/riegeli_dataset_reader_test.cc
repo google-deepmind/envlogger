@@ -422,5 +422,70 @@ TEST(DataDirectoryIndex, GetShardTest) {
   ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
 }
 
+TEST(DataDirectoryIndex, CloneTest) {
+  const std::string data_dir =
+      file::JoinPath(getenv("TEST_TMPDIR"), "my_data_dir");
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
+
+  // Write metadata and specs.
+  Data episode0_metadata = ParseTextProtoOrDie(R"pb(
+    datum: { values: { int32_values: 12345 } }
+  )pb");
+  Data dummy;
+  {
+    riegeli::RecordWriter writer(
+        RiegeliFileWriter(
+            file::JoinPath(data_dir, internal::kMetadataFilename)),
+        riegeli::RecordWriterBase::Options().set_transpose(true));
+    EXPECT_THAT(writer.WriteRecord(dummy), IsTrue());
+    writer.Flush(riegeli::FlushType::kFromMachine);
+  }
+  const absl::Time now = absl::Now();
+  CreateTimestampDirs(
+      data_dir,
+      {{now - absl::Minutes(60),
+        {{1.0f, true}, {2.0f, false}, {3.0f, false, episode0_metadata}}},
+       {now - absl::Minutes(30), {{4.0f, true}, {5.0f, false}}}});
+  RiegeliDatasetReader reader;
+  ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
+
+  absl::StatusOr<RiegeliDatasetReader> clone = reader.Clone();
+  EXPECT_THAT(clone.ok(), IsTrue());
+
+  EXPECT_THAT(reader.NumSteps(), Eq(5));
+  EXPECT_THAT(clone->NumSteps(), Eq(5));
+  EXPECT_THAT(reader.NumEpisodes(), Eq(2));
+  EXPECT_THAT(clone->NumEpisodes(), Eq(2));
+
+  // Check steps.
+  std::vector<Data> steps;
+  std::vector<Data> clone_steps;
+  for (int i = 0; i < reader.NumSteps(); ++i) {
+    const auto step = reader.Step(i);
+    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    steps.push_back(*step);
+
+    const auto clone_step = clone->Step(i);
+    EXPECT_THAT(clone_step, Not(Eq(absl::nullopt)));
+    clone_steps.push_back(*clone_step);
+  }
+  EXPECT_THAT(
+      steps,
+      ElementsAre(EqualsProto("datum: { values: { float_values: 1.0}}"),
+                  EqualsProto("datum: { values: { float_values: 2.0}}"),
+                  EqualsProto("datum: { values: { float_values: 3.0}}"),
+                  EqualsProto("datum: { values: { float_values: 4.0}}"),
+                  EqualsProto("datum: { values: { float_values: 5.0}}")));
+  EXPECT_THAT(
+      clone_steps,
+      ElementsAre(EqualsProto("datum: { values: { float_values: 1.0}}"),
+                  EqualsProto("datum: { values: { float_values: 2.0}}"),
+                  EqualsProto("datum: { values: { float_values: 3.0}}"),
+                  EqualsProto("datum: { values: { float_values: 4.0}}"),
+                  EqualsProto("datum: { values: { float_values: 5.0}}")));
+
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
+}
+
 }  // namespace
 }  // namespace envlogger

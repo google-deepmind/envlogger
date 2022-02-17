@@ -87,6 +87,22 @@ class BackendReader(metaclass=abc.ABCMeta):
   """Base class for trajectory readers."""
 
   def __init__(self):
+    self._init_visitors()
+
+  def copy(self) -> 'BackendReader':
+    """Returns a copy of self."""
+
+    c = self._copy()
+    c._init_visitors()
+    return c
+
+  @abc.abstractmethod
+  def _copy(self) -> 'BackendReader':
+    """Implementation-specific copy behavior."""
+
+  def _init_visitors(self):
+    """Initializes visitors."""
+
     logging.info('Creating visitors.')
     self._steps = _SequenceAdapter(
         count=self._get_num_steps(), get_nth_item=self._get_nth_step)

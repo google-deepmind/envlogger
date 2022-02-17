@@ -15,6 +15,7 @@
 
 """Reader of EnvironmentLogger data."""
 
+import copy
 from typing import Any, Optional, Sequence, Union
 
 from absl import logging
@@ -52,14 +53,28 @@ class Reader:
       raise TypeError(f'Unsupported backend: {backend}')
     self._set_specs()
 
+  def copy(self):
+    c = copy.copy(self)
+
+    c._backend = self._backend.copy()
+    c._observation = self._observation_spec
+    c._action_spec = self._action_spec
+    c._reward_spec = self._reward_spec
+    c._discount_spec = self._discount_spec
+
+    return c
+
+  def close(self):
+    self._backend.close()
+
   def __enter__(self):
     return self
 
   def __exit__(self, exc_type, exc_value, tb):
-    self._backend.close()
+    self.close()
 
   def __del__(self):
-    self._backend.close()
+    self.close()
 
   def metadata(self):
     return self._backend.metadata()

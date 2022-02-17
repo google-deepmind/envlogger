@@ -49,7 +49,15 @@ namespace envlogger {
 class RiegeliDatasetReader {
  public:
   RiegeliDatasetReader() = default;
+  RiegeliDatasetReader(RiegeliDatasetReader&&) = default;
   ~RiegeliDatasetReader();
+
+  // Clones a RiegeliDatasetReader.
+  // The cloned reader can be safely used in a different thread.
+  absl::StatusOr<RiegeliDatasetReader> Clone();
+
+  // Releases resources and closes the underlying files.
+  void Close();
 
   absl::Status Init(absl::string_view data_dir);
 
@@ -76,9 +84,6 @@ class RiegeliDatasetReader {
 
   // Returns a shard reader for the specified episode index.
   absl::StatusOr<RiegeliShardReader> GetShard(int64_t episode_index);
-
-  // Releases resources and closes the underlying files.
-  void Close();
 
  private:
   // A Shard represents a single timestamp directory.

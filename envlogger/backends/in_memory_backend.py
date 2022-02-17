@@ -16,6 +16,7 @@
 """Environment logger backend that stores all data in RAM.
 """
 
+import copy
 from typing import Any
 
 from envlogger import step_data
@@ -55,6 +56,9 @@ class InMemoryBackendReader(backend_reader.BackendReader):
   def __init__(self, in_memory_backend_writer: InMemoryBackendWriter):
     self._backend = in_memory_backend_writer
     super().__init__()
+
+  def _copy(self) -> 'InMemoryBackendReader':
+    return copy.deepcopy(self)
 
   def close(self) -> None:
     pass
