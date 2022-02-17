@@ -67,7 +67,6 @@ py_test(
         "@com_google_riegeli//python/riegeli",
         requirement("absl-py"),
         requirement("dm_env"),
-        requirement("mock"),
         requirement("numpy"),
     ],
 )

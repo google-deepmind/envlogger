@@ -1,6 +1,5 @@
 absl-py
 dm_env
-mock
 numpy
 protobuf
 tensorflow
