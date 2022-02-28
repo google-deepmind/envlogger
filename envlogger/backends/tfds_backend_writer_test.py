@@ -218,7 +218,7 @@ class TfdsBackendWriterTest(absltest.TestCase):
         num_episodes=num_episodes)
 
     builder = tfds.builder_from_directory(data_dir)
-    ds = builder.as_dataset(split='my_data_dir')
+    ds = builder.as_dataset(split='train')
 
     num_episodes = 0
     for index, episode in enumerate(ds):

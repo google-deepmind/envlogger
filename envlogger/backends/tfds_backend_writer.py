@@ -128,6 +128,38 @@ class Split(object):
     return tfds.core.splits.SplitDict([self.info])
 
 
+def initialize_split(split_name: Optional[str], data_directory: Any,
+                     builder_name: str) -> Split:
+  """Initializes a split.
+
+  Args:
+    split_name: name of the split. If None, it uses `train`.
+    data_directory: directory where the split data will be located.
+    builder_name: name of the TFDS builder.
+
+  Returns:
+    A Split.
+
+  """
+  if not split_name:
+    split_name = 'train'
+
+  filename_template = tfds.core.ShardedFileTemplate(
+      dataset_name=builder_name,
+      data_dir=data_directory,
+      split=split_name,
+      filetype_suffix='tfrecord',
+      template='{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}',
+  )
+  return Split(
+      info=tfds.core.splits.SplitInfo(
+          name=split_name,
+          shard_lengths=[],
+          num_bytes=0,
+          filename_template=filename_template),
+      ds_name=builder_name)
+
+
 class TFDSBackendWriter(backend_writer.BackendWriter):
   """Backend that writes trajectory data in TFDS format (and RLDS structure)."""
 
@@ -166,26 +198,8 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
     self._current_shard = None
     self._current_episode = None
 
-    if not split_name:
-      data_dir = self._data_directory
-      if data_dir.endswith('/'):
-        # we remove the last / otherwise basename returns an empty string.
-        data_dir = data_dir[:-1]
-      split_name = os.path.basename(data_dir)
-
-    filename_template = tfds.core.ShardedFileTemplate(
-        dataset_name=self._builder.name,
-        data_dir=self._builder.data_dir,
-        split=split_name,
-        filetype_suffix='tfrecord',
-        template='{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}',
-    )
-    self._split = Split(
-        info=tfds.core.splits.SplitInfo(
-            name=split_name,
-            shard_lengths=[],
-            num_bytes=0,
-            filename_template=filename_template))
+    self._split = initialize_split(split_name, data_directory,
+                                   self._builder.name)
     # We write the empty metadata so, when reading, we can always build the
     # dataset even if it's empty.
     self._write_split_metadata()

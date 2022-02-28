@@ -68,6 +68,21 @@ def generate_episode_data(
   return episodes_data
 
 
+def catch_env_tfds_config(
+    name: str = 'catch_example') -> tfds.rlds.rlds_base.DatasetConfig:
+  """Creates a TFDS DatasetConfig for the Catch environment."""
+  return tfds.rlds.rlds_base.DatasetConfig(
+      name=name,
+      observation_info=tfds.features.Tensor(
+          shape=(10, 5), dtype=tf.float32,
+          encoding=tfds.features.Encoding.ZLIB),
+      action_info=tf.int64,
+      reward_info=tf.float64,
+      discount_info=tf.float64,
+      step_metadata_info={'timestamp': tf.int64},
+      episode_metadata_info={'episode_id': tf.int64})
+
+
 def tfds_backend_catch_env(
     data_directory: str,
     max_episodes_per_file: int = 1,
@@ -85,15 +100,5 @@ def tfds_backend_catch_env(
   return tfds_backend_writer.TFDSBackendWriter(
       data_directory=data_directory,
       split_name=split_name,
-      ds_config=tfds.rlds.rlds_base.DatasetConfig(
-          name='catch_example',
-          observation_info=tfds.features.Tensor(
-              shape=(10, 5),
-              dtype=tf.float32,
-              encoding=tfds.features.Encoding.ZLIB),
-          action_info=tf.int64,
-          reward_info=tf.float64,
-          discount_info=tf.float64,
-          step_metadata_info={'timestamp': tf.int64},
-          episode_metadata_info={'episode_id': tf.int64}),
+      ds_config=catch_env_tfds_config(),
       max_episodes_per_file=max_episodes_per_file)
