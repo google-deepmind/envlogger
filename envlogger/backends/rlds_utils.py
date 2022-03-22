@@ -46,10 +46,11 @@ def to_rlds_step(prev_step: step_data.StepData,
     metadata = prev_step.custom_data
   return {
       'action':
-          step.action if step else np.zeros_like(prev_step.action),
+          step.action if step else tf.nest.map_structure(
+              np.zeros_like, prev_step.action),
       'discount':
-          step.timestep.discount
-          if step else np.zeros_like(prev_step.timestep.discount),
+          step.timestep.discount if step else tf.nest.map_structure(
+              np.zeros_like, prev_step.timestep.discount),
       'is_first':
           prev_step.timestep.first(),
       'is_last':
@@ -59,8 +60,8 @@ def to_rlds_step(prev_step: step_data.StepData,
       'observation':
           prev_step.timestep.observation,
       'reward':
-          step.timestep.reward
-          if step else np.zeros_like(prev_step.timestep.reward),
+          step.timestep.reward if step else tf.nest.map_structure(
+              np.zeros_like, prev_step.timestep.reward),
       **metadata,
   }
 

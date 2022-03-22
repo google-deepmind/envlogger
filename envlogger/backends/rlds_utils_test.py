@@ -20,6 +20,7 @@ import dm_env
 from envlogger import step_data
 from envlogger.backends import rlds_utils
 from envlogger.backends import tfds_backend_testlib
+import numpy as np
 import tensorflow_datasets as tfds
 
 
@@ -72,6 +73,43 @@ class RldsUtilsTest(absltest.TestCase):
     rlds_step = rlds_utils.to_rlds_step(prev_step, None)
 
     self.assertEqual(rlds_step, expected_step)
+
+  def test_build_nested_last_step(self):
+
+    def gen_oar(mode):
+      gen_fn = np.ones if mode == 'random' else np.zeros
+      obs = {'0': gen_fn((1, 2)), '1': gen_fn((3, 4))}
+      action = {'0': gen_fn((2, 3)), '1': gen_fn((4, 5))}
+      reward = {'0': gen_fn((1, 1)), '1': gen_fn((2, 2))}
+      return obs, action, reward
+
+    prev_obs, prev_action, prev_reward = gen_oar('ones')
+    prev_step = step_data.StepData(
+        timestep=dm_env.TimeStep(
+            step_type=dm_env.StepType.LAST,
+            reward=prev_reward,
+            observation=prev_obs,
+            discount=1),
+        action=prev_action)
+
+    _, zero_action, zero_reward = gen_oar('zeros')
+    expected_step = {
+        'observation': prev_obs,
+        'action': zero_action,
+        'reward': zero_reward,
+        'discount': 0,
+        'is_terminal': False,
+        'is_first': False,
+        'is_last': True,
+    }
+
+    rlds_step = rlds_utils.to_rlds_step(prev_step, None)
+    for key in rlds_step.keys():
+      if isinstance(rlds_step[key], dict):  # obs, action, reward dicts
+        for rv, ev in zip(rlds_step[key].values(), expected_step[key].values()):
+          np.testing.assert_equal(rv, ev)
+      else:
+        self.assertEqual(rlds_step[key], expected_step[key])
 
   def test_build_terminal_step(self):
     prev_step = step_data.StepData(
