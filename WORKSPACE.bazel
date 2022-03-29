@@ -18,7 +18,13 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Import protobuf dependencies.
 http_archive(
     name = "com_google_protobuf",
-    patch_cmds = [r"sed -i -e 's/\/\/external:six/@six_archive\/\/:six/g' BUILD"],
+    patch_cmds = [
+        r"sed -i -e 's/\/\/external:six/@six_archive\/\/:six/g' BUILD",
+        # Update `zlib` to 1.2.12 and use an up-to-date URL.
+        r"sed -i -e 's/zlib.net/www.zlib.net/' protobuf_deps.bzl",
+        r"sed -i -e 's/1\.2\.11/1.2.12/' protobuf_deps.bzl",
+        r"sed -i -e '/sha256/d' protobuf_deps.bzl",
+    ],
     strip_prefix = "protobuf-3.9.0",
     url = "https://github.com/protocolbuffers/protobuf/archive/v3.9.0.zip",
 )
@@ -142,12 +148,9 @@ http_archive(
 http_archive(
     name = "zlib",
     build_file = "//third_party:zlib.BUILD.bazel",
-    sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
-    strip_prefix = "zlib-1.2.11",
-    urls = [
-        "http://mirror.bazel.build/zlib.net/fossils/zlib-1.2.11.tar.gz",
-        "http://zlib.net/fossils/zlib-1.2.11.tar.gz",  # 2017-01-15
-    ],
+    sha256 = "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9",
+    strip_prefix = "zlib-1.2.12",
+    urls = ["https://www.zlib.net/zlib-1.2.12.tar.gz"],
 )
 
 # Xtensor and dependencies.
