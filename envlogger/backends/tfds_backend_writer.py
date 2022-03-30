@@ -95,7 +95,7 @@ class Episode(object):
       example = features.encode_example(episode)
     except Exception as e:
       tfds.core.utils.reraise(
-          e, prefix=f'Failed to encode episode:\n{episode}\n')
+          e, prefix='Failed to encode episode:\n', suffix=f'{episode}\n')
 
     return serializer.serialize_example(example)
 
