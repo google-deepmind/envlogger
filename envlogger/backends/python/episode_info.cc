@@ -23,7 +23,6 @@
 
 PYBIND11_MODULE(episode_info, m) {
   pybind11::google::ImportProtoModule();
-  pybind11::google::RegisterProtoMessageType<envlogger::Data>(m);
 
   m.doc() = "EpisodeInfo bindings.";
 
