@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,7 +28,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/variant.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/converters/make_visitor.h"
@@ -95,7 +95,7 @@ absl::Status RiegeliShardReader::Init(
   ENVLOGGER_ASSIGN_OR_RETURN(riegeli::RecordReader step_offsets_reader,
                              CreateReader(step_offsets_filepath));
   while (step_offsets_reader.ReadRecord(value)) {
-    const absl::optional<BasicType> step_offsets_decoded = Decode(value);
+    const std::optional<BasicType> step_offsets_decoded = Decode(value);
     if (step_offsets_decoded) absl::visit(steps_visitor, *step_offsets_decoded);
   }
 
@@ -103,7 +103,7 @@ absl::Status RiegeliShardReader::Init(
   ENVLOGGER_ASSIGN_OR_RETURN(riegeli::RecordReader episode_index_reader,
                              CreateReader(episode_index_filepath));
   while (episode_index_reader.ReadRecord(value)) {
-    const absl::optional<BasicType> episode_index_decoded = Decode(value);
+    const std::optional<BasicType> episode_index_decoded = Decode(value);
     if (episode_index_decoded)
       absl::visit(episode_index_visitor, *episode_index_decoded);
   }
@@ -145,8 +145,8 @@ int64_t RiegeliShardReader::NumEpisodes() const {
   return shard_->episode_starts.size();
 }
 
-absl::optional<EpisodeInfo> RiegeliShardReader::Episode(int64_t episode_index,
-                                                        bool include_metadata) {
+std::optional<EpisodeInfo> RiegeliShardReader::Episode(int64_t episode_index,
+                                                       bool include_metadata) {
   const auto& episode_starts = shard_->episode_starts;
   const auto& step_offsets = shard_->step_offsets;
   const auto& episode_metadata_offsets = shard_->episode_metadata_offsets;

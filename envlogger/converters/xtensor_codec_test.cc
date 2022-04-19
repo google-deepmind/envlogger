@@ -15,6 +15,7 @@
 #include "envlogger/converters/xtensor_codec.h"
 
 #include <cstdint>
+#include <optional>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -79,7 +80,7 @@ TEST(XtensorCodecTest, DecodeScalarFloat32) {
     values: { float_values: 1.23 }
   )pb");
   const float value = 1.23f;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -95,7 +96,7 @@ TEST(XtensorCodecTest, DecodeScalarFloat32) {
 
 TEST(XtensorCodecTest, Float32Identity) {
   const float value = 3.14f;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -115,7 +116,7 @@ TEST(XtensorCodecTest, DecodeScalarDouble) {
     values: { double_values: 3.14159265358979 }
   )pb");
   const double value = 3.14159265358979;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -125,7 +126,7 @@ TEST(XtensorCodecTest, DecodeScalarDouble) {
 
 TEST(XtensorCodecTest, DoubleIdentity) {
   const double value = 3.14159265358979;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -146,7 +147,7 @@ TEST(XtensorCodecTest, DecodeScalarInt32) {
     values: { int32_values: -32 }
   )pb");
   const int32_t value = -32;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -156,7 +157,7 @@ TEST(XtensorCodecTest, DecodeScalarInt32) {
 
 TEST(XtensorCodecTest, Int32Identity) {
   const int32_t value = 321;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -178,7 +179,7 @@ TEST(XtensorCodecTest, DecodeScalarInt64) {
     values: { int64_values: -64 }
   )pb");
   const int64_t value = -64;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -188,7 +189,7 @@ TEST(XtensorCodecTest, DecodeScalarInt64) {
 
 TEST(XtensorCodecTest, Int64Identity) {
   const int64_t value = 123456789012;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -210,7 +211,7 @@ TEST(XtensorCodecTest, DecodeScalarUint32) {
     values: { uint32_values: 32 }
   )pb");
   const uint32_t value = 32;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -221,7 +222,7 @@ TEST(XtensorCodecTest, DecodeScalarUint32) {
 TEST(XtensorCodecTest, Uint32Identity) {
   // 2^32 - 1 = 4294967295
   const uint32_t value = 4294967295;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -243,7 +244,7 @@ TEST(XtensorCodecTest, DecodeScalarUint64) {
     values: { uint64_values: 64 }
   )pb");
   const uint64_t value = 64;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -254,7 +255,7 @@ TEST(XtensorCodecTest, DecodeScalarUint64) {
 TEST(XtensorCodecTest, Uint64Identity) {
   // 2^64 - 1 = 9223372036854775807.
   const uint64_t value = 9223372036854775807;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -274,7 +275,7 @@ TEST(XtensorCodecTest, DecodeScalarBool) {
     shape: { dim: { size: -438 } }
     values: { bool_values: true }
   )pb");
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(true));
   absl::visit(CheckVisitor(true), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -283,7 +284,7 @@ TEST(XtensorCodecTest, DecodeScalarBool) {
 }
 
 TEST(XtensorCodecTest, BoolIdentity) {
-  const absl::optional<BasicType> decoded = Decode(Encode(true));
+  const std::optional<BasicType> decoded = Decode(Encode(true));
   EXPECT_THAT(decoded, Optional(true));
   absl::visit(CheckVisitor(true), *decoded);
 }
@@ -307,7 +308,7 @@ TEST(XtensorCodecTest, DecodeScalarString) {
     values: { string_values: 'pi' }
   )pb");
   const std::string value = "pi";
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -317,7 +318,7 @@ TEST(XtensorCodecTest, DecodeScalarString) {
 
 TEST(XtensorCodecTest, StringIdentity) {
   const std::string value = "pi";
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -339,7 +340,7 @@ TEST(XtensorCodecTest, BytesDecodeScalar) {
     values: { bytes_values: 'pi' }
   )pb");
   const absl::Cord value("pi");
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
   EXPECT_THAT(absl::holds_alternative<absl::Cord>(*decoded), IsTrue);
@@ -348,7 +349,7 @@ TEST(XtensorCodecTest, BytesDecodeScalar) {
 
 TEST(XtensorCodecTest, BytesIdentity) {
   const absl::Cord value("pi");
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -374,7 +375,7 @@ TEST(XtensorCodecTest, BigIntDecodeScalar) {
     values: { bigint_values: '\x01\x8e\xe9\x0f\xf6\xc3s\xe0\xeeN?\n\xd2' }
   )pb");
   const mpz_class value("123456789012345678901234567890", /*base=*/10);
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
   EXPECT_THAT(absl::holds_alternative<mpz_class>(*decoded), IsTrue);
@@ -383,7 +384,7 @@ TEST(XtensorCodecTest, BigIntDecodeScalar) {
 
 TEST(XtensorCodecTest, BigIntIdentity) {
   const mpz_class value("-98765432109876543210", /*base=*/10);
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -405,7 +406,7 @@ TEST(XtensorCodecTest, DecodeScalarInt8) {
     values: { int8_values: '\xfd' }
   )pb");
   const int8_t value = -3;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -415,7 +416,7 @@ TEST(XtensorCodecTest, DecodeScalarInt8) {
 
 TEST(XtensorCodecTest, Int8Identity) {
   const int8_t value = -123;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -437,7 +438,7 @@ TEST(XtensorCodecTest, DecodeScalarInt16) {
     values: { int16_values: '\x07\xd0' }
   )pb");
   const int16_t value = 2000;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -447,7 +448,7 @@ TEST(XtensorCodecTest, DecodeScalarInt16) {
 
 TEST(XtensorCodecTest, Int16Identity) {
   const int16_t value = -1234;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -469,7 +470,7 @@ TEST(XtensorCodecTest, Uint8DecodeScalar) {
     values: { uint8_values: '\xed' }
   )pb");
   const uint8_t value = 237;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -479,7 +480,7 @@ TEST(XtensorCodecTest, Uint8DecodeScalar) {
 
 TEST(XtensorCodecTest, Uint8Identity) {
   const uint8_t value = 255;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -501,7 +502,7 @@ TEST(XtensorCodecTest, Uint16DecodeScalar) {
     values: { uint16_values: '\x0b\xb8' }
   )pb");
   const uint16_t value = 3000;
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -511,7 +512,7 @@ TEST(XtensorCodecTest, Uint16DecodeScalar) {
 
 TEST(XtensorCodecTest, Uint16Identity) {
   const uint16_t value = 12345;
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -546,7 +547,7 @@ TEST(XtensorCodecTest, Float32DecodeXtarray) {
     values: { float_values: 1.23 }
   )pb");
   const xt::xarray<float> value{1.23f};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -556,7 +557,7 @@ TEST(XtensorCodecTest, Float32DecodeXtarray) {
 
 TEST(XtensorCodecTest, Float32XtarrayIdentity) {
   const xt::xarray<float> value{3.14f};
-  const absl::optional<BasicType> decoded =
+  const std::optional<BasicType> decoded =
       Decode(Encode(value, /*as_bytes=*/false));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
@@ -564,7 +565,7 @@ TEST(XtensorCodecTest, Float32XtarrayIdentity) {
 
 TEST(XtensorCodecTest, Float32XtarrayIdentityAsBytes) {
   const xt::xarray<float> value{3.14f};
-  const absl::optional<BasicType> decoded = Decode(Encode(value));
+  const std::optional<BasicType> decoded = Decode(Encode(value));
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
 }
@@ -586,7 +587,7 @@ TEST(XtensorCodecTest, DoubleDecodeXtarray) {
     values: { double_values: 3.14159265358979 }
   )pb");
   const xt::xarray<double> value{3.14159265358979};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -611,7 +612,7 @@ TEST(XtensorCodecTest, Int32DecodeXtarray) {
     values: { int32_values: -123 }
   )pb");
   const xt::xarray<int32_t> value{-123};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -636,7 +637,7 @@ TEST(XtensorCodecTest, Int64DecodeXtarray) {
     values: { int64_values: -123456789123 }
   )pb");
   const xt::xarray<int64_t> value{-123456789123};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -662,7 +663,7 @@ TEST(XtensorCodecTest, Uint32DecodeXtarray) {
     values: { uint32_values: 123456 }
   )pb");
   const xt::xarray<uint32_t> value{123456};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -688,7 +689,7 @@ TEST(XtensorCodecTest, Uint64DecodeXtarray) {
     values: { uint64_values: 1234567890123 }
   )pb");
   const xt::xarray<uint64_t> value{1234567890123};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -713,7 +714,7 @@ TEST(XtensorCodecTest, BoolDecodeXtarray) {
     values: { bool_values: true }
   )pb");
   const xt::xarray<bool> value{true};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -738,7 +739,7 @@ TEST(XtensorCodecTest, StringDecodeXtarray) {
     values: { string_values: "nice" }
   )pb");
   const xt::xarray<std::string> value{"nice"};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -767,7 +768,7 @@ TEST(XtensorCodecTest, BytesDecodeXtarray) {
     values: { bytes_values: '6f5e4d3c2b1a' }
   )pb");
   const xt::xarray<absl::Cord> value{absl::Cord("6f5e4d3c2b1a")};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -795,7 +796,7 @@ TEST(XtensorCodecTest, BigIntDecodeXtarray) {
   )pb");
   const xt::xarray<mpz_class> value{
       mpz_class("12345678901234567890", /*base=*/10)};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -820,7 +821,7 @@ TEST(XtensorCodecTest, Int8DecodeXtarray) {
     values: { int8_values: '\x85\x84' }
   )pb");
   const xt::xarray<int8_t> value{-123, -124};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -845,7 +846,7 @@ TEST(XtensorCodecTest, Int16DecodeXtarray) {
     values: { int16_values: '\xfe\xa7\xfe\xa6' }
   )pb");
   const xt::xarray<int16_t> value{-345, -346};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -870,7 +871,7 @@ TEST(XtensorCodecTest, Uint8DecodeXtarray) {
     values: { uint8_values: '\x7b\x7a' }
   )pb");
   const xt::xarray<uint8_t> value{123, 122};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.
@@ -895,7 +896,7 @@ TEST(XtensorCodecTest, Uint16DecodeXtarray) {
     values: { uint16_values: '\x01Y\x01X' }
   )pb");
   const xt::xarray<uint16_t> value{345, 344};
-  const absl::optional<BasicType> decoded = Decode(datum);
+  const std::optional<BasicType> decoded = Decode(datum);
   EXPECT_THAT(decoded, Optional(value));
   absl::visit(CheckVisitor(value), *decoded);
   // Directly checking for the value and getting it should also be supported.

@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -25,11 +26,10 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
-#include "envlogger/backends/cc/riegeli_shard_writer.h"
 #include "envlogger/backends/cc/riegeli_dataset_reader.h"
 #include "envlogger/backends/cc/riegeli_dataset_writer.h"
+#include "envlogger/backends/cc/riegeli_shard_writer.h"
 #include "envlogger/platform/filesystem.h"
 #include "envlogger/platform/parse_text_proto.h"
 #include "envlogger/platform/proto_testutil.h"

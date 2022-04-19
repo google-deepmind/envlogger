@@ -15,6 +15,7 @@
 #include "envlogger/converters/xtensor_codec.h"
 
 #include <cstdint>
+#include <optional>
 
 #include "glog/logging.h"
 #include "google/protobuf/repeated_field.h"
@@ -177,9 +178,9 @@ xt::xarray<mpz_class> FillXarrayValuesMpzClass(
 }
 
 template <typename T>
-absl::optional<BasicType> DecodeValues(const google::protobuf::RepeatedField<T>& values,
-                                       const std::vector<int>& shape,
-                                       bool is_scalar) {
+std::optional<BasicType> DecodeValues(const google::protobuf::RepeatedField<T>& values,
+                                      const std::vector<int>& shape,
+                                      bool is_scalar) {
   if (values.empty()) return absl::nullopt;
 
   if (is_scalar) {
@@ -190,9 +191,9 @@ absl::optional<BasicType> DecodeValues(const google::protobuf::RepeatedField<T>&
 }
 
 template <typename T>
-absl::optional<BasicType> DecodeValues(
-    const google::protobuf::RepeatedPtrField<T>& values, const std::vector<int>& shape,
-    bool is_scalar) {
+std::optional<BasicType> DecodeValues(const google::protobuf::RepeatedPtrField<T>& values,
+                                      const std::vector<int>& shape,
+                                      bool is_scalar) {
   if (values.empty()) return absl::nullopt;
 
   if (is_scalar) {
@@ -203,9 +204,9 @@ absl::optional<BasicType> DecodeValues(
 }
 
 template <typename T>
-absl::optional<BasicType> DecodeValuesBigEndian(const std::string& values,
-                                                const std::vector<int>& shape,
-                                                bool is_scalar) {
+std::optional<BasicType> DecodeValuesBigEndian(const std::string& values,
+                                               const std::vector<int>& shape,
+                                               bool is_scalar) {
   if (values.empty()) return absl::nullopt;
 
   if (is_scalar) {
@@ -216,9 +217,9 @@ absl::optional<BasicType> DecodeValuesBigEndian(const std::string& values,
 }
 
 template <typename T>
-absl::optional<BasicType> DecodeValues(const std::string& values,
-                                       const std::vector<int>& shape,
-                                       bool is_scalar) {
+std::optional<BasicType> DecodeValues(const std::string& values,
+                                      const std::vector<int>& shape,
+                                      bool is_scalar) {
   return DecodeValuesBigEndian<T>(values, shape, is_scalar);
 }
 
@@ -530,44 +531,44 @@ Datum Encode(const xt::xarray<uint16_t>& value) {
 // Decode()
 ////////////////////////////////////////////////////////////////////////////////
 
-absl::optional<BasicType> Decode(const Datum& datum) {
+std::optional<BasicType> Decode(const Datum& datum) {
   const std::vector<int> shape = ShapeVector(datum.shape());
   const bool is_scalar = IsScalar(shape);
   const auto& values = datum.values();
 
-  absl::optional<BasicType> float_buffer = DecodeValuesBigEndian<float>(
+  std::optional<BasicType> float_buffer = DecodeValuesBigEndian<float>(
       values.float_values_buffer(), shape, is_scalar);
   if (float_buffer) return float_buffer;
 
-  absl::optional<BasicType> floats =
+  std::optional<BasicType> floats =
       DecodeValues(values.float_values(), shape, is_scalar);
   if (floats) return floats;
 
-  absl::optional<BasicType> doubles =
+  std::optional<BasicType> doubles =
       DecodeValues(values.double_values(), shape, is_scalar);
   if (doubles) return doubles;
 
-  absl::optional<BasicType> int32s =
+  std::optional<BasicType> int32s =
       DecodeValues(values.int32_values(), shape, is_scalar);
   if (int32s) return int32s;
 
-  absl::optional<BasicType> int64s =
+  std::optional<BasicType> int64s =
       DecodeValues(values.int64_values(), shape, is_scalar);
   if (int64s) return int64s;
 
-  absl::optional<BasicType> uint32s =
+  std::optional<BasicType> uint32s =
       DecodeValues(values.uint32_values(), shape, is_scalar);
   if (uint32s) return uint32s;
 
-  absl::optional<BasicType> uint64s =
+  std::optional<BasicType> uint64s =
       DecodeValues(values.uint64_values(), shape, is_scalar);
   if (uint64s) return uint64s;
 
-  absl::optional<BasicType> bools =
+  std::optional<BasicType> bools =
       DecodeValues(values.bool_values(), shape, is_scalar);
   if (bools) return bools;
 
-  absl::optional<BasicType> strings =
+  std::optional<BasicType> strings =
       DecodeValues(values.string_values(), shape, is_scalar);
   if (strings) return strings;
 
@@ -595,19 +596,19 @@ absl::optional<BasicType> Decode(const Datum& datum) {
     }
   }
 
-  absl::optional<BasicType> int8s =
+  std::optional<BasicType> int8s =
       DecodeValues<int8_t>(values.int8_values(), shape, is_scalar);
   if (int8s) return int8s;
 
-  absl::optional<BasicType> int16s =
+  std::optional<BasicType> int16s =
       DecodeValues<int16_t>(values.int16_values(), shape, is_scalar);
   if (int16s) return int16s;
 
-  absl::optional<BasicType> uint8s =
+  std::optional<BasicType> uint8s =
       DecodeValues<uint8_t>(values.uint8_values(), shape, is_scalar);
   if (uint8s) return uint8s;
 
-  absl::optional<BasicType> uint16s =
+  std::optional<BasicType> uint16s =
       DecodeValues<uint16_t>(values.uint16_values(), shape, is_scalar);
   if (uint16s) return uint16s;
 

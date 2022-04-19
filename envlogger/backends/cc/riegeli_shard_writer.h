@@ -16,12 +16,12 @@
 #define THIRD_PARTY_PY_ENVLOGGER_BACKENDS_CC_RIEGELI_SHARD_WRITER_H_
 
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 #include "google/protobuf/message.h"
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/platform/riegeli_file_writer.h"
 #include "envlogger/proto/storage.pb.h"
@@ -103,7 +103,7 @@ class RiegeliShardWriter {
   std::vector<int64_t> episode_offsets_;
 
   // Metadata for the _current_ episode.
-  absl::optional<Data> episode_metadata_;
+  std::optional<Data> episode_metadata_;
 
   // Steps, episodes and their riegeli numeric offsets.
   riegeli::RecordWriter<RiegeliFileWriter> steps_writer_{riegeli::kClosed};

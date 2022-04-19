@@ -24,7 +24,6 @@
 #include <cstdint>
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/backends/cc/riegeli_shard_reader.h"
 #include "envlogger/backends/cc/riegeli_shard_writer.h"

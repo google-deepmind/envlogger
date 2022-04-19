@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,11 +31,10 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
+#include "envlogger/backends/cc/riegeli_dataset_io_constants.h"
 #include "envlogger/backends/cc/riegeli_shard_reader.h"
 #include "envlogger/backends/cc/riegeli_shard_writer.h"
-#include "envlogger/backends/cc/riegeli_dataset_io_constants.h"
 #include "envlogger/platform/bundle.h"
 #include "envlogger/platform/filesystem.h"
 #include "envlogger/platform/riegeli_file_reader.h"
@@ -166,9 +166,7 @@ absl::Status RiegeliDatasetReader::Init(absl::string_view data_dir) {
   return absl::OkStatus();
 }
 
-absl::optional<Data> RiegeliDatasetReader::Metadata() const {
-  return metadata_;
-}
+std::optional<Data> RiegeliDatasetReader::Metadata() const { return metadata_; }
 
 int64_t RiegeliDatasetReader::NumSteps() const { return total_num_steps_; }
 
@@ -176,7 +174,7 @@ int64_t RiegeliDatasetReader::NumEpisodes() const {
   return total_num_episodes_;
 }
 
-absl::optional<EpisodeInfo> RiegeliDatasetReader::Episode(
+std::optional<EpisodeInfo> RiegeliDatasetReader::Episode(
     int64_t episode_index, bool include_metadata) {
   if (episode_index < 0 || episode_index >= NumEpisodes()) return absl::nullopt;
 

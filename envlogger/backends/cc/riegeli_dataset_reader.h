@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,7 +28,6 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/backends/cc/riegeli_shard_reader.h"
 #include "envlogger/backends/cc/riegeli_shard_writer.h"
@@ -62,7 +62,7 @@ class RiegeliDatasetReader {
   absl::Status Init(absl::string_view data_dir);
 
   // Returns metadata associated with this RiegeliDatasetReader.
-  absl::optional<Data> Metadata() const;
+  std::optional<Data> Metadata() const;
 
   int64_t NumSteps() const;
   int64_t NumEpisodes() const;
@@ -70,7 +70,7 @@ class RiegeliDatasetReader {
   // Returns step data at index `step_index`.
   // Returns nullopt if `step_index` is not in [0, NumSteps()).
   template <typename T = Data>
-  absl::optional<T> Step(int64_t step_index);
+  std::optional<T> Step(int64_t step_index);
 
   // Returns information for accessing a specific episode.
   //
@@ -79,8 +79,8 @@ class RiegeliDatasetReader {
   // below without any modification.
   //
   // Returns nullopt if `episode_index` is not in [0, NumEpisodes()).
-  absl::optional<EpisodeInfo> Episode(int64_t episode_index,
-                                      bool include_metadata = false);
+  std::optional<EpisodeInfo> Episode(int64_t episode_index,
+                                     bool include_metadata = false);
 
   // Returns a shard reader for the specified episode index.
   absl::StatusOr<RiegeliShardReader> GetShard(int64_t episode_index);
@@ -117,7 +117,7 @@ class RiegeliDatasetReader {
   // this one calculates the same thing via binary search.
   int64_t total_num_episodes_ = 0;
 
-  absl::optional<Data> metadata_;
+  std::optional<Data> metadata_;
 
   // The list of all shards in this RiegeliDatasetReader.
   std::vector<Shard> shards_;
@@ -128,7 +128,7 @@ class RiegeliDatasetReader {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-absl::optional<T> RiegeliDatasetReader::Step(int64_t step_index) {
+std::optional<T> RiegeliDatasetReader::Step(int64_t step_index) {
   if (step_index < 0 || step_index >= NumSteps()) return absl::nullopt;
 
   Shard* shard = nullptr;

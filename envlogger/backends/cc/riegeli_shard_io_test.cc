@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <iterator>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,6 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/random/random.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/backends/cc/riegeli_shard_reader.h"
 #include "envlogger/backends/cc/riegeli_shard_writer.h"
@@ -227,7 +227,7 @@ void BM_WriteRead(benchmark::State& state) {
                                     episode_metadata_filename,
                                     episode_index_filename));
     for (int64_t i = 0; i < reader.NumSteps(); ++i) {
-      absl::optional<Data> payload = reader.Step(i);
+      std::optional<Data> payload = reader.Step(i);
     }
   };
 

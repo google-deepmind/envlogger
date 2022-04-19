@@ -17,8 +17,8 @@
 #define THIRD_PARTY_PY_ENVLOGGER_BACKENDS_CC_EPISODE_INFO_H_
 
 #include <cstdint>
+#include <optional>
 
-#include "absl/types/optional.h"
 #include "envlogger/proto/storage.pb.h"
 
 namespace envlogger {
@@ -31,7 +31,7 @@ struct EpisodeInfo {
   // The number of steps in this episode.
   int64_t num_steps;
   // Optional metadata which is only filled if requested.
-  absl::optional<Data> metadata;
+  std::optional<Data> metadata;
 };
 
 }  // namespace envlogger

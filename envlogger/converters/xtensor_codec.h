@@ -31,12 +31,12 @@
 
 #include <cstdint>
 #include <iterator>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include <cstdint>
 #include "absl/strings/cord.h"
-#include "absl/types/optional.h"
 #include "absl/types/variant.h"
 #include <gmpxx.h>
 #include "envlogger/proto/storage.pb.h"
@@ -98,7 +98,7 @@ Datum Encode(const xt::xarray<uint8_t>& value);
 Datum Encode(const xt::xarray<uint16_t>& value);
 
 // Decode() parses a Datum proto and maybe returns a BasicType.
-absl::optional<BasicType> Decode(const Datum& datum);
+std::optional<BasicType> Decode(const Datum& datum);
 
 // A non-owning view of envlogger::Data.
 class DataView {

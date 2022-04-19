@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,7 +29,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/backends/cc/riegeli_dataset_io_constants.h"
 #include "envlogger/backends/cc/riegeli_shard_writer.h"
@@ -64,7 +64,7 @@ struct TimestampDirSpec {
     // Whether this step is the first step of a new episode.
     bool is_new_episode;
     // Episodic metadata.
-    absl::optional<Data> episode_metadata;
+    std::optional<Data> episode_metadata;
     // Whether to use a different payload type (other than Data).
     bool use_other_payload_type;
   };

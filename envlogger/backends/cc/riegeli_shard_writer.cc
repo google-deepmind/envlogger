@@ -15,6 +15,7 @@
 #include "envlogger/backends/cc/riegeli_shard_writer.h"
 
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 #include "glog/logging.h"
@@ -37,7 +38,7 @@ namespace {
 // Writes any remaining episodic information which can only be written once an
 // episode is finalized.
 void WriteLastEpisodeIndex(std::vector<int64_t>* episode_starts,
-                           absl::optional<Data>* episode_metadata,
+                           std::optional<Data>* episode_metadata,
                            riegeli::RecordWriterBase* episode_metadata_writer,
                            riegeli::RecordWriterBase* episode_index_writer) {
   if (episode_starts->empty()) return;

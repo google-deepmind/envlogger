@@ -22,7 +22,6 @@
 #include "gtest/gtest.h"
 #include "absl/flags/flag.h"
 #include "absl/status/status.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/converters/xtensor_codec.h"
 #include "envlogger/platform/filesystem.h"

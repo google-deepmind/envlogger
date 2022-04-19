@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/platform/riegeli_file_reader.h"
 #include "envlogger/proto/storage.pb.h"
@@ -94,12 +94,12 @@ class RiegeliShardReader {
   // Returns step data at index `step_index`.
   // Returns nullopt if step_index is not in [0, NumSteps()).
   template <typename T = Data>
-  absl::optional<T> Step(int64_t step_index);
+  std::optional<T> Step(int64_t step_index);
 
   // Returns information for accessing a specific episode.
   // Returns nullopt if `episode_index` is not in [0, NumEpisodes()).
-  absl::optional<EpisodeInfo> Episode(int64_t episode_index,
-                                      bool include_metadata = false);
+  std::optional<EpisodeInfo> Episode(int64_t episode_index,
+                                     bool include_metadata = false);
 
   // Releases resources and closes the underlying files.
   void Close();
@@ -134,7 +134,7 @@ class RiegeliShardReader {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-absl::optional<T> RiegeliShardReader::Step(int64_t step_index) {
+std::optional<T> RiegeliShardReader::Step(int64_t step_index) {
   const auto& step_offsets = shard_->step_offsets;
   if (step_index < 0 ||
       step_index >= static_cast<int64_t>(step_offsets.size())) {
