@@ -176,7 +176,7 @@ int64_t RiegeliDatasetReader::NumEpisodes() const {
 
 std::optional<EpisodeInfo> RiegeliDatasetReader::Episode(
     int64_t episode_index, bool include_metadata) {
-  if (episode_index < 0 || episode_index >= NumEpisodes()) return absl::nullopt;
+  if (episode_index < 0 || episode_index >= NumEpisodes()) return std::nullopt;
 
   Shard* shard = nullptr;
   int64_t local_episode_index = -1;

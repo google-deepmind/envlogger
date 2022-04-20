@@ -152,7 +152,7 @@ std::optional<EpisodeInfo> RiegeliShardReader::Episode(int64_t episode_index,
   const auto& episode_metadata_offsets = shard_->episode_metadata_offsets;
   if (episode_index < 0 ||
       episode_index >= static_cast<int64_t>(episode_starts.size())) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   const int64_t start_index = episode_starts[episode_index];

@@ -96,7 +96,7 @@ TEST(RiegeliShardIoTest, NonEmptyMultipleEpisodes) {
   std::vector<Data> steps;
   for (int i = 0; i < reader.NumSteps(); ++i) {
     const auto step = reader.Step(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(step, Not(Eq(std::nullopt)));
     steps.push_back(*step);
   }
 
@@ -114,7 +114,7 @@ TEST(RiegeliShardIoTest, NonEmptyMultipleEpisodes) {
   std::vector<EpisodeInfo> episodes;
   for (int i = 0; i < reader.NumEpisodes(); ++i) {
     const auto episode = reader.Episode(i);
-    EXPECT_THAT(episode, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(episode, Not(Eq(std::nullopt)));
     episodes.push_back(*episode);
   }
   EXPECT_THAT(episodes, ElementsAre(EqualsEpisode(0, 3), EqualsEpisode(3, 3),
@@ -168,19 +168,19 @@ TEST(RiegeliShardIoTest, MultipleFlushes) {
   EXPECT_THAT(reader.NumEpisodes(), Eq(episode_starts.size()));
   for (size_t i = 0; i + 1 < episode_starts.size(); ++i) {
     const auto episode = reader.Episode(i);
-    EXPECT_THAT(episode, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(episode, Not(Eq(std::nullopt)));
     const int expected_num_steps = episode_starts[i + 1] - episode_starts[i];
     EXPECT_THAT(*episode, EqualsEpisode(episode_starts[i], expected_num_steps));
   }
   const auto last_episode = reader.Episode(episode_starts.size() - 1);
-  EXPECT_THAT(last_episode, Not(Eq(absl::nullopt)));
+  EXPECT_THAT(last_episode, Not(Eq(std::nullopt)));
   EXPECT_THAT(*last_episode, EqualsEpisode(episode_starts.back(),
                                            num_steps - episode_starts.back()));
 
   // Check actual step data in trajectories.
   for (int i = 0; i < reader.NumSteps(); ++i) {
     const auto step = reader.Step(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt))) << "step " << i << " is nullopt";
+    EXPECT_THAT(step, Not(Eq(std::nullopt))) << "step " << i << " is nullopt";
     EXPECT_THAT(*step, EqualsProto(payload));
   }
 }

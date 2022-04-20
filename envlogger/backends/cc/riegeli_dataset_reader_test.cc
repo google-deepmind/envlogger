@@ -158,7 +158,7 @@ TEST(DataDirectoryIndex, SimpleMetadataAndSpec) {
   RiegeliDatasetReader reader;
   ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   const auto actual_metadata = reader.Metadata();
-  EXPECT_THAT(actual_metadata, Not(Eq(absl::nullopt)));
+  EXPECT_THAT(actual_metadata, Not(Eq(std::nullopt)));
   EXPECT_THAT(*actual_metadata, EqualsProto(metadata));
 
   ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
@@ -193,16 +193,16 @@ TEST(DataDirectoryIndex, OneShard) {
   EXPECT_THAT(reader.NumSteps(), Eq(5));
   EXPECT_THAT(reader.NumEpisodes(), Eq(2));
   // Check for some invalid operations.
-  EXPECT_THAT(reader.Step(-1), Eq(absl::nullopt));
-  EXPECT_THAT(reader.Step(reader.NumSteps() + 1), Eq(absl::nullopt));
-  EXPECT_THAT(reader.Episode(-1), Eq(absl::nullopt));
-  EXPECT_THAT(reader.Episode(reader.NumEpisodes() + 1), Eq(absl::nullopt));
+  EXPECT_THAT(reader.Step(-1), Eq(std::nullopt));
+  EXPECT_THAT(reader.Step(reader.NumSteps() + 1), Eq(std::nullopt));
+  EXPECT_THAT(reader.Episode(-1), Eq(std::nullopt));
+  EXPECT_THAT(reader.Episode(reader.NumEpisodes() + 1), Eq(std::nullopt));
 
   // Check steps.
   std::vector<Data> steps;
   for (int i = 0; i < reader.NumSteps(); ++i) {
     const auto step = reader.Step(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(step, Not(Eq(std::nullopt)));
     steps.push_back(*step);
   }
   EXPECT_THAT(
@@ -217,11 +217,11 @@ TEST(DataDirectoryIndex, OneShard) {
   std::vector<EpisodeInfo> episodes;
   for (int i = 0; i < reader.NumEpisodes(); ++i) {
     const auto episode = reader.Episode(i, /*include_metadata=*/true);
-    EXPECT_THAT(episode, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(episode, Not(Eq(std::nullopt)));
     episodes.push_back(*episode);
   }
   EXPECT_THAT(episodes, ElementsAre(EqualsEpisode(0, 3), EqualsEpisode(3, 2)));
-  EXPECT_THAT(episodes[0].metadata, Not(Eq(absl::nullopt)));
+  EXPECT_THAT(episodes[0].metadata, Not(Eq(std::nullopt)));
   EXPECT_THAT(*episodes[0].metadata, EqualsProto(episode0_metadata));
 
   ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
@@ -250,26 +250,26 @@ TEST(DataDirectoryIndex, OneShardNonDmDataPayload) {
   const bool use_other_payload_type = true;
   CreateTimestampDirs(
       data_dir, {{absl::Now() - absl::Minutes(60),
-                  {{1.0f, true, absl::nullopt, use_other_payload_type},
-                   {2.0f, false, absl::nullopt, use_other_payload_type},
+                  {{1.0f, true, std::nullopt, use_other_payload_type},
+                   {2.0f, false, std::nullopt, use_other_payload_type},
                    {3.0f, false, episode0_metadata, use_other_payload_type},
-                   {4.0f, true, absl::nullopt, use_other_payload_type},
-                   {5.0f, false, absl::nullopt, use_other_payload_type}}}});
+                   {4.0f, true, std::nullopt, use_other_payload_type},
+                   {5.0f, false, std::nullopt, use_other_payload_type}}}});
   RiegeliDatasetReader reader;
   ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   EXPECT_THAT(reader.NumSteps(), Eq(5));
   EXPECT_THAT(reader.NumEpisodes(), Eq(2));
   // Check for some invalid operations.
-  EXPECT_THAT(reader.Step<Datum::Shape::Dim>(-1), Eq(absl::nullopt));
-  EXPECT_THAT(reader.Step(reader.NumSteps() + 1), Eq(absl::nullopt));
-  EXPECT_THAT(reader.Episode(-1), Eq(absl::nullopt));
-  EXPECT_THAT(reader.Episode(reader.NumEpisodes() + 1), Eq(absl::nullopt));
+  EXPECT_THAT(reader.Step<Datum::Shape::Dim>(-1), Eq(std::nullopt));
+  EXPECT_THAT(reader.Step(reader.NumSteps() + 1), Eq(std::nullopt));
+  EXPECT_THAT(reader.Episode(-1), Eq(std::nullopt));
+  EXPECT_THAT(reader.Episode(reader.NumEpisodes() + 1), Eq(std::nullopt));
 
   // Check steps.
   std::vector<Datum::Shape::Dim> steps;
   for (int i = 0; i < reader.NumSteps(); ++i) {
     const auto step = reader.Step<Datum::Shape::Dim>(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(step, Not(Eq(std::nullopt)));
     steps.push_back(*step);
   }
   EXPECT_THAT(steps, ElementsAre(EqualsProto("size: 1"), EqualsProto("size: 2"),
@@ -280,11 +280,11 @@ TEST(DataDirectoryIndex, OneShardNonDmDataPayload) {
   std::vector<EpisodeInfo> episodes;
   for (int i = 0; i < reader.NumEpisodes(); ++i) {
     const auto episode = reader.Episode(i, /*include_metadata=*/true);
-    EXPECT_THAT(episode, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(episode, Not(Eq(std::nullopt)));
     episodes.push_back(*episode);
   }
   EXPECT_THAT(episodes, ElementsAre(EqualsEpisode(0, 3), EqualsEpisode(3, 2)));
-  EXPECT_THAT(episodes[0].metadata, Not(Eq(absl::nullopt)));
+  EXPECT_THAT(episodes[0].metadata, Not(Eq(std::nullopt)));
   EXPECT_THAT(*episodes[0].metadata, EqualsProto(episode0_metadata));
 
   ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
@@ -324,7 +324,7 @@ TEST(DataDirectoryIndex, TwoShards) {
   std::vector<Data> steps;
   for (int i = 0; i < reader.NumSteps(); ++i) {
     const auto step = reader.Step(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(step, Not(Eq(std::nullopt)));
     steps.push_back(*step);
   }
   EXPECT_THAT(
@@ -343,7 +343,7 @@ TEST(DataDirectoryIndex, TwoShards) {
   std::vector<EpisodeInfo> episodes;
   for (int i = 0; i < reader.NumEpisodes(); ++i) {
     const auto episode = reader.Episode(i);
-    EXPECT_THAT(episode, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(episode, Not(Eq(std::nullopt)));
     episodes.push_back(*episode);
   }
   EXPECT_THAT(episodes, ElementsAre(EqualsEpisode(0, 3), EqualsEpisode(3, 2),
@@ -391,22 +391,22 @@ TEST(DataDirectoryIndex, GetShardTest) {
   EXPECT_THAT(episode1->NumSteps(), Eq(2));
 
   // Check for some invalid operations.
-  EXPECT_THAT(episode0->Step(-1), Eq(absl::nullopt));
-  EXPECT_THAT(episode0->Step(3), Eq(absl::nullopt));
-  EXPECT_THAT(episode1->Step(-1), Eq(absl::nullopt));
-  EXPECT_THAT(episode1->Step(2), Eq(absl::nullopt));
+  EXPECT_THAT(episode0->Step(-1), Eq(std::nullopt));
+  EXPECT_THAT(episode0->Step(3), Eq(std::nullopt));
+  EXPECT_THAT(episode1->Step(-1), Eq(std::nullopt));
+  EXPECT_THAT(episode1->Step(2), Eq(std::nullopt));
 
   // Check steps.
   std::vector<Data> episode0_steps;
   for (int i = 0; i < episode0->NumSteps(); ++i) {
     const auto step = episode0->Step(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(step, Not(Eq(std::nullopt)));
     episode0_steps.push_back(*step);
   }
   std::vector<Data> episode1_steps;
   for (int i = 0; i < episode1->NumSteps(); ++i) {
     const auto step = episode1->Step(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(step, Not(Eq(std::nullopt)));
     episode1_steps.push_back(*step);
   }
   EXPECT_THAT(
@@ -462,11 +462,11 @@ TEST(DataDirectoryIndex, CloneTest) {
   std::vector<Data> clone_steps;
   for (int i = 0; i < reader.NumSteps(); ++i) {
     const auto step = reader.Step(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(step, Not(Eq(std::nullopt)));
     steps.push_back(*step);
 
     const auto clone_step = clone->Step(i);
-    EXPECT_THAT(clone_step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(clone_step, Not(Eq(std::nullopt)));
     clone_steps.push_back(*clone_step);
   }
   EXPECT_THAT(

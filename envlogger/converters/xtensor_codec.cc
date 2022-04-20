@@ -181,7 +181,7 @@ template <typename T>
 std::optional<BasicType> DecodeValues(const google::protobuf::RepeatedField<T>& values,
                                       const std::vector<int>& shape,
                                       bool is_scalar) {
-  if (values.empty()) return absl::nullopt;
+  if (values.empty()) return std::nullopt;
 
   if (is_scalar) {
     return values[0];
@@ -194,7 +194,7 @@ template <typename T>
 std::optional<BasicType> DecodeValues(const google::protobuf::RepeatedPtrField<T>& values,
                                       const std::vector<int>& shape,
                                       bool is_scalar) {
-  if (values.empty()) return absl::nullopt;
+  if (values.empty()) return std::nullopt;
 
   if (is_scalar) {
     return values[0];
@@ -207,7 +207,7 @@ template <typename T>
 std::optional<BasicType> DecodeValuesBigEndian(const std::string& values,
                                                const std::vector<int>& shape,
                                                bool is_scalar) {
-  if (values.empty()) return absl::nullopt;
+  if (values.empty()) return std::nullopt;
 
   if (is_scalar) {
     return LoadScalar<T>(values.data());
@@ -612,7 +612,7 @@ std::optional<BasicType> Decode(const Datum& datum) {
       DecodeValues<uint16_t>(values.uint16_values(), shape, is_scalar);
   if (uint16s) return uint16s;
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

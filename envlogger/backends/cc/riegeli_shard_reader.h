@@ -138,18 +138,18 @@ std::optional<T> RiegeliShardReader::Step(int64_t step_index) {
   const auto& step_offsets = shard_->step_offsets;
   if (step_index < 0 ||
       step_index >= static_cast<int64_t>(step_offsets.size())) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   const int64_t offset = step_offsets[step_index];
   if (!steps_reader_.Seek(offset)) {
     VLOG(0) << absl::StrCat("Failed to seek to offset ", offset,
                             " status: ", steps_reader_.status().ToString());
-    return absl::nullopt;
+    return std::nullopt;
   }
   T data;
   const bool read_status = steps_reader_.ReadRecord(data);
-  if (!read_status) return absl::nullopt;
+  if (!read_status) return std::nullopt;
 
   return data;
 }

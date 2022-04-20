@@ -150,7 +150,7 @@ PYBIND11_MODULE(riegeli_dataset_reader, m) {
               int64_t step_index) -> std::optional<pybind11::bytes> {
              std::optional<envlogger::Data> data = self->Step(step_index);
              OptimizeDataProto(&*data);
-             if (!data) return absl::nullopt;
+             if (!data) return std::nullopt;
              return pybind11::bytes(data->SerializeAsString());
            })
       .def("episode", &envlogger::RiegeliDatasetReader::Episode,

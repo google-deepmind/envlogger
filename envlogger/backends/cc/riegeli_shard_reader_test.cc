@@ -55,8 +55,8 @@ TEST(RiegeliShardReaderTest, EmptyIndexFilename) {
       /*episode_metadata_filepath=*/"", /*episode_index_filepath=*/"")));
   EXPECT_THAT(reader.NumSteps(), Eq(0));
   EXPECT_THAT(reader.NumEpisodes(), Eq(0));
-  EXPECT_THAT(reader.Step(0), Eq(absl::nullopt));
-  EXPECT_THAT(reader.Episode(0), Eq(absl::nullopt));
+  EXPECT_THAT(reader.Step(0), Eq(std::nullopt));
+  EXPECT_THAT(reader.Episode(0), Eq(std::nullopt));
   reader.Close();  // (optional) Close the reader and free up its resources.
 }
 
@@ -144,7 +144,7 @@ TEST(RiegeliShardReaderTest, NonEmptySingleEpisode) {
   // Check steps.
   for (int i = 0; i < reader.NumSteps(); ++i) {
     const auto step = reader.Step(i);
-    EXPECT_THAT(step, Not(Eq(absl::nullopt)));
+    EXPECT_THAT(step, Not(Eq(std::nullopt)));
     EXPECT_THAT(*step, EqualsProto(expected_steps[i]));
   }
   EXPECT_EQ(reader.NumSteps(), expected_steps.size());
@@ -154,16 +154,16 @@ TEST(RiegeliShardReaderTest, NonEmptySingleEpisode) {
   // If `include_metadata==false`, we expect the `metadata` field to be empty.
   const auto episode0_no_metadata_opt =
       reader.Episode(0, /*include_metadata=*/false);
-  EXPECT_THAT(episode0_no_metadata_opt, Not(Eq(absl::nullopt)));
+  EXPECT_THAT(episode0_no_metadata_opt, Not(Eq(std::nullopt)));
   EXPECT_THAT(*episode0_no_metadata_opt, EqualsEpisode(0, 7));
-  EXPECT_THAT(episode0_no_metadata_opt->metadata, Eq(absl::nullopt));
+  EXPECT_THAT(episode0_no_metadata_opt->metadata, Eq(std::nullopt));
 
   // If `include_metadata==true`, we expect the `metadata` field to be filled
   // with the data we wrote above.
   const auto episode0_opt = reader.Episode(0, /*include_metadata=*/true);
-  EXPECT_THAT(episode0_opt, Not(Eq(absl::nullopt)));
+  EXPECT_THAT(episode0_opt, Not(Eq(std::nullopt)));
   EXPECT_THAT(*episode0_opt, EqualsEpisode(0, 7));
-  EXPECT_THAT(episode0_opt->metadata, Not(Eq(absl::nullopt)));
+  EXPECT_THAT(episode0_opt->metadata, Not(Eq(std::nullopt)));
   EXPECT_THAT(*episode0_opt->metadata, EqualsProto(expected_episode_metadata));
 }
 

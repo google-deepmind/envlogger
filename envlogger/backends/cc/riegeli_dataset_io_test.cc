@@ -73,7 +73,7 @@ TEST(RiegeliDatasetTest, MetadataTest) {
   RiegeliDatasetReader reader;
   ENVLOGGER_EXPECT_OK(reader.Init(data_dir));
   const auto actual_metadata = reader.Metadata();
-  EXPECT_THAT(actual_metadata, Not(Eq(absl::nullopt)));
+  EXPECT_THAT(actual_metadata, Not(Eq(std::nullopt)));
   EXPECT_THAT(*actual_metadata, EqualsProto(metadata));
 
   ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));

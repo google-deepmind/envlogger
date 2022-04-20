@@ -129,7 +129,7 @@ class RiegeliDatasetReader {
 
 template <typename T>
 std::optional<T> RiegeliDatasetReader::Step(int64_t step_index) {
-  if (step_index < 0 || step_index >= NumSteps()) return absl::nullopt;
+  if (step_index < 0 || step_index >= NumSteps()) return std::nullopt;
 
   Shard* shard = nullptr;
   int64_t local_step_index = -1;
