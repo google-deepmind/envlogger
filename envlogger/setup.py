@@ -27,7 +27,7 @@ from setuptools.command import build_py
 
 PROJECT_NAME = 'envlogger'
 
-__version__ = '1.0.7'
+__version__ = '1.0.8'
 
 _ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
