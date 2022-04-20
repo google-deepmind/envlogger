@@ -126,7 +126,7 @@ class _BuildExt(build_ext.build_ext):
       shutil.copyfile(ext_bazel_bin_path, ext_dest_path)
 
       # Copy things from /external to their own libs
-      # E.g. /external/some_repo/pybind11_abseil --> /pybind11_abseil
+      # E.g. /external/some_repo/some_lib --> /some_lib
       if ext_name.startswith('external/'):
         split_path = ext_name.split('/')
         ext_name = '/'.join(split_path[2:])
@@ -147,7 +147,6 @@ setuptools.setup(
         BazelExtension('//envlogger/backends/python:episode_info'),
         BazelExtension('//envlogger/backends/python:riegeli_dataset_reader'),
         BazelExtension('//envlogger/backends/python:riegeli_dataset_writer'),
-        BazelExtension('//external/pybind11_abseil/pybind11_abseil:status'),
     ],
     cmdclass={
         'build_ext': _BuildExt,
@@ -156,7 +155,10 @@ setuptools.setup(
     },
     packages=setuptools.find_packages(),
     setup_requires=[
-        'grpcio-tools',
+        # Some software packages have problems with older versions already
+        # installed by pip. In particular DeepMind Acme uses grpcio-tools 1.45.0
+        # (as of 2022-04-20) so we use the same version here.
+        'grpcio-tools>=1.45.0',
     ],
     install_requires=[
         'absl-py',

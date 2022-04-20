@@ -86,7 +86,6 @@ py_library(
     data = [
         "//envlogger/backends/python:episode_info.so",
         "//envlogger/backends/python:riegeli_dataset_reader.so",
-        "@pybind11_abseil//pybind11_abseil:status.so",
     ],
     srcs_version = "PY3",
     deps = [

@@ -27,7 +27,6 @@ from envlogger.proto import storage_pb2
 
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
-from pybind11_abseil import status
 
 
 class RiegeliDatasetTest(absltest.TestCase):
@@ -41,12 +40,24 @@ class RiegeliDatasetTest(absltest.TestCase):
     shutil.rmtree(self._directory)
     super().tearDown()
 
+  def test_reader_non_existent_data_dir(self):
+    """Checks that an exception is raised when a `data_dir` does not exist."""
+
+    reader = riegeli_dataset_reader.RiegeliDatasetReader()
+    self.assertRaises(RuntimeError, reader.init, data_dir='/i/do/not/exist/')
+
+  def test_writer_non_existent_data_dir(self):
+    """Checks that an exception is raised when a `data_dir` does not exist."""
+
+    writer = riegeli_dataset_writer.RiegeliDatasetWriter()
+    self.assertRaises(RuntimeError, writer.init, data_dir='/i/do/not/exist/')
+
   def test_storage_data_payload(self):
     """Ensures that we can read and write `Data` proto messages."""
     writer = riegeli_dataset_writer.RiegeliDatasetWriter()
     try:
       writer.init(data_dir=self._directory)
-    except status.StatusNotOk:
+    except RuntimeError:
       logging.exception('Failed to initialize writer')
 
     for i in range(10):
@@ -56,7 +67,7 @@ class RiegeliDatasetTest(absltest.TestCase):
     reader = riegeli_dataset_reader.RiegeliDatasetReader()
     try:
       reader.init(data_dir=self._directory)
-    except status.StatusNotOk:
+    except RuntimeError:
       logging.exception('Failed to initialize reader')
 
     for i in range(reader.num_steps):
@@ -69,7 +80,7 @@ class RiegeliDatasetTest(absltest.TestCase):
     writer = riegeli_dataset_writer.RiegeliDatasetWriter()
     try:
       writer.init(data_dir=self._directory)
-    except status.StatusNotOk:
+    except RuntimeError:
       logging.exception('Failed to initialize writer')
 
     for i in range(10):
@@ -81,7 +92,7 @@ class RiegeliDatasetTest(absltest.TestCase):
     reader = riegeli_dataset_reader.RiegeliDatasetReader()
     try:
       reader.init(data_dir=self._directory)
-    except status.StatusNotOk:
+    except RuntimeError:
       logging.exception('Failed to initialize reader')
 
     for i in range(reader.num_steps):
@@ -99,7 +110,7 @@ class RiegeliDatasetTest(absltest.TestCase):
     writer = riegeli_dataset_writer.RiegeliDatasetWriter()
     try:
       writer.init(data_dir=self._directory)
-    except status.StatusNotOk:
+    except RuntimeError:
       logging.exception('Failed to initialize writer')
 
     for i in range(10):
@@ -110,7 +121,7 @@ class RiegeliDatasetTest(absltest.TestCase):
     reader = riegeli_dataset_reader.RiegeliDatasetReader()
     try:
       reader.init(data_dir=self._directory)
-    except status.StatusNotOk:
+    except RuntimeError:
       logging.exception('Failed to initialize reader')
 
     for i in range(reader.num_steps):
@@ -126,7 +137,7 @@ class RiegeliDatasetTest(absltest.TestCase):
     writer = riegeli_dataset_writer.RiegeliDatasetWriter()
     try:
       writer.init(data_dir=self._directory)
-    except status.StatusNotOk:
+    except RuntimeError:
       logging.exception('Failed to initialize writer')
 
     for i in range(10):
@@ -136,7 +147,7 @@ class RiegeliDatasetTest(absltest.TestCase):
     reader = riegeli_dataset_reader.RiegeliDatasetReader()
     try:
       reader.init(data_dir=self._directory)
-    except status.StatusNotOk:
+    except RuntimeError:
       logging.exception('Failed to initialize reader')
 
     cloned = reader.clone()

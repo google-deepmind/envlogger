@@ -14,13 +14,14 @@
 
 #include "envlogger/backends/cc/riegeli_dataset_reader.h"
 
+#include <exception>
 #include <optional>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
 #include "pybind11//stl.h"
-#include "pybind11_abseil/status_casters.h"
 #include "pybind11_protobuf/proto_casters.h"
 #include "riegeli/bytes/string_writer.h"
 #include "riegeli/endian/endian_writing.h"
@@ -77,16 +78,38 @@ void OptimizeDataProto(envlogger::Data* data) {
 
 PYBIND11_MODULE(riegeli_dataset_reader, m) {
   pybind11::google::ImportProtoModule();
-  pybind11::google::ImportStatusModule();
   pybind11::module::import("envlogger.backends.python.episode_info");
 
   m.doc() = "RiegeliDatasetReader bindings.";
 
   pybind11::class_<envlogger::RiegeliDatasetReader>(m, "RiegeliDatasetReader")
       .def(pybind11::init<>())
-      .def("clone", &envlogger::RiegeliDatasetReader::Clone)
-      .def("init", &envlogger::RiegeliDatasetReader::Init,
-           pybind11::arg("data_dir"))
+      .def("clone",
+           [](envlogger::RiegeliDatasetReader* self)
+               -> std::optional<envlogger::RiegeliDatasetReader> {
+             absl::StatusOr<envlogger::RiegeliDatasetReader> copy =
+                 self->Clone();
+             if (!copy.ok()) {
+               VLOG(0) << "Error cloning reader: " << copy.status().ToString();
+               return std::nullopt;
+             }
+             return std::move(*copy);
+           })
+      // Initializes the reader with the given `data_dir`.
+      // If successful, `void` is returned with no side effects. Otherwise a
+      // `RuntimeError` is raised with an accompanying message.
+      // Note: `absl::Status` isn't used because there are incompatibilities
+      // between slightly different versions of `pybind11_abseil` when used with
+      // different projects. Please see
+      // https://github.com/deepmind/envlogger/issues/3 for more details.
+      .def(
+          "init",
+          [](envlogger::RiegeliDatasetReader* self,
+             std::string data_dir) -> void {
+            const absl::Status status = self->Init(data_dir);
+            if (!status.ok()) throw std::runtime_error(status.ToString());
+          },
+          pybind11::arg("data_dir"))
       .def("metadata", &envlogger::RiegeliDatasetReader::Metadata)
       .def_property_readonly("num_steps",
                              &envlogger::RiegeliDatasetReader::NumSteps)

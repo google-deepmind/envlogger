@@ -17,7 +17,6 @@
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
 #include "pybind11//stl.h"
-#include "pybind11_abseil/status_casters.h"
 #include "pybind11_protobuf/proto_casters.h"
 #include "riegeli/bytes/string_writer.h"
 #include "riegeli/endian/endian_writing.h"
@@ -74,18 +73,34 @@ void OptimizeDataProto(envlogger::Data* data) {
 
 PYBIND11_MODULE(riegeli_dataset_writer, m) {
   pybind11::google::ImportProtoModule();
-  pybind11::google::ImportStatusModule();
   pybind11::module::import("envlogger.backends.python.episode_info");
 
   m.doc() = "RiegeliDatasetWriter bindings.";
 
   pybind11::class_<envlogger::RiegeliDatasetWriter>(m, "RiegeliDatasetWriter")
       .def(pybind11::init<>())
-      .def("init", &envlogger::RiegeliDatasetWriter::Init,
-           pybind11::arg("data_dir"),
-           pybind11::arg("metadata") = envlogger::Data(),
-           pybind11::arg("max_episodes_per_shard") = 0,
-           pybind11::arg("writer_options") = "transpose,brotli:6,chunk_size:1M")
+      // Initializes the writer with the given arguments.
+      // If successful, `void` is returned with no side effects. Otherwise a
+      // `RuntimeError` is raised with an accompanying message.
+      // Note: `absl::Status` isn't used because there are incompatibilities
+      // between slightly different versions of `pybind11_abseil` when used with
+      // different projects. Please see
+      // https://github.com/deepmind/envlogger/issues/3 for more details.
+      .def(
+          "init",
+          [](envlogger::RiegeliDatasetWriter* self, std::string data_dir,
+             const envlogger::Data& metadata = envlogger::Data(),
+             int64_t max_episodes_per_shard = 0,
+             std::string writer_options =
+                 "transpose,brotli:6,chunk_size:1M") -> void {
+            const absl::Status status = self->Init(
+                data_dir, metadata, max_episodes_per_shard, writer_options);
+            if (!status.ok()) throw std::runtime_error(status.ToString());
+          },
+          pybind11::arg("data_dir"),
+          pybind11::arg("metadata") = envlogger::Data(),
+          pybind11::arg("max_episodes_per_shard") = 0,
+          pybind11::arg("writer_options") = "transpose,brotli:6,chunk_size:1M")
       .def("add_step", &envlogger::RiegeliDatasetWriter::AddStep,
            pybind11::arg("data"), pybind11::arg("is_new_episode") = false)
       .def("set_episode_metadata",

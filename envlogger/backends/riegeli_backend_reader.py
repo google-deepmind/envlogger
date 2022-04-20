@@ -27,7 +27,6 @@ from envlogger.backends.python import riegeli_dataset_reader
 from envlogger.converters import codec
 from envlogger.proto import storage_pb2
 
-from pybind11_abseil import status
 
 
 
@@ -44,9 +43,9 @@ class RiegeliBackendReader(backend_reader.BackendReader):
     self._reader = riegeli_dataset_reader.RiegeliDatasetReader()
     try:
       self._reader.init(data_directory)
-    except status.StatusNotOk as e:
-      if (e.status.code() == status.StatusCode.NOT_FOUND and
-          e.status.message().startswith('Empty steps in ')):
+    except RuntimeError as e:
+      error_message = str(e)
+      if error_message.startswith('NOT_FOUND: Empty steps in '):
         # This case happens frequently when clients abruptly kill the
         # EnvironmentLogger without calling its .close() method, which then
         # causes the last shard to be truncated. This can be because the client

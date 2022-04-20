@@ -215,12 +215,6 @@ python_configure(
 )
 
 git_repository(
-    name = "pybind11_abseil",
-    commit = "0807a71b53ddbdbb0ff69b8aec813b113de71469",
-    remote = "https://github.com/pybind/pybind11_abseil.git",
-)
-
-git_repository(
     name = "pybind11_protobuf",
     commit = "0f9d7e967cb20e3875be04115e7340ab3211ffe2",
     patch_args = ["-p0"],

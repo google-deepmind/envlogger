@@ -100,7 +100,6 @@ py_library(
     srcs = ["riegeli_backend_reader.py"],
     data = [
         "//envlogger/backends/python:riegeli_dataset_reader.so",
-        "@pybind11_abseil//pybind11_abseil:status.so",
     ],
     srcs_version = "PY3",
     deps = [
@@ -118,7 +117,6 @@ py_library(
     srcs = ["riegeli_backend_writer.py"],
     data = [
         "//envlogger/backends/python:riegeli_dataset_writer.so",
-        "@pybind11_abseil//pybind11_abseil:status.so",
     ],
     srcs_version = "PY3",
     deps = [

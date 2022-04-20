@@ -24,7 +24,6 @@ from envlogger.backends import schedulers
 from envlogger.backends.python import riegeli_dataset_writer
 from envlogger.converters import codec
 
-from pybind11_abseil import status
 
 
 class RiegeliBackendWriter(backend_writer.BackendWriter):
@@ -75,7 +74,7 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
           metadata=codec.encode(metadata),
           max_episodes_per_shard=max_episodes_per_file,
           writer_options=writer_options)
-    except status.StatusNotOk as e:
+    except RuntimeError as e:
       logging.exception('exception: %r', e)
 
   def _record_step(self, data: step_data.StepData,

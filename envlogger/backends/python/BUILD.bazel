@@ -25,7 +25,6 @@ pybind_extension(
         "//envlogger/proto:storage_cc_proto",
         "@com_google_riegeli//riegeli/bytes:string_writer",
         "@com_google_riegeli//riegeli/endian:endian_writing",
-        "@pybind11_abseil//pybind11_abseil:status_casters",
         "@pybind11_protobuf//pybind11_protobuf:proto_casters",
     ],
 )
@@ -38,7 +37,6 @@ pybind_extension(
         "//envlogger/proto:storage_cc_proto",
         "@com_google_riegeli//riegeli/bytes:string_writer",
         "@com_google_riegeli//riegeli/endian:endian_writing",
-        "@pybind11_abseil//pybind11_abseil:status_casters",
         "@pybind11_protobuf//pybind11_protobuf:proto_casters",
     ],
 )
