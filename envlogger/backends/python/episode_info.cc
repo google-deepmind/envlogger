@@ -15,8 +15,8 @@
 #include "envlogger/backends/cc/episode_info.h"
 
 #include <cstdint>
+#include <optional>
 
-#include "absl/types/optional.h"
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
 #include "pybind11_protobuf/proto_casters.h"
@@ -27,9 +27,9 @@ PYBIND11_MODULE(episode_info, m) {
   m.doc() = "EpisodeInfo bindings.";
 
   pybind11::class_<envlogger::EpisodeInfo>(m, "EpisodeInfo")
-      .def(pybind11::init<int64_t, int64_t, absl::optional<envlogger::Data>>(),
+      .def(pybind11::init<int64_t, int64_t, std::optional<envlogger::Data>>(),
            pybind11::arg("start") = 0, pybind11::arg("num_steps") = 0,
-           pybind11::arg("metadata") = absl::nullopt)
+           pybind11::arg("metadata") = std::nullopt)
       .def_readwrite("start", &envlogger::EpisodeInfo::start)
       .def_readwrite("num_steps", &envlogger::EpisodeInfo::num_steps)
       .def_readwrite("metadata", &envlogger::EpisodeInfo::metadata);

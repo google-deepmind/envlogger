@@ -23,7 +23,6 @@ pybind_extension(
     deps = [
         "//envlogger/backends/cc:riegeli_dataset_reader",
         "//envlogger/proto:storage_cc_proto",
-        "@com_google_absl//absl/types:optional",
         "@com_google_riegeli//riegeli/bytes:string_writer",
         "@com_google_riegeli//riegeli/endian:endian_writing",
         "@pybind11_abseil//pybind11_abseil:status_casters",
@@ -37,7 +36,6 @@ pybind_extension(
     deps = [
         "//envlogger/backends/cc:riegeli_dataset_writer",
         "//envlogger/proto:storage_cc_proto",
-        "@com_google_absl//absl/types:optional",
         "@com_google_riegeli//riegeli/bytes:string_writer",
         "@com_google_riegeli//riegeli/endian:endian_writing",
         "@pybind11_abseil//pybind11_abseil:status_casters",

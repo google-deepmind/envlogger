@@ -13,13 +13,13 @@
 // limitations under the License.
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "absl/flags/parse.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/flags/flag.h"
-#include "absl/types/optional.h"
 #include <gmpxx.h>
 #include "envlogger/backends/cc/riegeli_dataset_reader.h"
 #include "envlogger/converters/xtensor_codec.h"
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
   VLOG(0) << "reader.NumSteps(): " << reader.NumSteps();
   for (int64_t i = 0; i < reader.NumSteps(); ++i) {
-    absl::optional<envlogger::Data> step = reader.Step(i);
+    std::optional<envlogger::Data> step = reader.Step(i);
     EXPECT_THAT(step.has_value(), IsTrue())
         << "All steps should be readable. Step " << i << " is not available.";
 
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     // Check step type.
     const envlogger::Data* step_type = timestep_view[0];
     VLOG(2) << "step_type: " << step_type->ShortDebugString();
-    absl::optional<envlogger::BasicType> decoded_step_type =
+    std::optional<envlogger::BasicType> decoded_step_type =
         envlogger::Decode(step_type->datum());
     EXPECT_THAT(decoded_step_type.has_value(), IsTrue())
         << "Failed to decode step_type";
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     // Check reward.
     const envlogger::Data* reward = timestep_view[1];
     VLOG(2) << "reward: " << reward->ShortDebugString();
-    absl::optional<envlogger::BasicType> decoded_reward =
+    std::optional<envlogger::BasicType> decoded_reward =
         envlogger::Decode(reward->datum());
     EXPECT_THAT(decoded_reward.has_value(), IsTrue())
         << "Failed to decode reward";
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
     // Check discount.
     const envlogger::Data* discount = timestep_view[2];
     VLOG(2) << "discount: " << discount->ShortDebugString();
-    absl::optional<envlogger::BasicType> decoded_discount =
+    std::optional<envlogger::BasicType> decoded_discount =
         envlogger::Decode(discount->datum());
     EXPECT_THAT(decoded_discount.has_value(), IsTrue())
         << "Failed to decode discount";
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
     // Check observation.
     const envlogger::Data* observation = timestep_view[3];
     VLOG(2) << "observation: " << observation->ShortDebugString();
-    absl::optional<envlogger::BasicType> decoded_obs =
+    std::optional<envlogger::BasicType> decoded_obs =
         envlogger::Decode(observation->datum());
     EXPECT_THAT(decoded_obs.has_value(), IsTrue())
         << "Failed to decode observation";
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
     EXPECT_THAT(obs(0), FloatEq(i));
 
     // Check action.
-    absl::optional<envlogger::BasicType> decoded_action =
+    std::optional<envlogger::BasicType> decoded_action =
         envlogger::Decode(action->datum());
     EXPECT_THAT(decoded_action.has_value(), IsTrue())
         << "Failed to decode action";

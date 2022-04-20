@@ -14,9 +14,9 @@
 
 #include "envlogger/backends/cc/riegeli_dataset_reader.h"
 
+#include <optional>
 #include <string>
 
-#include "absl/types/optional.h"
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
 #include "pybind11//stl.h"
@@ -105,7 +105,7 @@ PYBIND11_MODULE(riegeli_dataset_reader, m) {
               return pybind11::none();
             }
 
-            absl::optional<std::string> record =
+            std::optional<std::string> record =
                 self->Step<std::string>(step_index);
             if (!record) {
               VLOG(0) << "Failed to read record at step_index: " << step_index;
@@ -124,8 +124,8 @@ PYBIND11_MODULE(riegeli_dataset_reader, m) {
       // proto. Return type is 'bytes' or None.
       .def("serialized_step",
            [](envlogger::RiegeliDatasetReader* self,
-              int64_t step_index) -> absl::optional<pybind11::bytes> {
-             absl::optional<envlogger::Data> data = self->Step(step_index);
+              int64_t step_index) -> std::optional<pybind11::bytes> {
+             std::optional<envlogger::Data> data = self->Step(step_index);
              OptimizeDataProto(&*data);
              if (!data) return absl::nullopt;
              return pybind11::bytes(data->SerializeAsString());
