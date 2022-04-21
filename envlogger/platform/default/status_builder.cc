@@ -14,7 +14,7 @@
 
 #include "envlogger/platform/default/status_builder.h"
 
-#include "absl/memory/memory.h"
+#include <memory>
 
 namespace envlogger {
 namespace internal {
@@ -24,7 +24,7 @@ StatusBuilder::StatusBuilder(const StatusBuilder& sb) {
   file_ = sb.file_;
   line_ = sb.line_;
   no_logging_ = sb.no_logging_;
-  stream_ = absl::make_unique<std::ostringstream>(sb.stream_->str());
+  stream_ = std::make_unique<std::ostringstream>(sb.stream_->str());
   join_style_ = sb.join_style_;
 }
 
@@ -33,7 +33,7 @@ StatusBuilder& StatusBuilder::operator=(const StatusBuilder& sb) {
   file_ = sb.file_;
   line_ = sb.line_;
   no_logging_ = sb.no_logging_;
-  stream_ = absl::make_unique<std::ostringstream>(sb.stream_->str());
+  stream_ = std::make_unique<std::ostringstream>(sb.stream_->str());
   join_style_ = sb.join_style_;
   return *this;
 }
