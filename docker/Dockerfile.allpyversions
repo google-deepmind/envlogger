@@ -37,12 +37,9 @@ RUN python3 -m pip install --upgrade pip setuptools grpcio-tools
 RUN echo 2 | update-alternatives --config python3
 RUN python3 -m pip install --upgrade pip setuptools grpcio-tools
 
-RUN echo 3 | update-alternatives --config python3
-RUN python3 -m pip install --upgrade pip setuptools grpcio-tools
-
 # Python3.9 has a breaking change in the HTML Parser, so we need to upgrade
 # these one at a time.
-RUN echo 4 | update-alternatives --config python3
+RUN echo 3 | update-alternatives --config python3
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade setuptools
 RUN python3 -m pip install --upgrade grpcio-tools
