@@ -15,24 +15,17 @@
 #ifndef THIRD_PARTY_PY_ENVLOGGER_CONVERTERS_MAKE_VISITOR_H_
 #define THIRD_PARTY_PY_ENVLOGGER_CONVERTERS_MAKE_VISITOR_H_
 
-#include <tuple>
-#include <type_traits>
-#include <utility>
-
-#include "absl/types/variant.h"
-#include "absl/utility/utility.h"
-
 // Template magic for more easily creating overloaded visitors for use with
-// absl::visit (and eventually std::visit with C++17).
+// std::visit.
 //
 // Example:
 //
-// const absl::variant<Foo, Bar> my_variant = PopulateVariant();
+// const std::variant<Foo, Bar> my_variant = PopulateVariant();
 // const auto visitor = envlogger::MakeVisitor(
 //     [](const Foo& foo) { DoFooStuff(foo); },
 //     [](const Bar& bar) { DoBarStuff(bar); }
 // );
-// absl::visit(visitor, my_variant);
+// std::visit(visitor, my_variant);
 
 namespace envlogger {
 

@@ -33,11 +33,10 @@
 #include <iterator>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
-#include <cstdint>
 #include "absl/strings/cord.h"
-#include "absl/types/variant.h"
 #include <gmpxx.h>
 #include "envlogger/proto/storage.pb.h"
 #include "xtensor/xarray.hpp"
@@ -46,14 +45,15 @@ namespace envlogger {
 
 // BasicType is the set union of all types that are supported in each Datum.
 
-using BasicType = absl::variant<
-    float, double, int32_t, int64_t, uint32_t, uint64_t, bool, std::string,
-    absl::Cord, mpz_class, int8_t, int16_t, uint8_t, uint16_t,
-    xt::xarray<float>, xt::xarray<double>, xt::xarray<int32_t>,
-    xt::xarray<int64_t>, xt::xarray<uint32_t>, xt::xarray<uint64_t>,
-    xt::xarray<bool>, xt::xarray<std::string>, xt::xarray<absl::Cord>,
-    xt::xarray<mpz_class>, xt::xarray<int8_t>, xt::xarray<int16_t>,
-    xt::xarray<uint8_t>, xt::xarray<uint16_t>>;
+using BasicType =
+    std::variant<float, double, int32_t, int64_t, uint32_t, uint64_t, bool,
+                 std::string, absl::Cord, mpz_class, int8_t, int16_t, uint8_t,
+                 uint16_t, xt::xarray<float>, xt::xarray<double>,
+                 xt::xarray<int32_t>, xt::xarray<int64_t>, xt::xarray<uint32_t>,
+                 xt::xarray<uint64_t>, xt::xarray<bool>,
+                 xt::xarray<std::string>, xt::xarray<absl::Cord>,
+                 xt::xarray<mpz_class>, xt::xarray<int8_t>, xt::xarray<int16_t>,
+                 xt::xarray<uint8_t>, xt::xarray<uint16_t>>;
 
 // Encode() transforms a C++ object into a Datum that can be serialized to disk.
 

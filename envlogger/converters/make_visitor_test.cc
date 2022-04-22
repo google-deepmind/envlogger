@@ -17,11 +17,10 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <variant>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include <cstdint>
-#include "absl/types/variant.h"
 
 namespace envlogger {
 namespace {
@@ -45,11 +44,11 @@ TEST(MakeVisitorTest, SanityCheck) {
       },
       [&](int) { FAIL() << "This shouldn't be called."; });
 
-  absl::visit(visitor, absl::variant<char, double>('x'));
+  std::visit(visitor, std::variant<char, double>('x'));
   EXPECT_THAT(executed_char_visitor, IsTrue());
   EXPECT_THAT(executed_double_visitor, IsFalse());
 
-  absl::visit(visitor, absl::variant<char, double>(1.5));
+  std::visit(visitor, std::variant<char, double>(1.5));
   EXPECT_THAT(executed_char_visitor, IsFalse());
   EXPECT_THAT(executed_double_visitor, IsTrue());
 }
@@ -67,16 +66,16 @@ struct Padded {
 constexpr size_t kPaddedSize = sizeof(Padded);
 
 TEST(MakeVisitorTest, TemplatedVisitor) {
-  using VariantT = absl::variant<char, double, std::nullptr_t, Padded>;
+  using VariantT = std::variant<char, double, std::nullptr_t, Padded>;
 
   const auto visitor =
       MakeVisitor([](std::nullptr_t) -> std::size_t { return 0; },  //
                   SizeOfVisitor{},                                  //
                   [](char) -> std::size_t { return -1; });
-  EXPECT_THAT(absl::visit(visitor, VariantT('x')), Eq(static_cast<size_t>(-1)));
-  EXPECT_THAT(absl::visit(visitor, VariantT(1.5)), Eq(sizeof(double)));
-  EXPECT_THAT(absl::visit(visitor, VariantT(nullptr)), Eq(0));
-  EXPECT_THAT(absl::visit(visitor, VariantT(Padded{})), Eq(kPaddedSize));
+  EXPECT_THAT(std::visit(visitor, VariantT('x')), Eq(static_cast<size_t>(-1)));
+  EXPECT_THAT(std::visit(visitor, VariantT(1.5)), Eq(sizeof(double)));
+  EXPECT_THAT(std::visit(visitor, VariantT(nullptr)), Eq(0));
+  EXPECT_THAT(std::visit(visitor, VariantT(Padded{})), Eq(kPaddedSize));
 }
 
 }  // namespace

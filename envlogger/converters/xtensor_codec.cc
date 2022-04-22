@@ -16,6 +16,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <variant>
 
 #include "glog/logging.h"
 #include "google/protobuf/repeated_field.h"
