@@ -23,8 +23,8 @@
 // Please see xtensor_codec_test.cc for usage examples.
 //
 // Consumers of Decode() may also want to use a library for writing visitors to
-// reduce the boilerplate when dealing with the output. Here's one:
-// //learning/deepmind/datasets/environment_logger/converters/make_visitor.h
+// reduce the boilerplate when dealing with the output. Please see
+// make_visitor.h in this same directory.
 
 #ifndef THIRD_PARTY_PY_ENVLOGGER_CONVERTERS_XTENSOR_CODEC_H_
 #define THIRD_PARTY_PY_ENVLOGGER_CONVERTERS_XTENSOR_CODEC_H_
