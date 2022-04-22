@@ -44,4 +44,4 @@ Visitor<Visitors...> MakeVisitor(Visitors... visitors) {
 
 }  // namespace envlogger
 
-#endif  // LEARNING_DEEPMIND_DATASETS_ENVIRONMENT_LOGGER_CONVERTERS_MAKE_VISITOR_H_
+#endif  // THIRD_PARTY_PY_ENVLOGGER_CONVERTERS_MAKE_VISITOR_H_
