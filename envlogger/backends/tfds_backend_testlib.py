@@ -15,7 +15,7 @@
 
 """Utils to test the backends."""
 import time
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from absl import logging
 from envlogger import step_data
@@ -86,13 +86,16 @@ def catch_env_tfds_config(
 def tfds_backend_catch_env(
     data_directory: str,
     max_episodes_per_file: int = 1,
-    split_name: Optional[str] = None) -> tfds_backend_writer.TFDSBackendWriter:
+    split_name: Optional[str] = None,
+    ds_metadata: Optional[Dict[Any, Any]] = None
+) -> tfds_backend_writer.TFDSBackendWriter:
   """Creates a TFDS Backend Writer for the Catch Environment.
 
   Args:
     data_directory: directory where the data will be created (it has to exist).
     max_episodes_per_file: maximum number of episodes per file.
     split_name: number of the TFDS split to create.
+    ds_metadata: metadata of the dataset.
 
   Returns:
     TFDS backend writer.
@@ -101,4 +104,5 @@ def tfds_backend_catch_env(
       data_directory=data_directory,
       split_name=split_name,
       ds_config=catch_env_tfds_config(),
-      max_episodes_per_file=max_episodes_per_file)
+      max_episodes_per_file=max_episodes_per_file,
+      metadata=ds_metadata)
