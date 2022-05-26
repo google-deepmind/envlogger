@@ -355,9 +355,8 @@ Datum Encode(const xt::xarray<float>& value, bool as_bytes) {
   }
   if (as_bytes) {
     riegeli::StringWriter writer(
-        datum.mutable_values()->mutable_float_values_buffer(),
-        riegeli::StringWriterBase::Options().set_size_hint(value.size() *
-                                                           sizeof(float)));
+        datum.mutable_values()->mutable_float_values_buffer());
+    writer.SetWriteSizeHint(value.size() * sizeof(float));
     for (const float f : xt::ravel<xt::layout_type::row_major>(value)) {
       riegeli::WriteBigEndian32(absl::bit_cast<uint32_t>(f), writer);
     }

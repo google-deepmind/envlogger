@@ -97,9 +97,9 @@ http_archive(
 # Riegeli.
 http_archive(
     name = "com_google_riegeli",
-    sha256 = "a54dafa634db87723db106bc44ef365b1b442d8862aafbeb5f1d2e922049e587",
-    strip_prefix = "riegeli-934428f44a6d120cb6c065315c788aa3a1be6b66",
-    url = "https://github.com/google/riegeli/archive/934428f44a6d120cb6c065315c788aa3a1be6b66.tar.gz",  # 2022-02-16
+    sha256 = "eec741f77864bec2ed0bb976b8c869cc61c9ed29aad7e378fb96442dfe1a0ec2",
+    strip_prefix = "riegeli-5710ef9c214f571febe5bc0668c9e407f85108cd",
+    url = "https://github.com/google/riegeli/archive/5710ef9c214f571febe5bc0668c9e407f85108cd.tar.gz",  # 2022-05-26
 )
 
 # Dependencies needed by Riegeli.

@@ -36,9 +36,9 @@ void OptimizeDataProto(envlogger::Data* data) {
       auto* datum = data->mutable_datum();
       if (!datum->values().float_values().empty()) {
         riegeli::StringWriter writer(
-            datum->mutable_values()->mutable_float_values_buffer(),
-            riegeli::StringWriterBase::Options().set_size_hint(
-                datum->values().float_values_size() * sizeof(float)));
+            datum->mutable_values()->mutable_float_values_buffer());
+        writer.SetWriteSizeHint(datum->values().float_values_size() *
+                                sizeof(float));
         for (float v : datum->values().float_values()) {
           // We need this endian transformation because codec.decode() expects
           // big endian values. Otherwise we could just have done a bit_cast<>
