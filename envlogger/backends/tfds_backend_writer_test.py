@@ -280,6 +280,22 @@ class TfdsBackendWriterTest(absltest.TestCase):
     info = builder.info
     self.assertIsNone(info.metadata)
 
+  def test_backend_writer_ignore_dataset_metadata(self):
+    num_episodes = 5
+    max_episodes_per_file = 3
+    data_dir = self.create_tempdir(name='my_data_dir').full_path
+    _ = tfds_backend_testlib.generate_episode_data(
+        backend=tfds_backend_testlib.tfds_backend_catch_env(
+            data_directory=data_dir,
+            max_episodes_per_file=max_episodes_per_file,
+            ds_metadata={'env_name': 'catch'},
+            store_ds_metadata=False),
+        num_episodes=num_episodes)
+
+    builder = tfds.builder_from_directory(data_dir)
+    info = builder.info
+    self.assertIsNone(info.metadata)
+
 
 if __name__ == '__main__':
   absltest.main()

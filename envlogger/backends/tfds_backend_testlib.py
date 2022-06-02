@@ -87,7 +87,8 @@ def tfds_backend_catch_env(
     data_directory: str,
     max_episodes_per_file: int = 1,
     split_name: Optional[str] = None,
-    ds_metadata: Optional[Dict[Any, Any]] = None
+    ds_metadata: Optional[Dict[Any, Any]] = None,
+    store_ds_metadata: bool = True,
 ) -> tfds_backend_writer.TFDSBackendWriter:
   """Creates a TFDS Backend Writer for the Catch Environment.
 
@@ -96,7 +97,7 @@ def tfds_backend_catch_env(
     max_episodes_per_file: maximum number of episodes per file.
     split_name: number of the TFDS split to create.
     ds_metadata: metadata of the dataset.
-
+    store_ds_metadata: if the metadata should be stored.
   Returns:
     TFDS backend writer.
   """
@@ -105,4 +106,5 @@ def tfds_backend_catch_env(
       split_name=split_name,
       ds_config=catch_env_tfds_config(),
       max_episodes_per_file=max_episodes_per_file,
-      metadata=ds_metadata)
+      metadata=ds_metadata,
+      store_ds_metadata=store_ds_metadata)

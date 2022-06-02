@@ -170,6 +170,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
                max_episodes_per_file: int = 1000,
                split_name: Optional[str] = None,
                version: str = '0.0.1',
+               store_ds_metadata: bool = True,
                **base_kwargs):
     """Constructor.
 
@@ -180,6 +181,8 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
       split_name: Name to be used by the split. If None, the name of the parent
         directory will be used.
       version: version (major.minor.patch) of the dataset.
+      store_ds_metadata: if False, it won't store the dataset level
+        metadata.
       **base_kwargs: arguments for the base class.
     """
     super().__init__(**base_kwargs)
@@ -188,8 +191,12 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
     builder_cls.VERSION = version
     builder_cls.BUILDER_CONFIGS = [ds_config]
     self._builder = builder_cls(data_dir=data_directory, config=ds_config.name)
+    if store_ds_metadata:
+      metadata = self._metadata
+    else:
+      metadata = None
     self._ds_info = tfds.rlds.rlds_base.build_info(ds_config, self._builder,
-                                                   self._metadata)
+                                                   metadata)
     self._ds_info.set_file_format('tfrecord')
 
     self._serializer = tfds.core.example_serializer.ExampleSerializer(
