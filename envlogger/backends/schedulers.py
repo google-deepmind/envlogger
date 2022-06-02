@@ -147,7 +147,7 @@ def list_episode_scheduler(
   episodes.
 
   Args:
-    desired_episodes: Episode indices (0-based) that indicate desired espiodes
+    desired_episodes: Episode indices (0-based) that indicate desired episodes
         to log.
   Raises:
     ValueError: When `desired_episodes` is empty.
