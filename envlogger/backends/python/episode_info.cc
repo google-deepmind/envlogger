@@ -19,6 +19,7 @@
 
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
+#include "pybind11//stl.h"
 #include "pybind11_protobuf/proto_casters.h"
 
 PYBIND11_MODULE(episode_info, m) {
