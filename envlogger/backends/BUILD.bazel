@@ -167,7 +167,6 @@ py_library(
         ":rlds_utils",
         "//envlogger:step_data",
         requirement("absl-py"),
-        requirement("tensorflow"),
         requirement("tfds-nightly"),
     ],
 )

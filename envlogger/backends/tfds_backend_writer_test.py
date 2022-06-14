@@ -15,7 +15,6 @@
 
 """Tests for tfds_backend_writer."""
 
-import os
 from typing import List
 
 from absl.testing import absltest
@@ -49,40 +48,6 @@ def _tfds_features() -> tfds.features.FeaturesDict:
   })
 
 
-class TfdsBackendWriterShardTest(absltest.TestCase):
-
-  def test_add_episodes(self):
-    temp_dir = self.create_tempdir()
-    filepath = os.path.join(temp_dir.full_path, 'myfile')
-    writer = tf.io.TFRecordWriter(os.fspath(filepath))
-    shard = tfds_backend_writer.Shard(writer=writer)
-    num_bytes = 0
-    for i in range(2):
-      record_bytes = tf.train.Example(
-          features=tf.train.Features(feature={
-              'intlist':
-                  tf.train.Feature(int64_list=tf.train.Int64List(value=[i]))
-          })).SerializeToString()
-      shard.add_episode(record_bytes)
-      num_bytes += len(record_bytes)
-    shard.close_writer()
-
-    self.assertEqual(shard.num_episodes, 2)
-    self.assertEqual(shard.num_bytes, num_bytes)
-
-    def _parse_example(ex):
-      return tf.io.parse_single_example(
-          ex, {'intlist': tf.io.FixedLenFeature([], dtype=tf.int64)})
-
-    read_ds = tf.data.TFRecordDataset([filepath]).map(_parse_example)
-
-    num_elements = 0
-    for index, value in enumerate(read_ds):
-      np.testing.assert_equal([index], value['intlist'])
-      num_elements += 1
-    self.assertEqual(num_elements, 2)
-
-
 class TfdsBackendWriterEpisodeTest(absltest.TestCase):
 
   def test_add_step(self):
@@ -106,28 +71,19 @@ class TfdsBackendWriterEpisodeTest(absltest.TestCase):
 
     self.assertEqual(episode.steps[0], expected_rlds_step)
 
-  def test_serialize_episode(self):
+  def test_get_rlds_episode(self):
     episode = tfds_backend_writer.Episode(
         _create_step(0, dm_env.StepType.FIRST))
     episode.add_step(_create_step(1, dm_env.StepType.MID))
     episode.add_step(_create_step(2, dm_env.StepType.LAST))
 
-    features = _tfds_features()
-    serializer = tfds.core.example_serializer.ExampleSerializer(
-        features.get_serialized_info())
-    serialized_example = episode.serialize_episode(features, serializer)
+    rlds_episode = episode.get_rlds_episode()
 
-    parser = tfds.core.example_parser.ExampleParser(
-        features.get_serialized_info())
-    episode = parser.parse_example(serialized_example)
-
-    self.assertIsInstance(episode, dict)
-    self.assertIn('steps', episode)
-
-    steps = tf.data.Dataset.from_tensor_slices(episode['steps'])
+    self.assertIsInstance(rlds_episode, dict)
+    self.assertIn('steps', rlds_episode)
 
     steps_counter = 0
-    for index, step in enumerate(steps):
+    for index, step in enumerate(rlds_episode['steps']):
       self.assertEqual(index, step['observation'])
       self.assertFalse(step['is_terminal'])
       self.assertEqual(index == 0, step['is_first'])
@@ -137,64 +93,6 @@ class TfdsBackendWriterEpisodeTest(absltest.TestCase):
         self.assertEqual(next_value, step[key])
       steps_counter += 1
     self.assertEqual(steps_counter, 3)
-
-
-class TfdsBackendWriterSplitTest(absltest.TestCase):
-
-  def test_update_split(self):
-    split = tfds_backend_writer.Split(
-        tfds.core.splits.SplitInfo(
-            name='split_name',
-            shard_lengths=[3],
-            num_bytes=1,
-            filename_template=tfds.core.ShardedFileTemplate(
-                dataset_name='rlds_envlogger_builder',
-                split='split_name',
-                data_dir='',
-                filetype_suffix='tfrecord')))
-
-    shard = tfds_backend_writer.Shard(writer=None, num_episodes=10, num_bytes=1)
-    split.update(shard)
-
-    self.assertEqual(split.complete_shards, 1)
-    self.assertEqual(split.ds_name, 'rlds_envlogger_builder')
-    self.assertEqual(split.info.name, 'split_name')
-    self.assertEqual(split.info.shard_lengths, [3, 10])
-    self.assertEqual(split.info.num_bytes, 2)
-
-  def test_get_shard_path(self):
-    split = tfds_backend_writer.Split(
-        tfds.core.splits.SplitInfo(
-            name='split_name',
-            shard_lengths=[3],
-            num_bytes=1,
-            filename_template=tfds.core.ShardedFileTemplate(
-                dataset_name='rlds_envlogger_builder',
-                split='split_name',
-                data_dir='',
-                filetype_suffix='tfrecord')),
-        complete_shards=10)
-    path = split.get_shard_path()
-
-    self.assertEqual(path, 'rlds_envlogger_builder-split_name.tfrecord-00010')
-
-  def test_get_split_dict(self):
-    split_info = tfds.core.splits.SplitInfo(
-        name='split_name',
-        shard_lengths=[3],
-        num_bytes=1,
-        filename_template=tfds.core.ShardedFileTemplate(
-            dataset_name='rlds_envlogger_builder',
-            split='split_name',
-            data_dir='',
-            filetype_suffix='tfrecord'))
-    split = tfds_backend_writer.Split(split_info, complete_shards=10)
-    split_dict = split.get_split_dict()
-
-    self.assertEqual(split_dict['split_name'].num_examples,
-                     split_info.num_examples)
-    self.assertEqual(split_dict['split_name'].num_shards, split_info.num_shards)
-    self.assertEqual(list(split_dict.keys()), ['split_name'])
 
 
 class TfdsBackendWriterTest(absltest.TestCase):
