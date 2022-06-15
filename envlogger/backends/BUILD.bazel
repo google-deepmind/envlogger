@@ -99,6 +99,7 @@ py_library(
     name = "riegeli_backend_reader",
     srcs = ["riegeli_backend_reader.py"],
     data = [
+        "//envlogger/backends/python:episode_info.so",
         "//envlogger/backends/python:riegeli_dataset_reader.so",
     ],
     srcs_version = "PY3",
