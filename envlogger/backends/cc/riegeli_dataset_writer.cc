@@ -87,19 +87,25 @@ absl::Status CreateRiegeliShardWriter(absl::string_view data_dir,
 absl::Status RiegeliDatasetWriter::Init(std::string data_dir,
                                         const Data& metadata,
                                         int64_t max_episodes_per_shard,
-                                        std::string writer_options) {
+                                        std::string writer_options,
+                                        int episode_counter) {
   if (data_dir.empty()) return absl::NotFoundError("Empty data_dir.");
 
   data_dir_ = data_dir;
   writer_options_ = writer_options;
-  ENVLOGGER_RETURN_IF_ERROR(WriteSingleRiegeliRecord(
-      /*filepath=*/file::JoinPath(data_dir, internal::kMetadataFilename),
-      /*data=*/metadata));
+  const std::string metadata_filepath =
+      file::JoinPath(data_dir, internal::kMetadataFilename);
+  if (!file::GetSize(metadata_filepath).ok()) {
+    // If metadata does not yet exist, write it.
+    ENVLOGGER_RETURN_IF_ERROR(WriteSingleRiegeliRecord(
+        /*filepath=*/metadata_filepath, /*data=*/metadata));
+  }
   max_episodes_per_shard_ = max_episodes_per_shard;
   if (max_episodes_per_shard_ <= 0) {
     ENVLOGGER_RETURN_IF_ERROR(
         CreateRiegeliShardWriter(data_dir, writer_options_, &writer_));
   }
+  episode_counter_ = episode_counter;
 
   return absl::OkStatus();
 }

@@ -107,5 +107,40 @@ PYBIND11_MODULE(riegeli_dataset_writer, m) {
            &envlogger::RiegeliDatasetWriter::SetEpisodeMetadata,
            pybind11::arg("data"))
       .def("flush", &envlogger::RiegeliDatasetWriter::Flush)
-      .def("close", &envlogger::RiegeliDatasetWriter::Close);
+      .def("close", &envlogger::RiegeliDatasetWriter::Close)
+      // Accessors.
+      .def("data_dir", &envlogger::RiegeliDatasetWriter::DataDir)
+      .def("max_episodes_per_shard",
+           &envlogger::RiegeliDatasetWriter::MaxEpisodesPerShard)
+      .def("writer_options", &envlogger::RiegeliDatasetWriter::WriterOptions)
+      .def("episode_counter", &envlogger::RiegeliDatasetWriter::EpisodeCounter)
+      // Pickling support.
+      .def(pybind11::pickle(
+          [](const envlogger::RiegeliDatasetWriter& self) {  // __getstate__().
+            pybind11::dict output;
+            output["data_dir"] = self.DataDir();
+            output["max_episodes_per_shard"] = self.MaxEpisodesPerShard();
+            output["writer_options"] = self.WriterOptions();
+            output["episode_counter_"] = self.EpisodeCounter();
+            return output;
+          },
+          [](pybind11::dict d) {  // __setstate__().
+            const std::string data_dir = d["data_dir"].cast<std::string>();
+            const int64_t max_episodes_per_shard =
+                d["max_episodes_per_shard"].cast<int64_t>();
+            const std::string writer_options =
+                d["writer_options"].cast<std::string>();
+
+            auto writer = std::make_unique<envlogger::RiegeliDatasetWriter>();
+            const absl::Status status = writer->Init(
+                /*data_dir=*/data_dir, /*metadata=*/envlogger::Data(),
+                /*max_episodes_per_shard=*/max_episodes_per_shard,
+                /*writer_options=*/writer_options);
+            if (!status.ok()) {
+              throw std::runtime_error(
+                  "Failed to initialize RiegeliDatasetWriter: " +
+                  status.ToString());
+            }
+            return writer;
+          }));
 }

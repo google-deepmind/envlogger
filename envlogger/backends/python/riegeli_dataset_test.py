@@ -16,6 +16,7 @@
 """Writes and reads data using RiegeliDataset{Writer, Reader}."""
 
 import os
+import pickle
 import shutil
 
 from absl import logging
@@ -164,6 +165,34 @@ class RiegeliDatasetTest(absltest.TestCase):
       step = cloned.step(i)
       self.assertEqual(codec.decode(step), i)
     cloned.close()
+
+  def test_writer_can_be_pickled(self):
+    """RiegeliDatasetWriter pickling support."""
+
+    # Arrange.
+    writer = riegeli_dataset_writer.RiegeliDatasetWriter()
+    try:
+      writer.init(data_dir=self._directory, metadata=codec.encode(3.141592))
+    except RuntimeError:
+      logging.exception('Failed to initialize `writer`')
+
+    # Act.
+    data = pickle.dumps(writer)
+    another_writer = pickle.loads(data)
+    reader = riegeli_dataset_reader.RiegeliDatasetReader()
+    try:
+      reader.init(data_dir=self._directory)
+    except RuntimeError:
+      logging.exception('Failed to initialize `reader`')
+
+    # Assert.
+    self.assertEqual(writer.data_dir(), another_writer.data_dir())
+    self.assertEqual(writer.max_episodes_per_shard(),
+                     another_writer.max_episodes_per_shard())
+    self.assertEqual(writer.writer_options(), another_writer.writer_options())
+    self.assertEqual(writer.episode_counter(), another_writer.episode_counter())
+    self.assertAlmostEqual(codec.decode(reader.metadata()), 3.141592)
+
 
 if __name__ == '__main__':
   absltest.main()

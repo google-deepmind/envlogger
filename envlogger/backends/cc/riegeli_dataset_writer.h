@@ -42,12 +42,16 @@ class RiegeliDatasetWriter {
   // `max_episodes_per_shard` determines the maximum number of episodes a single
   // RiegeliShardWriter shard will hold. If non-positive, a single shard file
   // will hold all steps and episodes.
+  // `episode_counter` sets the current episode that this writer is processing.
+  // It influences the shards that are created if `max_episodes_per_shard` is
+  // positive.
   //
   // IMPORTANT: `data_dir` MUST exist _before_ calling Init().
   absl::Status Init(
       std::string data_dir, const Data& metadata = Data(),
       int64_t max_episodes_per_shard = 0,
-      std::string writer_options = "transpose,brotli:6,chunk_size:1M");
+      std::string writer_options = "transpose,brotli:6,chunk_size:1M",
+      int episode_counter = 0);
 
   // Adds `data` to the trajectory and marks it as a new episode if
   // `is_new_episode==true`.
@@ -65,6 +69,12 @@ class RiegeliDatasetWriter {
 
   // Finalizes all writes and releases all handles.
   void Close();
+
+  // Const accessors to internal state.
+  std::string DataDir() const { return data_dir_; }
+  std::string WriterOptions() const { return writer_options_; }
+  int64_t MaxEpisodesPerShard() const { return max_episodes_per_shard_; }
+  int EpisodeCounter() const { return episode_counter_; }
 
  private:
   std::string data_dir_;
