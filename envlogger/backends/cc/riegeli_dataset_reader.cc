@@ -93,6 +93,7 @@ void RiegeliDatasetReader::Close() {
 }
 
 absl::Status RiegeliDatasetReader::Init(absl::string_view data_dir) {
+  data_dir_ = data_dir;
   ENVLOGGER_ASSIGN_OR_RETURN(
       std::vector<std::string> matches,
       file::GetSubdirectories(data_dir, internal::kStepOffsetsFilename));

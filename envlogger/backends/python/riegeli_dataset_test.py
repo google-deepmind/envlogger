@@ -17,6 +17,7 @@
 
 import os
 import pickle
+import random
 import shutil
 
 from absl import logging
@@ -192,6 +193,49 @@ class RiegeliDatasetTest(absltest.TestCase):
     self.assertEqual(writer.writer_options(), another_writer.writer_options())
     self.assertEqual(writer.episode_counter(), another_writer.episode_counter())
     self.assertAlmostEqual(codec.decode(reader.metadata()), 3.141592)
+
+  def test_reader_can_be_pickled(self):
+    """RiegeliDatasetReader pickling support."""
+
+    # Arrange.
+    writer = riegeli_dataset_writer.RiegeliDatasetWriter()
+    try:
+      writer.init(data_dir=self._directory, metadata=codec.encode(3.141592))
+    except RuntimeError:
+      logging.exception('Failed to initialize `writer`')
+    for i in range(50):
+      writer.add_step(codec.encode(i), is_new_episode=random.random() < 0.5)
+    writer.close()
+
+    reader = riegeli_dataset_reader.RiegeliDatasetReader()
+    try:
+      reader.init(data_dir=self._directory)
+    except RuntimeError:
+      logging.exception('Failed to initialize `reader`')
+
+    # Act.
+    data = pickle.dumps(reader)
+    another_reader = pickle.loads(data)
+
+    # Assert.
+    self.assertEqual(reader.data_dir(), another_reader.data_dir())
+    self.assertAlmostEqual(codec.decode(reader.metadata()), 3.141592)
+    self.assertAlmostEqual(
+        codec.decode(reader.metadata()),
+        codec.decode(another_reader.metadata()))
+    self.assertEqual(reader.num_steps, another_reader.num_steps)
+    self.assertEqual(reader.num_episodes, another_reader.num_episodes)
+    self.assertEqual(
+        [codec.decode(reader.step(i)) for i in range(reader.num_steps)], [
+            codec.decode(another_reader.step(i))
+            for i in range(another_reader.num_steps)
+        ])
+    for i in range(reader.num_episodes):
+      episode = reader.episode(i)
+      another_episode = another_reader.episode(i)
+      self.assertEqual(episode.start, another_episode.start)
+      self.assertEqual(episode.num_steps, another_episode.num_steps)
+      self.assertEqual(episode.metadata, another_episode.metadata)
 
 
 if __name__ == '__main__':

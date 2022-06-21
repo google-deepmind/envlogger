@@ -85,6 +85,8 @@ class RiegeliDatasetReader {
   // Returns a shard reader for the specified episode index.
   absl::StatusOr<RiegeliShardReader> GetShard(int64_t episode_index);
 
+  std::string DataDir() const { return data_dir_; }
+
  private:
   // A Shard represents a single timestamp directory.
   struct Shard {
@@ -108,6 +110,9 @@ class RiegeliDatasetReader {
   // `global_index`.
   std::pair<Shard*, int64_t> FindShard(
       int64_t global_index, std::function<int64_t(const Shard&)> extractor);
+
+  // The data directory associated with this reader.
+  std::string data_dir_;
 
   // The total number of steps across all timestamp directories.
   int64_t total_num_steps_ = 0;
