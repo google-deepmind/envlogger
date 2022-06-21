@@ -260,5 +260,43 @@ TEST(RiegeliDatasetWriterTest, WriterOptionsAreForwarded) {
   ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(writer_options2));
 }
 
+TEST(RiegeliDatasetWriterTest, DataDirReuseShouldStillWork) {
+  const std::string data_dir =
+      file::JoinPath(getenv("TEST_TMPDIR"), "some_shard");
+  const Data metadata;
+  ENVLOGGER_EXPECT_OK(file::CreateDir(data_dir));
+
+  // Write some episodes in `data_dir`.
+  {
+    RiegeliDatasetWriter writer;
+    ENVLOGGER_EXPECT_OK(writer.Init(data_dir, metadata));
+    for (int i = 0; i < 10; ++i) {
+      Data data;
+      data.mutable_datum()->mutable_values()->add_float_values(i);
+      writer.AddStep(data, /*is_new_episode=*/true);
+    }
+    writer.Flush();
+  }
+
+  // Write more episodes in the same `data_dir`.
+  {
+    RiegeliDatasetWriter writer;
+    ENVLOGGER_EXPECT_OK(writer.Init(data_dir, metadata));
+    for (int i = 0; i < 10; ++i) {
+      Data data;
+      data.mutable_datum()->mutable_values()->add_float_values(i);
+      writer.AddStep(data, /*is_new_episode=*/true);
+    }
+    writer.Flush();
+  }
+
+  // Check that there's a second shard.
+  ENVLOGGER_ASSERT_OK_AND_ASSIGN(const auto match_results,
+                                 file::GetSubdirectories(data_dir));
+  EXPECT_THAT(match_results, SizeIs(2));
+
+  ENVLOGGER_EXPECT_OK(file::RecursivelyDelete(data_dir));
+}
+
 }  // namespace
 }  // namespace envlogger
