@@ -15,7 +15,7 @@
 
 """Common logging scheduling strategies."""
 
-from typing import Callable, List, Union
+from typing import Callable, List, Optional, Union
 
 from envlogger import step_data
 import numpy as np
@@ -47,17 +47,18 @@ class NStepScheduler:
 class BernoulliStepScheduler:
   """Returns `True` with a given probability."""
 
-  def __init__(self, keep_probability: float):
+  def __init__(self, keep_probability: float, seed: Optional[int] = None):
     if keep_probability < 0.0 or keep_probability > 1.0:
       raise ValueError(
           f'keep_probability must be in [0,1], got: {keep_probability}')
 
     self._keep_probability = keep_probability
+    self._rng = np.random.default_rng(seed)
 
   def __call__(self, unused_data: step_data.StepData):
     """Returns `True` with probability `self._keep_probability`."""
 
-    return np.random.random() < self._keep_probability
+    return self._rng.random() < self._keep_probability
 
 
 class NEpisodeScheduler:
@@ -83,19 +84,20 @@ class NEpisodeScheduler:
 class BernoulliEpisodeScheduler:
   """Returns `True` with a given probability at every episode."""
 
-  def __init__(self, keep_probability: float):
+  def __init__(self, keep_probability: float, seed: Optional[int] = None):
     if keep_probability < 0.0 or keep_probability > 1.0:
       raise ValueError(
           f'keep_probability must be in [0,1], got: {keep_probability}')
 
     self._keep_probability = keep_probability
-    self._current_p = np.random.random()
+    self._rng = np.random.default_rng(seed)
+    self._current_p = self._rng.random()
 
   def __call__(self, data: step_data.StepData):
     """Returns `True` with probability `self._keep_probability`."""
 
     if data.timestep.last():
-      self._current_p = np.random.random()
+      self._current_p = self._rng.random()
     return self._current_p < self._keep_probability
 
 

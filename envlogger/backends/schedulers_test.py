@@ -87,13 +87,13 @@ class DefaultSchedulersTest(parameterized.TestCase):
         keep_probability=keep_probability)
 
   def test_bernoulli_steps_probability_0(self):
-    """bernoulli_step_scheduler should always False if given probability 0.0."""
+    """bernoulli_step_scheduler should return False if given probability 0.0."""
     scheduler = schedulers.BernoulliStepScheduler(keep_probability=0)
     for _ in range(100):
       self.assertFalse(scheduler(None))
 
   def test_bernoulli_steps_probability_1(self):
-    """bernoulli_step_scheduler should always False if given probability 1.0."""
+    """bernoulli_step_scheduler should return True if given probability 1.0."""
     scheduler = schedulers.BernoulliStepScheduler(keep_probability=1)
     for _ in range(100):
       self.assertTrue(scheduler(None))
@@ -115,6 +115,24 @@ class DefaultSchedulersTest(parameterized.TestCase):
       num_true += scheduler(None)
     num_false = 1000 - num_true
     self.assertGreater(num_true, num_false)
+
+  def test_bernoulli_step_fixed_seed(self):
+    """BernoulliStepScheduler should return deterministic outcomes."""
+
+    seed = np.random.default_rng().integers(10000)
+
+    # Run one trial with `seed`.
+    scheduler = schedulers.BernoulliStepScheduler(
+        keep_probability=0.5, seed=seed)
+    outcomes = [scheduler(None) for _ in range(100)]
+
+    # Repeat the trial with the same `seed`.
+    other_scheduler = schedulers.BernoulliStepScheduler(
+        keep_probability=0.5, seed=seed)
+    other_outcomes = [other_scheduler(None) for _ in range(100)]
+
+    # Assert that the outcomes are exactly the same.
+    self.assertEqual(outcomes, other_outcomes)
 
   @parameterized.named_parameters(
       ('negative_interval', -1),
@@ -170,14 +188,14 @@ class DefaultSchedulersTest(parameterized.TestCase):
         keep_probability=keep_probability)
 
   def test_bernoulli_episodes_probability_0(self):
-    """bernoulli_episode_scheduler should always False if given probability 0.0."""
+    """bernoulli_episode_scheduler should return False if given probability 0.0."""
     scheduler = schedulers.BernoulliEpisodeScheduler(keep_probability=0.0)
     for _ in range(100):
       for timestep in _create_episode(num_transitions=np.random.randint(100)):
         self.assertFalse(scheduler(timestep))
 
   def test_bernoulli_episodes_probability_1(self):
-    """bernoulli_episode_scheduler should always False if given probability 1.0."""
+    """bernoulli_episode_scheduler should return True if given probability 1.0."""
     scheduler = schedulers.BernoulliEpisodeScheduler(keep_probability=1.0)
     for _ in range(100):
       for timestep in _create_episode(num_transitions=np.random.randint(100)):
@@ -210,6 +228,34 @@ class DefaultSchedulersTest(parameterized.TestCase):
         else:
           num_false += 1
     self.assertGreater(num_true, num_false)
+
+  def test_bernoulli_episode_fixed_seed(self):
+    """BernoulliEpisodeScheduler should return deterministic outcomes."""
+
+    seed = np.random.default_rng().integers(10000)
+    episodes = [
+        _create_episode(num_transitions=np.random.randint(100))
+        for _ in range(1000)
+    ]
+
+    # Run one trial with `seed`.
+    scheduler = schedulers.BernoulliEpisodeScheduler(
+        keep_probability=0.5, seed=seed)
+    outcomes = []
+    for episode in episodes:
+      for timestep in episode:
+        outcomes.append(scheduler(timestep))
+
+    # Repeat the trial with the same `seed`.
+    other_scheduler = schedulers.BernoulliEpisodeScheduler(
+        keep_probability=0.5, seed=seed)
+    other_outcomes = []
+    for episode in episodes:
+      for timestep in episode:
+        other_outcomes.append(other_scheduler(timestep))
+
+    # Assert that the outcomes are exactly the same.
+    self.assertEqual(outcomes, other_outcomes)
 
   @parameterized.named_parameters(
       ('empty_list', []),
