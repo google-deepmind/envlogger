@@ -18,6 +18,7 @@
 import concurrent.futures
 import glob
 import os
+import pickle
 import tempfile
 import threading
 from typing import List, Optional
@@ -381,7 +382,7 @@ class EnvLoggerTest(parameterized.TestCase):
         env,
         data_directory=self.dataset_path,
         max_episodes_per_file=10_000_000_000,
-        flush_scheduler=schedulers.bernoulli_step_scheduler(1.0 / 13),
+        flush_scheduler=schedulers.BernoulliStepScheduler(1.0 / 13),
         backend=backend_type.BackendType.RIEGELI)
     _train(env, num_episodes=100)
 
@@ -510,6 +511,23 @@ class EnvLoggerTest(parameterized.TestCase):
     # Close the copies.
     for copy in copies:
       copy.close()
+
+  def test_envlogger_pickling(self):
+    """Checks EnvLogger pickling support."""
+
+    env = catch_env.Catch()
+    env = environment_logger.EnvLogger(
+        env,
+        backend=backend_type.BackendType.RIEGELI,
+        data_directory=self.dataset_path)
+    _ = _train(env, num_episodes=7)
+
+    serialized = pickle.dumps(env)
+    another_env = pickle.loads(serialized)
+
+    # The env should also work as usual.
+    another_data = _train(another_env, num_episodes=11)
+    self.assertNotEmpty(another_data)
 
 
 

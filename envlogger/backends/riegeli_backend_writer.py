@@ -59,8 +59,7 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
     super().__init__(**base_kwargs)
     self._data_directory = data_directory
     if flush_scheduler is None:
-      self._flush_scheduler = schedulers.bernoulli_step_scheduler(
-          1.0 / 5000)
+      self._flush_scheduler = schedulers.BernoulliStepScheduler(1.0 / 5000)
     else:
       self._flush_scheduler = flush_scheduler
     self._data_writer = riegeli_dataset_writer.RiegeliDatasetWriter()

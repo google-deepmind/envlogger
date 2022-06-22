@@ -15,6 +15,8 @@
 
 """Base class for implementing environment wrappers.."""
 
+import pickle
+
 import dm_env
 
 
@@ -34,6 +36,12 @@ class EnvironmentWrapper(dm_env.Environment):
 
   def __getattr__(self, name):
     return getattr(self._environment, name)
+
+  def __getstate__(self):
+    return pickle.dumps(self._environment)
+
+  def __setstate__(self, state):
+    self._environment = pickle.loads(state)
 
   def step(self, action) -> dm_env.TimeStep:
     return self._environment.step(action)

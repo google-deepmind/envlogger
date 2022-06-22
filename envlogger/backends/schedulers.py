@@ -26,146 +26,132 @@ import numpy as np
 Scheduler = Callable[[step_data.StepData], bool]
 
 
-def n_step_scheduler(step_interval: int) -> Scheduler:
-  """Returns a closure that returns True every N times it is called.
+class NStepScheduler:
+  """Returns `True` every N times it is called."""
 
-  Args:
-    step_interval: Must be a positive integer.
-  Raises:
-    ValueError: When `step_interval` is not a positive integer.
-  """
-  if step_interval <= 0:
-    raise ValueError(f'step_interval must be positive, got {step_interval}')
+  def __init__(self, step_interval: int):
+    if step_interval <= 0:
+      raise ValueError(f'step_interval must be positive, got {step_interval}')
 
-  def f(unused_data: step_data.StepData) -> bool:
-    should_log = f.step_counter % step_interval == 0
-    f.step_counter += 1
+    self._step_interval = step_interval
+    self._step_counter = 0
+
+  def __call__(self, unused_data: step_data.StepData):
+    """Returns `True` every N times it is called."""
+
+    should_log = self._step_counter % self._step_interval == 0
+    self._step_counter += 1
     return should_log
 
-  f.step_counter = 0
-  return f
+
+class BernoulliStepScheduler:
+  """Returns `True` with a given probability."""
+
+  def __init__(self, keep_probability: float):
+    if keep_probability < 0.0 or keep_probability > 1.0:
+      raise ValueError(
+          f'keep_probability must be in [0,1], got: {keep_probability}')
+
+    self._keep_probability = keep_probability
+
+  def __call__(self, unused_data: step_data.StepData):
+    """Returns `True` with probability `self._keep_probability`."""
+
+    return np.random.random() < self._keep_probability
 
 
-def bernoulli_step_scheduler(keep_probability: float) -> Scheduler:
-  """Returns a closure that returns True with probability `keep_probability`.
+class NEpisodeScheduler:
+  """Returns `True` every N episodes."""
 
-  Args:
-    keep_probability: Must be within [0,1].
-  Raises:
-    ValueError: When `keep_probability` is not in [0,1].
-  """
-  if keep_probability < 0.0 or keep_probability > 1.0:
-    raise ValueError(
-        f'keep_probability must be in [0,1], got: {keep_probability}')
+  def __init__(self, episode_interval: int):
+    if episode_interval <= 0:
+      raise ValueError(
+          f'episode_interval must be positive, got {episode_interval}')
 
-  def f(unused_data: step_data.StepData) -> bool:
-    return np.random.random() < keep_probability
+    self._episode_interval = episode_interval
+    self._episode_counter = 0
 
-  return f
+  def __call__(self, data: step_data.StepData):
+    """Returns `True` every N episodes."""
 
-
-def n_episode_scheduler(episode_interval: int) -> Scheduler:
-  """Returns a closure that returns True every N episodes.
-
-  Args:
-    episode_interval: Must be a positive integer.
-  Raises:
-    ValueError: When `episode_interval` is not a positive integer.
-  """
-  if episode_interval <= 0:
-    raise ValueError(
-        f'episode_interval must be positive, got {episode_interval}')
-
-  def f(data: step_data.StepData) -> bool:
-    should_log = f.episode_counter % episode_interval == 0
+    should_log = self._episode_counter % self._episode_interval == 0
     if data.timestep.last():
-      f.episode_counter += 1
+      self._episode_counter += 1
     return should_log
 
-  f.episode_counter = 0
-  return f
 
+class BernoulliEpisodeScheduler:
+  """Returns `True` with a given probability at every episode."""
 
-def bernoulli_episode_scheduler(keep_probability: float) -> Scheduler:
-  """Returns a closure that keeps episodes with probability `keep_probability`.
+  def __init__(self, keep_probability: float):
+    if keep_probability < 0.0 or keep_probability > 1.0:
+      raise ValueError(
+          f'keep_probability must be in [0,1], got: {keep_probability}')
 
-  Args:
-    keep_probability: Must be within [0,1].
-  Raises:
-    ValueError: When `keep_probability` is not in [0,1].
-  """
-  if keep_probability < 0.0 or keep_probability > 1.0:
-    raise ValueError(
-        f'keep_probability must be in [0,1], got: {keep_probability}')
+    self._keep_probability = keep_probability
+    self._current_p = np.random.random()
 
-  def f(data: step_data.StepData) -> bool:
+  def __call__(self, data: step_data.StepData):
+    """Returns `True` with probability `self._keep_probability`."""
+
     if data.timestep.last():
-      f.current_p = np.random.random()
-    return f.current_p < keep_probability
-
-  f.current_p = np.random.random()
-
-  return f
+      self._current_p = np.random.random()
+    return self._current_p < self._keep_probability
 
 
-def list_step_scheduler(
-    desired_steps: Union[List[int], np.ndarray]) -> Scheduler:
-  """Returns a closure that keeps steps in `desired_steps`.
+class ListStepScheduler:
+  """Returns `True` for steps in `desired_steps`.
 
   Please see unit tests for examples of using this scheduler. In particular,
   you can use Numpy's functions such as logspace() to generate non-linear steps.
-
-  Args:
-    desired_steps: Step indices (0-based) that indicate desired steps to log.
-  Raises:
-    ValueError: When `desired_steps` is empty.
   """
-  if (isinstance(desired_steps, np.ndarray) and
-      not (desired_steps.dtype == np.int32 or desired_steps.dtype == np.int64)):
-    raise TypeError(
-        f'desired_steps.dtype must be np.in32 or np.int64: {desired_steps} '
-        f'(dtype: {desired_steps.dtype})')
-  if len(desired_steps) <= 0:
-    raise ValueError(f'desired_steps cannot be empty: {desired_steps}')
 
-  def f(unused_data: step_data.StepData) -> bool:
-    should_log = f.step_counter in f.desired_steps
-    f.step_counter += 1
+  def __init__(self, desired_steps: Union[List[int], np.ndarray]):
+    if (isinstance(desired_steps, np.ndarray) and
+        not (desired_steps.dtype == np.int32 or
+             desired_steps.dtype == np.int64)):
+      raise TypeError(
+          f'desired_steps.dtype must be np.in32 or np.int64: {desired_steps} '
+          f'(dtype: {desired_steps.dtype})')
+    if len(desired_steps) <= 0:
+      raise ValueError(f'desired_steps cannot be empty: {desired_steps}')
+
+    self._desired_steps = set(desired_steps)
+    self._step_counter = 0
+
+  def __call__(self, data: step_data.StepData):
+    """Returns `True` every N episodes."""
+
+    should_log = self._step_counter in self._desired_steps
+    self._step_counter += 1
     return should_log
 
-  f.desired_steps = set(desired_steps)
-  f.step_counter = 0
-  return f
 
-
-def list_episode_scheduler(
-    desired_episodes: Union[List[int], np.ndarray]) -> Scheduler:
-  """Returns a closure that keeps episodes in `desired_episodes`.
+class ListEpisodeScheduler:
+  """Returns `True` for episodes in `desired_episodes`.
 
   Please see unit tests for examples of using this scheduler. In particular,
-  you can use Numpy's functions such as logspace() to generate non-linear
-  episodes.
-
-  Args:
-    desired_episodes: Episode indices (0-based) that indicate desired episodes
-        to log.
-  Raises:
-    ValueError: When `desired_episodes` is empty.
+  you can use Numpy's functions such as logspace() to generate non-linear steps.
   """
-  if (isinstance(desired_episodes, np.ndarray) and
-      not (desired_episodes.dtype == np.int32 or
-           desired_episodes.dtype == np.int64)):
-    raise TypeError('desired_episodes.dtype must be np.in32 or np.int64: '
-                    f'{desired_episodes} (dtype: {desired_episodes.dtype})')
-  if len(desired_episodes) <= 0:
-    raise ValueError(f'desired_episodes cannot be empty: {desired_episodes}')
 
-  def f(data: step_data.StepData) -> bool:
-    should_log = f.episode_counter in f.desired_episodes
+  def __init__(self, desired_episodes: Union[List[int], np.ndarray]):
+    if (isinstance(desired_episodes, np.ndarray) and
+        not (desired_episodes.dtype == np.int32 or
+             desired_episodes.dtype == np.int64)):
+      raise TypeError('desired_episodes.dtype must be np.in32 or np.int64: '
+                      f'{desired_episodes} (dtype: {desired_episodes.dtype})')
+    if len(desired_episodes) <= 0:
+      raise ValueError(f'desired_episodes cannot be empty: {desired_episodes}')
+
+    self._desired_episodes = set(desired_episodes)
+    self._episode_counter = 0
+
+  def __call__(self, data: step_data.StepData):
+    """Returns `True` every N episodes."""
+
+    should_log = self._episode_counter in self._desired_episodes
     if data.timestep.last():
-      f.episode_counter += 1
+      self._episode_counter += 1
     return should_log
 
-  f.desired_episodes = set(desired_episodes)
-  f.episode_counter = 0
-  return f
+

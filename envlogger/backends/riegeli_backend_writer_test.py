@@ -121,7 +121,7 @@ class RiegeliBackendTest(parameterized.TestCase):
   def test_scheduler(self):
     num_episodes = 2
     step_interval = 2
-    scheduler = schedulers.n_step_scheduler(step_interval=step_interval)
+    scheduler = schedulers.NStepScheduler(step_interval=step_interval)
     expected_steps, data_directory = self._collect_episode_data(
         num_episodes=num_episodes, scheduler=scheduler)
     with riegeli_backend_reader.RiegeliBackendReader(

@@ -93,7 +93,7 @@ class InMemoryBackendTest(parameterized.TestCase):
   def test_scheduler(self):
     num_episodes = 2
     step_interval = 2
-    scheduler = schedulers.n_step_scheduler(step_interval=step_interval)
+    scheduler = schedulers.NStepScheduler(step_interval=step_interval)
     expected_steps, backend = _collect_episode_data(num_episodes, scheduler)
     expected_steps = [
         step for i, step in enumerate(expected_steps) if i % step_interval == 0
