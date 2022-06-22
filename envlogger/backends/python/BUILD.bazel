@@ -55,7 +55,6 @@ py_test(
     name = "episode_info_test",
     srcs = ["episode_info_test.py"],
     data = [":episode_info.so"],
-    python_version = "PY3",
     deps = [
         "//envlogger/proto:storage_py_pb2",
         requirement("absl-py"),

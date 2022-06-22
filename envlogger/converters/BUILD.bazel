@@ -21,7 +21,6 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "codec",
     srcs = ["codec.py"],
-    srcs_version = "PY3",
     deps = [
         "//envlogger/proto:storage_py_pb2",
         requirement("numpy"),
@@ -31,7 +30,6 @@ py_library(
 py_test(
     name = "codec_test",
     srcs = ["codec_test.py"],
-    python_version = "PY3",
     deps = [
         ":codec",
         "//envlogger/proto:storage_py_pb2",
@@ -43,7 +41,6 @@ py_test(
 py_library(
     name = "spec_codec",
     srcs = ["spec_codec.py"],
-    srcs_version = "PY3",
     deps = [
         requirement("dm_env"),
         requirement("numpy"),
@@ -53,7 +50,6 @@ py_library(
 py_test(
     name = "spec_codec_test",
     srcs = ["spec_codec_test.py"],
-    python_version = "PY3",
     deps = [
         ":spec_codec",
         "//envlogger/proto:storage_py_pb2",

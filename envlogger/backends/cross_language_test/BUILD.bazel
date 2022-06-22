@@ -53,8 +53,6 @@ py_test(
         ":cc_reader",
         ":py_writer",
     ],
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = [
         "@rules_python//python/runfiles",
         requirement("absl-py"),

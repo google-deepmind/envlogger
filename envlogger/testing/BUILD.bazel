@@ -21,7 +21,6 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "catch_env",
     srcs = ["catch_env.py"],
-    srcs_version = "PY3",
     deps = [
         requirement("dm_env"),
         requirement("numpy"),

@@ -21,7 +21,6 @@ package(default_visibility = ["//visibility:public"])
 py_binary(
     name = "random_agent_catch",
     srcs = ["random_agent_catch.py"],
-    python_version = "PY3",
     deps = [
         "//envlogger",
         "//envlogger/testing:catch_env",
