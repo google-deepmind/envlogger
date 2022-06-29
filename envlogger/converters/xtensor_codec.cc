@@ -20,7 +20,6 @@
 
 #include "glog/logging.h"
 #include "google/protobuf/repeated_field.h"
-#include "absl/base/casts.h"
 #include "absl/strings/string_view.h"
 #include <gmpxx.h>
 #include "riegeli/bytes/string_writer.h"
@@ -131,7 +130,7 @@ inline T LoadScalar(const char* p) {
 // Specialization of the above for floats.
 template <>
 inline float LoadScalar(const char* p) {
-  return absl::bit_cast<float>(riegeli::ReadBigEndian32(p));
+  return riegeli::ReadBigEndianFloat(p);
 }
 
 template <typename T>
@@ -358,7 +357,7 @@ Datum Encode(const xt::xarray<float>& value, bool as_bytes) {
         datum.mutable_values()->mutable_float_values_buffer());
     writer.SetWriteSizeHint(value.size() * sizeof(float));
     for (const float f : xt::ravel<xt::layout_type::row_major>(value)) {
-      riegeli::WriteBigEndian32(absl::bit_cast<uint32_t>(f), writer);
+      riegeli::WriteBigEndianFloat(f, writer);
     }
     writer.Close();
   } else {

@@ -39,12 +39,7 @@ void OptimizeDataProto(envlogger::Data* data) {
             datum->mutable_values()->mutable_float_values_buffer());
         writer.SetWriteSizeHint(datum->values().float_values_size() *
                                 sizeof(float));
-        for (float v : datum->values().float_values()) {
-          // We need this endian transformation because codec.decode() expects
-          // big endian values. Otherwise we could just have done a bit_cast<>
-          // of datum->values().float_values().data() into the bytes buffer.
-          riegeli::WriteBigEndian32(absl::bit_cast<uint32_t>(v), writer);
-        }
+        riegeli::WriteBigEndianFloats(datum->values().float_values(), writer);
         writer.Close();
         datum->mutable_values()->clear_float_values();
       }
