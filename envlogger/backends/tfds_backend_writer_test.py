@@ -156,7 +156,8 @@ class TfdsBackendWriterTest(absltest.TestCase):
         backend=tfds_backend_testlib.tfds_backend_catch_env(
             data_directory=data_dir,
             max_episodes_per_file=max_episodes_per_file,
-            ds_metadata={'env_name': 'catch'}),
+            ds_metadata={'env_name': 'catch'},
+            store_ds_metadata=True),
         num_episodes=num_episodes)
 
     builder = tfds.builder_from_directory(data_dir)
@@ -171,7 +172,8 @@ class TfdsBackendWriterTest(absltest.TestCase):
         backend=tfds_backend_testlib.tfds_backend_catch_env(
             data_directory=data_dir,
             max_episodes_per_file=max_episodes_per_file,
-            ds_metadata=None),
+            ds_metadata=None,
+            store_ds_metadata=True),
         num_episodes=num_episodes)
 
     builder = tfds.builder_from_directory(data_dir)

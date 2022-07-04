@@ -61,7 +61,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
                max_episodes_per_file: int = 1000,
                split_name: Optional[str] = None,
                version: str = '0.0.1',
-               store_ds_metadata: bool = True,
+               store_ds_metadata: bool = False,
                **base_kwargs):
     """Constructor.
 
