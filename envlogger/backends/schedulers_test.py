@@ -43,18 +43,18 @@ class DefaultSchedulersTest(parameterized.TestCase):
       ('zero_interval', 0),
   )
   def test_n_steps_invalid_args(self, step_interval):
-    """n_step_scheduler should raise an error if given invalid intervals."""
+    """NStepScheduler should raise an error if given invalid intervals."""
     self.assertRaises(
         ValueError, schedulers.NStepScheduler, step_interval=step_interval)
 
   def test_n_steps_interval_1(self):
-    """n_step_scheduler should always return True if interval is 1."""
+    """NStepScheduler should always return True if interval is 1."""
     scheduler = schedulers.NStepScheduler(step_interval=1)
     for _ in range(100):
       self.assertTrue(scheduler(None))
 
   def test_n_steps_interval_3(self):
-    """n_step_scheduler should return True only every 3 steps."""
+    """NStepScheduler should return True only every 3 steps."""
     n = 3
     scheduler = schedulers.NStepScheduler(step_interval=n)
     self.assertTrue(scheduler(None))
@@ -65,7 +65,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
     self.assertFalse(scheduler(None))
 
   def test_n_steps_interval_n(self):
-    """n_step_scheduler should return True only every n steps."""
+    """NStepScheduler should return True only every n steps."""
     for _ in range(10):
       n = np.random.randint(1, 50)
       scheduler = schedulers.NStepScheduler(step_interval=n)
@@ -80,26 +80,26 @@ class DefaultSchedulersTest(parameterized.TestCase):
       ('greater_than_1_probability', 1.01),
   )
   def test_bernoulli_steps_invalid_args(self, keep_probability):
-    """bernoulli_scheduler should raise an error with negative probabilities."""
+    """The scheduler should raise an error with negative probabilities."""
     self.assertRaises(
         ValueError,
         schedulers.BernoulliStepScheduler,
         keep_probability=keep_probability)
 
   def test_bernoulli_steps_probability_0(self):
-    """bernoulli_step_scheduler should return False if given probability 0.0."""
+    """BernoulliStepScheduler should return False if given probability 0.0."""
     scheduler = schedulers.BernoulliStepScheduler(keep_probability=0)
     for _ in range(100):
       self.assertFalse(scheduler(None))
 
   def test_bernoulli_steps_probability_1(self):
-    """bernoulli_step_scheduler should return True if given probability 1.0."""
+    """BernoulliStepScheduler should return True if given probability 1.0."""
     scheduler = schedulers.BernoulliStepScheduler(keep_probability=1)
     for _ in range(100):
       self.assertTrue(scheduler(None))
 
   def test_bernoulli_steps_probability_1pct(self):
-    """bernoulli_step_scheduler should return more False than True with p=0.01."""
+    """BernoulliStepScheduler should return more False than True with p=0.01."""
     scheduler = schedulers.BernoulliStepScheduler(keep_probability=0.01)
     num_true = 0
     for _ in range(1000):
@@ -108,7 +108,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
     self.assertGreater(num_false, num_true)
 
   def test_bernoulli_steps_probability_99pct(self):
-    """bernoulli_step_scheduler should return more True than False with p=0.99."""
+    """BernoulliStepScheduler should return more True than False with p=0.99."""
     scheduler = schedulers.BernoulliStepScheduler(keep_probability=0.99)
     num_true = 0
     for _ in range(1000):
@@ -139,21 +139,21 @@ class DefaultSchedulersTest(parameterized.TestCase):
       ('zero_interval', 0),
   )
   def test_n_episode_invalid_args(self, episode_interval):
-    """n_episode_scheduler should raise an error if given invalid intervals."""
+    """NEpisodeScheduler should raise an error if given invalid intervals."""
     self.assertRaises(
         ValueError,
         schedulers.NEpisodeScheduler,
         episode_interval=episode_interval)
 
   def test_n_episode_interval_1(self):
-    """n_episode_scheduler should always return True if interval is 1."""
+    """NEpisodeScheduler should always return True if interval is 1."""
     scheduler = schedulers.NEpisodeScheduler(episode_interval=1)
     for _ in range(100):
       for timestep in _create_episode(num_transitions=np.random.randint(100)):
         self.assertTrue(scheduler(timestep))
 
   def test_n_episode_interval_2(self):
-    """n_episode_scheduler should return True every other episode."""
+    """NEpisodeScheduler should return True every other episode."""
     scheduler = schedulers.NEpisodeScheduler(episode_interval=2)
     for _ in range(100):
       for timestep in _create_episode(num_transitions=np.random.randint(100)):
@@ -162,7 +162,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
         self.assertFalse(scheduler(timestep))
 
   def test_n_episode_interval_n(self):
-    """n_episode_scheduler should return True only every n episodes."""
+    """NEpisodeScheduler should return True only every n episodes."""
     for _ in range(10):
       n = np.random.randint(1, 50)
       scheduler = schedulers.NEpisodeScheduler(episode_interval=n)
@@ -181,28 +181,28 @@ class DefaultSchedulersTest(parameterized.TestCase):
       ('greater_than_1_probability', 1.01),
   )
   def test_bernoulli_episodes_invalid_args(self, keep_probability):
-    """bernoulli_scheduler should raise an error with negative probabilities."""
+    """The scheduler should raise an error with negative probabilities."""
     self.assertRaises(
         ValueError,
         schedulers.BernoulliEpisodeScheduler,
         keep_probability=keep_probability)
 
   def test_bernoulli_episodes_probability_0(self):
-    """bernoulli_episode_scheduler should return False if given probability 0.0."""
+    """BernoulliEpisodeScheduler should return False if given probability 0.0."""
     scheduler = schedulers.BernoulliEpisodeScheduler(keep_probability=0.0)
     for _ in range(100):
       for timestep in _create_episode(num_transitions=np.random.randint(100)):
         self.assertFalse(scheduler(timestep))
 
   def test_bernoulli_episodes_probability_1(self):
-    """bernoulli_episode_scheduler should return True if given probability 1.0."""
+    """BernoulliEpisodeScheduler should return True if given probability 1.0."""
     scheduler = schedulers.BernoulliEpisodeScheduler(keep_probability=1.0)
     for _ in range(100):
       for timestep in _create_episode(num_transitions=np.random.randint(100)):
         self.assertTrue(scheduler(timestep))
 
   def test_bernoulli_episodes_probability_1pct(self):
-    """bernoulli_episode_scheduler should return more False with p=0.01."""
+    """BernoulliEpisodeScheduler should return more False with p=0.01."""
     scheduler = schedulers.BernoulliEpisodeScheduler(keep_probability=0.01)
     num_true = 0
     num_false = 0
@@ -216,7 +216,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
     self.assertGreater(num_false, num_true)
 
   def test_bernoulli_episodes_probability_99pct(self):
-    """bernoulli_episode_scheduler should return more True with p=0.99."""
+    """BernoulliEpisodeScheduler should return more True with p=0.99."""
     scheduler = schedulers.BernoulliEpisodeScheduler(keep_probability=0.99)
     num_true = 0
     num_false = 0
@@ -262,19 +262,19 @@ class DefaultSchedulersTest(parameterized.TestCase):
       ('empty_ndarray', np.array([], dtype=np.int64)),
   )
   def test_list_steps_empty_steps(self, desired_steps):
-    """list_step_scheduler should raise an error if given invalid steps."""
+    """ListStepScheduler should raise an error if given invalid steps."""
     self.assertRaises(
         ValueError, schedulers.ListStepScheduler, desired_steps=desired_steps)
 
   def test_list_np_array_wrong_type(self):
-    """list_step_scheduler should raise an error if given invalid steps."""
+    """ListStepScheduler should raise an error if given invalid steps."""
     self.assertRaises(
         TypeError,
         schedulers.ListStepScheduler,
         desired_steps=np.array([1.0, 10.0, 100.0], dtype=np.float32))
 
   def test_list_steps_single_item(self):
-    """list_step_scheduler should return True if step is in `desired_steps`."""
+    """ListStepScheduler should return True if step is in `desired_steps`."""
     scheduler = schedulers.ListStepScheduler(desired_steps=[3])
     self.assertFalse(scheduler(None))
     self.assertFalse(scheduler(None))
@@ -284,7 +284,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
       self.assertFalse(scheduler(None))
 
   def test_list_steps_first_10(self):
-    """list_step_scheduler should return True if step is in `desired_steps`."""
+    """ListStepScheduler should return True if step is in `desired_steps`."""
     scheduler = schedulers.ListStepScheduler(desired_steps=list(range(10)))
     for _ in range(10):  # First 10 steps should be True.
       self.assertTrue(scheduler(None))
@@ -292,7 +292,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
       self.assertFalse(scheduler(None))
 
   def test_list_steps_logspace(self):
-    """list_step_scheduler should return True if step is in `desired_steps`."""
+    """ListStepScheduler should return True if step is in `desired_steps`."""
     desired_steps = np.logspace(
         start=0, stop=3, num=10, base=10.0).astype(np.int32) - 1
     # At this point: desired_steps = [0, 1, 3, 9, 20, 45, 99, 214, 463, 999]
@@ -308,14 +308,14 @@ class DefaultSchedulersTest(parameterized.TestCase):
       ('empty_ndarray', np.array([], dtype=np.int64)),
   )
   def test_list_empty_episodes(self, desired_episodes):
-    """list_episode_scheduler should raise an error if given invalid episodes."""
+    """ListEpisodeScheduler should raise an error if given invalid episodes."""
     self.assertRaises(
         ValueError,
         schedulers.ListEpisodeScheduler,
         desired_episodes=desired_episodes)
 
   def test_list_episodes_np_array_wrong_type(self):
-    """list_episode_scheduler should raise an error if given invalid episodes."""
+    """ListEpisodeScheduler should raise an error if given invalid episodes."""
     self.assertRaises(
         TypeError,
         schedulers.ListEpisodeScheduler,
@@ -338,7 +338,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
         self.assertFalse(scheduler(timestep))
 
   def test_list_episodes_first_10(self):
-    """Scheduler should return True if episode is in `desired_episodes`."""
+    """The scheduler should return True if episode is in `desired_episodes`."""
     scheduler = schedulers.ListEpisodeScheduler(
         desired_episodes=list(range(10)))
     for _ in range(10):  # First 10 episodes should be True.
@@ -349,7 +349,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
         self.assertFalse(scheduler(timestep))
 
   def test_list_episodes_logspace(self):
-    """Scheduler should return True if episode is in `desired_episodes`."""
+    """The scheduler should return True if episode is in `desired_episodes`."""
     desired_episodes = np.logspace(
         start=0, stop=3, num=10, base=10.0).astype(np.int32) - 1
     # At this point: desired_episodes = [0, 1, 3, 9, 20, 45, 99, 214, 463, 999]

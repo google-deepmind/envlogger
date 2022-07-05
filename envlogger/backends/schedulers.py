@@ -155,5 +155,3 @@ class ListEpisodeScheduler:
     if data.timestep.last():
       self._episode_counter += 1
     return should_log
-
-
