@@ -391,11 +391,11 @@ def decode_datum(
   if values.string_values:
     if is_scalar:
       return values.string_values[0]
-    array = np.array([x for x in values.string_values], dtype=np.object)
+    array = np.array(list(values.string_values), dtype=np.object)
   elif values.bytes_values:
     if is_scalar:
       return values.bytes_values[0]
-    array = np.array([x for x in values.bytes_values], dtype=np.object)
+    array = np.array(list(values.bytes_values), dtype=np.object)
   elif values.bigint_values:
     def from_bigint(int_bytes):
       return int.from_bytes(int_bytes, byteorder='big', signed=True)
