@@ -296,9 +296,6 @@ class NumpyConvertersTest(parameterized.TestCase):
     datum.values.bool_values.append(True)
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode(True), expected)
-    # Numpy's booleans should also work.
-    self.assertEqual(codec.encode(np.bool(True)), expected)
-    self.assertEqual(codec.encode(np.bool_(True)), expected)
 
   def test_decode_bool_scalar(self):
     """Proto supports bool so we expect no precision loss in decoding."""
@@ -317,13 +314,6 @@ class NumpyConvertersTest(parameterized.TestCase):
   def test_identity_bool_scalar_true(self):
     """Encoding and decoding it back should not change its value."""
     decoded = codec.decode(codec.encode(True))
-    self.assertIsInstance(decoded, bool)
-    self.assertEqual(decoded, True)
-    # Numpy's booleans should also work, but they all become Python bools.
-    decoded = codec.decode(codec.encode(np.bool_(True)))
-    self.assertIsInstance(decoded, bool)
-    self.assertEqual(decoded, True)
-    decoded = codec.decode(codec.encode(np.bool(True)))
     self.assertIsInstance(decoded, bool)
     self.assertEqual(decoded, True)
 
@@ -986,15 +976,15 @@ class NumpyConvertersTest(parameterized.TestCase):
     expected = storage_pb2.Data()
     datum = expected.datum
     datum.values.bool_values.append(True)
-    self.assertEqual(codec.encode(np.array(True, dtype=np.bool)), expected)
+    self.assertEqual(codec.encode(np.array(True, dtype=bool)), expected)
 
   def test_encode_one_bool_elem_ndarray(self):
-    """Ensures that np bool arrays can be encoded in our proto."""
+    """Ensures that bool arrays can be encoded in our proto."""
     expected = storage_pb2.Data()
     datum = expected.datum
     datum.shape.dim.add().size = 1
     datum.values.bool_values.append(True)
-    self.assertEqual(codec.encode(np.array([True], dtype=np.bool)), expected)
+    self.assertEqual(codec.encode(np.array([True], dtype=bool)), expected)
 
   def test_decode_one_bool_elem_ndarray(self):
     """Once encoded, the proto should be decodeable."""
@@ -1002,7 +992,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     user_data.datum.shape.dim.add().size = 1
     user_data.datum.values.bool_values.append(True)
     np.testing.assert_equal(
-        codec.decode(user_data), np.array([True], dtype=np.bool))
+        codec.decode(user_data), np.array([True], dtype=bool))
 
   def test_encode_one_string_elem_scalar_ndarray(self):
     """Ensures that np arrays with shape 0 can be encoded in our proto."""
