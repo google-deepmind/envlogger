@@ -264,7 +264,7 @@ def encode(
   of numpy arrays) to a proto format that can be written to disk.
 
   NOTE: When converting numpy arrays of strings or bytes, ensure that its dtype
-  is np.object to ensure that no wrong conversions will occur.
+  is `object` to ensure that no wrong conversions will occur.
 
   Usage:
     # A bare numpy array.
@@ -391,11 +391,11 @@ def decode_datum(
   if values.string_values:
     if is_scalar:
       return values.string_values[0]
-    array = np.array(list(values.string_values), dtype=np.object)
+    array = np.array(list(values.string_values), dtype=object)
   elif values.bytes_values:
     if is_scalar:
       return values.bytes_values[0]
-    array = np.array(list(values.bytes_values), dtype=np.object)
+    array = np.array(list(values.bytes_values), dtype=object)
   elif values.bigint_values:
     def from_bigint(int_bytes):
       return int.from_bytes(int_bytes, byteorder='big', signed=True)
@@ -423,7 +423,7 @@ def decode(
   For usage examples, please see the unit tests for this function.
 
   NOTE: `string_values` and `bytes_values` will both use numpy's dtype ==
-  np.object. This is to avoid wrong conversions and unintended narrowing.
+  `object`. This is to avoid wrong conversions and unintended narrowing.
 
   Args:
     user_data: The protobuf data to convert to Python data objects.
