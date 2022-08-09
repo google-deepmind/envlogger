@@ -49,7 +49,7 @@ class CrossLanguageTest(parameterized.TestCase):
 
     # Find C++ reader and run it.
     cc_reader_output = _execute_binary(
-        'backends/cross_language_test/py_writer',
+        'backends/cross_language_test/cc_reader',
         args=[f'--trajectories_dir={trajectories_dir}'])
     logging.info('cc_reader_output: %r', cc_reader_output)
 
