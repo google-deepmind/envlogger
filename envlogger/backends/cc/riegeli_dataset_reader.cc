@@ -40,7 +40,6 @@
 #include "envlogger/platform/riegeli_file_reader.h"
 #include "envlogger/platform/status_macros.h"
 #include "envlogger/proto/storage.pb.h"
-#include "riegeli/base/base.h"
 #include "riegeli/records/record_reader.h"
 #include "riegeli/records/record_writer.h"
 

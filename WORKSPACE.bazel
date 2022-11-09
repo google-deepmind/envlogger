@@ -20,9 +20,9 @@ http_archive(
     name = "com_google_protobuf",
     patch_cmds = [
         r"sed -i -e 's/\/\/external:six/@six_archive\/\/:six/g' BUILD",
-        # Update `zlib` to 1.2.12 and use an up-to-date URL.
+        # Update `zlib` to 1.2.13 and use an up-to-date URL.
         r"sed -i -e 's/zlib.net/www.zlib.net/' protobuf_deps.bzl",
-        r"sed -i -e 's/1\.2\.11/1.2.12/' protobuf_deps.bzl",
+        r"sed -i -e 's/1\.2\.11/1.2.13/' protobuf_deps.bzl",
         r"sed -i -e '/sha256/d' protobuf_deps.bzl",
     ],
     strip_prefix = "protobuf-3.9.0",
@@ -97,9 +97,9 @@ http_archive(
 # Riegeli.
 http_archive(
     name = "com_google_riegeli",
-    sha256 = "59f94348f425fe3d7edd8f98ee0277ee2f4adecf7cf86f858f75039ce4955244",
-    strip_prefix = "riegeli-e9ba0d79a76b9fa1f0de46c11c464141e345338f",
-    url = "https://github.com/google/riegeli/archive/e9ba0d79a76b9fa1f0de46c11c464141e345338f.tar.gz",  # 2022-06-27
+    sha256 = "64b8848baef329b382a64e30e1c58708de061bf5a6e017b8599d9ebd116f04d9",
+    strip_prefix = "riegeli-301c122a77aa60fd01396b5b9a7901218494e096",
+    url = "https://github.com/google/riegeli/archive/301c122a77aa60fd01396b5b9a7901218494e096.tar.gz",  # 2022-11-04
 )
 
 # Dependencies needed by Riegeli.
@@ -148,9 +148,9 @@ http_archive(
 http_archive(
     name = "zlib",
     build_file = "//patches:zlib.BUILD.bazel",
-    sha256 = "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9",
-    strip_prefix = "zlib-1.2.12",
-    urls = ["https://www.zlib.net/zlib-1.2.12.tar.gz"],
+    sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
+    strip_prefix = "zlib-1.2.13",
+    urls = ["https://www.zlib.net/zlib-1.2.13.tar.gz"],
 )
 
 # Xtensor and dependencies.

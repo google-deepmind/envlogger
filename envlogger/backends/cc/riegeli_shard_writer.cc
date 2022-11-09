@@ -26,7 +26,7 @@
 #include "envlogger/platform/riegeli_file_writer.h"
 #include "envlogger/platform/status_macros.h"
 #include "envlogger/proto/storage.pb.h"
-#include "riegeli/base/base.h"
+#include "riegeli/base/types.h"
 #include "riegeli/records/record_position.h"
 #include "riegeli/records/record_writer.h"
 #include "xtensor/xadapt.hpp"
