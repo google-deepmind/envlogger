@@ -411,9 +411,19 @@ def decode_datum(
 
 
 def decode(
-    user_data: storage_pb2.Data
-) -> Optional[Union[ScalarNumber, bool, str, bytes, np.ndarray, List[Any],
-                    Tuple[Any, ...], Dict[str, Any]]]:
+    user_data: storage_pb2.Data,
+) -> Optional[
+    Union[
+        ScalarNumber,
+        bool,
+        str,
+        bytes,
+        np.ndarray,
+        List[Any],
+        Tuple[Any, ...],
+        Dict[Any, Any],
+    ]
+]:
   """Converts from storage_pb2.Data to common Python data objects.
 
   This function converts a storage_pb2.Data protobuf to numpy arrays, lists of
@@ -449,8 +459,10 @@ def decode(
   if user_data.HasField('tuple'):
     return tuple((decode(x) for x in user_data.tuple.values))
   if user_data.HasField('dict'):
-    string_dict = {k: decode(x) for k, x in user_data.dict.values.items()}
-    kvs_dict = {
+    string_dict: dict[Any, Any] = {
+        k: decode(x) for k, x in user_data.dict.values.items()
+    }
+    kvs_dict: dict[Any, Any] = {
         decode(t.tuple.values[0]): decode(t.tuple.values[1])
         for t in user_data.dict.kvs.values
     }
