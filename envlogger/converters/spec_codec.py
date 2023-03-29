@@ -48,7 +48,7 @@ def decode_environment_specs(
     encoded_specs: Dict[str, Any]) -> Dict[str, Optional[specs.Array]]:
   """Decodes all the specs of an environment."""
   if encoded_specs:
-    return {spec_name: decode(encoded_specs[spec_name])
+    return {spec_name: decode(encoded_specs[spec_name])  # pytype: disable=bad-return-type  # always-use-return-annotations
             for spec_name in _ENVIRONMENT_SPEC_NAMES}
   return {spec_name: None for spec_name in _ENVIRONMENT_SPEC_NAMES}
 
