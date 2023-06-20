@@ -15,18 +15,20 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# abseil-cpp.
+http_archive(
+    name = "com_google_absl",
+    sha256 = "54707f411cb62a26a776dad5fd60829098c181700edcd022ea5c2ca49e9b7ef1",
+    strip_prefix = "abseil-cpp-20220623.1",
+    urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20220623.1.zip"], # 2022-06-23
+)
+
 # Import protobuf dependencies.
 http_archive(
     name = "com_google_protobuf",
-    patch_cmds = [
-        r"sed -i -e 's/\/\/external:six/@six_archive\/\/:six/g' BUILD",
-        # Update `zlib` to 1.2.13 and use an up-to-date URL.
-        r"sed -i -e 's/zlib.net/www.zlib.net/' protobuf_deps.bzl",
-        r"sed -i -e 's/1\.2\.11/1.2.13/' protobuf_deps.bzl",
-        r"sed -i -e '/sha256/d' protobuf_deps.bzl",
-    ],
-    strip_prefix = "protobuf-3.9.0",
-    url = "https://github.com/protocolbuffers/protobuf/archive/v3.9.0.zip",
+    sha256 = "f66073dee0bc159157b0bd7f502d7d1ee0bc76b3c1eac9836927511bdc4b3fc1",
+    strip_prefix = "protobuf-3.21.9",
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.21.9.zip"],  # 2019-09-20
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
@@ -43,17 +45,23 @@ http_archive(
 # Install the requirements.
 http_archive(
     name = "rules_python",
-    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+    sha256 = "84aec9e21cc56fbc7f1335035a71c850d1b9b5cc6ff497306f84cced9a769841",
+    strip_prefix = "rules_python-0.23.1",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.23.1/rules_python-0.23.1.tar.gz",
 )
 
-load("@rules_python//python:pip.bzl", "pip_install")
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
 
-pip_install(
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
     name = "py_deps",
-    quiet = False,
-    requirements = "//envlogger:requirements.txt",
+    requirements = "//envlogger:requirements_lock.txt",
 )
+
+load("@py_deps//:requirements.bzl", "install_deps")
+install_deps()
 
 # Import Bazel protobuf rules.
 http_archive(
@@ -72,34 +80,25 @@ rules_proto_dependencies()
 
 rules_proto_toolchains()
 
-# abseil-cpp.
-http_archive(
-    name = "com_google_absl",
-    sha256 = "35f22ef5cb286f09954b7cc4c85b5a3f6221c9d4df6b8c4a1e9d399555b366ee",  # SHARED_ABSL_SHA
-    strip_prefix = "abseil-cpp-997aaf3a28308eba1b9156aa35ab7bca9688e9f6",
-    urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/abseil/abseil-cpp/archive/997aaf3a28308eba1b9156aa35ab7bca9688e9f6.tar.gz",
-        "https://github.com/abseil/abseil-cpp/archive/997aaf3a28308eba1b9156aa35ab7bca9688e9f6.tar.gz",
-    ],
-)
-
 # Google Test and gmock.
 http_archive(
     name = "com_google_googletest",
-    sha256 = "ff7a82736e158c077e76188232eac77913a15dac0b22508c390ab3f88e6d6d86",
-    strip_prefix = "googletest-b6cd405286ed8635ece71c72f118e659f4ade3fb",
+    # sha256 = "ff7a82736e158c077e76188232eac77913a15dac0b22508c390ab3f88e6d6d86",
+    sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
+    strip_prefix = "googletest-release-1.12.1",
     urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/google/googletest/archive/b6cd405286ed8635ece71c72f118e659f4ade3fb.zip",
-        "https://github.com/google/googletest/archive/b6cd405286ed8635ece71c72f118e659f4ade3fb.zip",
+        "https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz"
     ],
 )
 
 # Riegeli.
 http_archive(
     name = "com_google_riegeli",
-    sha256 = "64b8848baef329b382a64e30e1c58708de061bf5a6e017b8599d9ebd116f04d9",
-    strip_prefix = "riegeli-301c122a77aa60fd01396b5b9a7901218494e096",
-    url = "https://github.com/google/riegeli/archive/301c122a77aa60fd01396b5b9a7901218494e096.tar.gz",  # 2022-11-04
+    sha256 = "2eb060d759f4c2cefc099a9442bd1b2040303464879915c692ade46b5b9fdc17",
+    patch_args = ["-p1"],
+    patches = ["//patches:riegeli.patch"],
+    strip_prefix = "riegeli-b2210b97a79a9b7212a8b45590fa03dae0a81d44",
+    url = "https://github.com/google/riegeli/archive/b2210b97a79a9b7212a8b45590fa03dae0a81d44.tar.gz",  # 2022-11-04
 )
 
 # Dependencies needed by Riegeli.
@@ -195,23 +194,21 @@ http_archive(
 # Pybind11 bindings for the Abseil C++ common libraries.
 http_archive(
     name = "pybind11_bazel",
-    strip_prefix = "pybind11_bazel-26973c0ff320cb4b39e45bc3e4297b82bc3a6c09",
-    urls = ["https://github.com/pybind/pybind11_bazel/archive/26973c0ff320cb4b39e45bc3e4297b82bc3a6c09.zip"],
+    sha256 = "b72c5b44135b90d1ffaba51e08240be0b91707ac60bea08bb4d84b47316211bb",
+    strip_prefix = "pybind11_bazel-b162c7c88a253e3f6b673df0c621aca27596ce6b",
+    urls = ["https://github.com/pybind/pybind11_bazel/archive/b162c7c88a253e3f6b673df0c621aca27596ce6b.zip"],
 )
 
 http_archive(
     name = "pybind11",
     build_file = "@pybind11_bazel//:pybind11.BUILD",
-    sha256 = "4828cd4b5b637ac5bc1106655931e5fe8dd6b56db6c24ccf7b44d3b2c55f49c2",
-    strip_prefix = "pybind11-0c93a0f3fcf6bf26be584558d7426564720cea6f",
-    urls = ["https://github.com/pybind/pybind11/archive/0c93a0f3fcf6bf26be584558d7426564720cea6f.tar.gz"],
+    strip_prefix = "pybind11-2.10.4",
+    urls = ["https://github.com/pybind/pybind11/archive/v2.10.4.tar.gz"],
 )
 
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
 
-python_configure(
-    name = "local_config_python",
-)
+python_configure(name = "local_config_python")
 
 git_repository(
     name = "pybind11_protobuf",

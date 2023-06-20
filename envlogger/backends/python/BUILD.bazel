@@ -57,6 +57,6 @@ py_test(
     data = [":episode_info.so"],
     deps = [
         "//envlogger/proto:storage_py_pb2",
-        requirement("absl-py"),
+        # requirement("absl-py"),
     ],
 )
