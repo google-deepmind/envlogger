@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Examples.
-load("@py_deps//:requirements.bzl", "requirement")
+# load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
@@ -24,8 +24,8 @@ py_binary(
     deps = [
         "//envlogger",
         "//envlogger/testing:catch_env",
-        requirement("absl-py"),
-        requirement("numpy"),
+        # requirement("absl-py"),
+        # requirement("numpy"),
     ],
 )
 
@@ -36,9 +36,9 @@ py_binary(
         "//envlogger",
         "//envlogger/backends:tfds_backend_writer",
         "//envlogger/testing:catch_env",
-        requirement("absl-py"),
-        requirement("numpy"),
-        requirement("tensorflow"),
-        requirement("tfds-nightly"),
+        # requirement("absl-py"),
+        # requirement("numpy"),
+        # requirement("tensorflow"),
+        # requirement("tfds-nightly"),
     ],
 )

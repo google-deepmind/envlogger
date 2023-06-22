@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Testing.
-load("@py_deps//:requirements.bzl", "requirement")
+# load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -22,7 +22,7 @@ py_library(
     name = "catch_env",
     srcs = ["catch_env.py"],
     deps = [
-        requirement("dm_env"),
-        requirement("numpy"),
+        # requirement("dm_env"),
+        # requirement("numpy"),
     ],
 )

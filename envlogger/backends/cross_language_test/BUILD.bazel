@@ -14,7 +14,7 @@
 
 # Tests for reading/writing from different languages.
 
-load("@py_deps//:requirements.bzl", "requirement")
+# load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 cc_binary(

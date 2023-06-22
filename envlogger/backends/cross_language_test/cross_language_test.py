@@ -30,7 +30,8 @@ def _execute_binary(rel_path: str, args: Sequence[str]) -> bytes:
   r = runfiles.Create()
   path = r.Rlocation(os.path.join('__main__', 'envlogger', rel_path))
   cmd = [path] + args
-  return subprocess.check_output(cmd, env=r.EnvVars())
+  env = {**os.environ, **r.EnvVars()}
+  return subprocess.check_output(cmd, env=env)
 
 
 class CrossLanguageTest(parameterized.TestCase):
