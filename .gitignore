@@ -1,3 +1,4 @@
+configure.bazelrc
 /bazel-*
 
 # Byte-compiled / optimized / DLL files

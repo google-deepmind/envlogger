@@ -20,3 +20,5 @@ build -c opt
 build --cxxopt="-mavx"
 build --cxxopt="-std=c++17"
 build --cxxopt="-D_GLIBCXX_USE_CXX11_ABI=0"
+
+try-import %workspace%/configure.bazelrc
