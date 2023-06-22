@@ -19,6 +19,7 @@ from distutils import cmd
 import os
 import posixpath
 import shutil
+import sys
 
 import pkg_resources
 import setuptools
@@ -105,10 +106,11 @@ class _BuildExt(build_ext.build_ext):
     bazel_argv = [
         'bazel',
         'build',
-        '...',
+        '//envlogger/...',
         '--symlink_prefix=' + os.path.join(self.build_temp, 'bazel-'),
         '--compilation_mode=' + ('dbg' if self.debug else 'opt'),
         '--verbose_failures',
+        f'--action_env=PYTHON_BIN_PATH={sys.executable}', 
     ]
 
     self.spawn(bazel_argv)
