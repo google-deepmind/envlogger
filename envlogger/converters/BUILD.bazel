@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # Converters to and from environment logger proto format.
-load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -23,7 +22,6 @@ py_library(
     srcs = ["codec.py"],
     deps = [
         "//envlogger/proto:storage_py_pb2",
-        requirement("numpy"),
     ],
 )
 
@@ -33,18 +31,12 @@ py_test(
     deps = [
         ":codec",
         "//envlogger/proto:storage_py_pb2",
-        requirement("absl-py"),
-        requirement("numpy"),
     ],
 )
 
 py_library(
     name = "spec_codec",
     srcs = ["spec_codec.py"],
-    deps = [
-        requirement("dm_env"),
-        requirement("numpy"),
-    ],
 )
 
 py_test(
@@ -53,9 +45,6 @@ py_test(
     deps = [
         ":spec_codec",
         "//envlogger/proto:storage_py_pb2",
-        requirement("absl-py"),
-        requirement("dm_env"),
-        requirement("numpy"),
     ],
 )
 

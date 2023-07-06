@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # Build targets for environment logger.
-load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -43,7 +42,6 @@ py_library(
         "//envlogger/backends:in_memory_backend",
         "//envlogger/backends:riegeli_backend_writer",
         "//envlogger/converters:spec_codec",
-        requirement("dm_env"),
     ],
 )
 
@@ -62,9 +60,6 @@ py_test(
         "//envlogger/proto:storage_py_pb2",
         "//envlogger/testing:catch_env",
         "@com_google_riegeli//python/riegeli",
-        requirement("absl-py"),
-        requirement("dm_env"),
-        requirement("numpy"),
     ],
 )
 
@@ -72,7 +67,6 @@ py_library(
     name = "environment_wrapper",
     srcs = ["environment_wrapper.py"],
     deps = [
-        requirement("dm_env"),
     ],
 )
 
@@ -90,7 +84,6 @@ py_library(
         "//envlogger/backends:in_memory_backend",
         "//envlogger/backends:riegeli_backend_reader",
         "//envlogger/converters:spec_codec",
-        requirement("absl-py"),
     ],
 )
 
@@ -98,6 +91,5 @@ py_library(
     name = "step_data",
     srcs = ["step_data.py"],
     deps = [
-        requirement("dm_env"),
     ],
 )

@@ -17,4 +17,12 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR/..
 
-docker build -t envlogger -f docker/Dockerfile .
+# Default to Python 3.10.
+PY3_VERSION=${1:-10}
+echo Python version 3.${PY3_VERSION}
+
+# Default image label to "envlogger"
+IMAGE_LABEL=${2:-envlogger}
+echo Output docker image label: ${IMAGE_LABEL}
+
+docker build -t ${IMAGE_LABEL} -f docker/Dockerfile . --build-arg PY3_VERSION=${PY3_VERSION}

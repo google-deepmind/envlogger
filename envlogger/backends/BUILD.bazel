@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # Backends.
-load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -28,7 +27,6 @@ py_library(
     srcs = ["schedulers.py"],
     deps = [
         "//envlogger:step_data",
-        requirement("numpy"),
     ],
 )
 
@@ -38,9 +36,6 @@ py_test(
     deps = [
         ":schedulers",
         "//envlogger:step_data",
-        requirement("absl-py"),
-        requirement("dm_env"),
-        requirement("numpy"),
     ],
 )
 
@@ -51,7 +46,6 @@ py_library(
     deps = [
         "//envlogger:step_data",
         "//envlogger/converters:codec",
-        requirement("absl-py"),
     ],
 )
 
@@ -83,8 +77,6 @@ py_test(
         ":schedulers",
         "//envlogger:step_data",
         "//envlogger/testing:catch_env",
-        requirement("absl-py"),
-        requirement("numpy"),
     ],
 )
 
@@ -100,8 +92,6 @@ py_library(
         "//envlogger:step_data",
         "//envlogger/converters:codec",
         "//envlogger/proto:storage_py_pb2",
-        requirement("absl-py"),
-        requirement("dm_env"),
     ],
 )
 
@@ -116,7 +106,6 @@ py_library(
         ":schedulers",
         "//envlogger:step_data",
         "//envlogger/converters:codec",
-        requirement("absl-py"),
     ],
 )
 
@@ -130,9 +119,6 @@ py_test(
         ":schedulers",
         "//envlogger:step_data",
         "//envlogger/testing:catch_env",
-        requirement("absl-py"),
-        requirement("dm_env"),
-        requirement("numpy"),
     ],
 )
 
@@ -141,10 +127,6 @@ py_library(
     srcs = ["rlds_utils.py"],
     deps = [
         "//envlogger:step_data",
-        requirement("absl-py"),
-        requirement("numpy"),
-        requirement("tensorflow"),
-        requirement("tfds-nightly"),
     ],
 )
 
@@ -155,8 +137,6 @@ py_library(
         ":backend_writer",
         ":rlds_utils",
         "//envlogger:step_data",
-        requirement("absl-py"),
-        requirement("tfds-nightly"),
     ],
 )
 
@@ -169,10 +149,6 @@ py_library(
         ":tfds_backend_writer",
         "//envlogger:step_data",
         "//envlogger/testing:catch_env",
-        requirement("absl-py"),
-        requirement("numpy"),
-        requirement("tensorflow"),
-        requirement("tfds-nightly"),
     ],
 )
 
@@ -183,11 +159,6 @@ py_test(
         ":rlds_utils",
         ":tfds_backend_testlib",
         "//envlogger:step_data",
-        requirement("absl-py"),
-        requirement("dm_env"),
-        requirement("numpy"),
-        requirement("tensorflow"),
-        requirement("tfds-nightly"),
     ],
 )
 
@@ -200,10 +171,5 @@ py_test(
         ":tfds_backend_testlib",
         ":tfds_backend_writer",
         "//envlogger:step_data",
-        requirement("absl-py"),
-        requirement("dm_env"),
-        requirement("numpy"),
-        requirement("tensorflow"),
-        requirement("tfds-nightly"),
     ],
 )
