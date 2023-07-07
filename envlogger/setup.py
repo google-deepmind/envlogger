@@ -15,7 +15,6 @@
 
 """Install script for setuptools."""
 
-from distutils import cmd
 import os
 import posixpath
 import shutil
@@ -36,10 +35,10 @@ _ENVLOGGER_PROTOS = (
 )
 
 
-class _GenerateProtoFiles(cmd.Command):
-  """Command to generate protobuf bindings for AndroidEnv protos."""
+class _GenerateProtoFiles(setuptools.Command):
+  """Command to generate protobuf bindings for EnvLogger protos."""
 
-  descriptions = 'Generates Python protobuf bindings for AndroidEnv protos.'
+  descriptions = 'Generates Python protobuf bindings for EnvLogger protos.'
   user_options = []
 
   def initialize_options(self):
