@@ -28,6 +28,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/time/time.h"
 #include "absl/types/variant.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/converters/make_visitor.h"
