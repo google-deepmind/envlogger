@@ -14,6 +14,10 @@
 
 #include "envlogger/backends/cc/riegeli_dataset_writer.h"
 
+#include <memory>
+#include <stdexcept>
+#include <string>
+
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
 #include "pybind11//stl.h"
