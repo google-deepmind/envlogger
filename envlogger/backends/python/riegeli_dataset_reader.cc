@@ -15,8 +15,11 @@
 #include "envlogger/backends/cc/riegeli_dataset_reader.h"
 
 #include <exception>
+#include <memory>
 #include <optional>
+#include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "absl/strings/string_view.h"
 #include "envlogger/proto/storage.pb.h"
