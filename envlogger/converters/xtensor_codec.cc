@@ -16,7 +16,9 @@
 
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <variant>
+#include <vector>
 
 #include "glog/logging.h"
 #include "google/protobuf/repeated_field.h"
