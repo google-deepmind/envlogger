@@ -15,6 +15,8 @@
 #include "envlogger/platform/default/status_builder.h"
 
 #include <memory>
+#include <sstream>
+#include <string>
 
 namespace envlogger {
 namespace internal {
