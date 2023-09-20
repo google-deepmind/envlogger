@@ -14,6 +14,10 @@
 
 #include "envlogger/platform/default/bundle.h"
 
+#include <functional>
+#include <future>  // NOLINT(build/c++11)
+#include <utility>
+
 #include "glog/logging.h"
 
 namespace envlogger {
