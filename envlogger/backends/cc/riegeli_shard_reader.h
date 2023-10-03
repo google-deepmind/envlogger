@@ -66,7 +66,6 @@ class RiegeliShardReader {
 
   ~RiegeliShardReader();
 
-
   // Reads trajectory data written by RiegeliShardWriter.
   //
   // If `step_offsets_filepath` is empty the constructor will return early

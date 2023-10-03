@@ -37,7 +37,6 @@ class RiegeliShardWriter {
   RiegeliShardWriter() = default;
   ~RiegeliShardWriter();
 
-
   // IMPORTANT: The directory where these file live MUST exist _before_ calling
   //            Init().
   //

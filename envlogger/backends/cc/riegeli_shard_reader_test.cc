@@ -167,6 +167,5 @@ TEST(RiegeliShardReaderTest, NonEmptySingleEpisode) {
   EXPECT_THAT(*episode0_opt->metadata, EqualsProto(expected_episode_metadata));
 }
 
-
 }  // namespace
 }  // namespace envlogger

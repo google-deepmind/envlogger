@@ -69,7 +69,6 @@ void WriteLastEpisodeIndex(std::vector<int64_t>* episode_starts,
 
 }  // namespace
 
-
 absl::Status RiegeliShardWriter::Init(
     absl::string_view steps_filepath, absl::string_view step_offsets_filepath,
     absl::string_view episode_metadata_filepath,

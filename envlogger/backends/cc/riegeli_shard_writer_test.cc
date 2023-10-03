@@ -50,7 +50,6 @@ MATCHER_P2(EqualsEpisode, start_index, num_steps, "") {
   return Value(arg.start, start_index) && Value(arg.num_steps, num_steps);
 }
 
-
 TEST(RiegeliShardWriterTest, KStepsIndex) {
   const std::string steps_filename =
       file::JoinPath(getenv("TEST_TMPDIR"), "my_steps.riegeli");

@@ -57,7 +57,6 @@ absl::StatusOr<riegeli::RecordReader<RiegeliFileReader>> CreateReader(
 
 }  // namespace
 
-
 RiegeliShardReader::~RiegeliShardReader() { Close(); }
 
 absl::Status RiegeliShardReader::Init(
