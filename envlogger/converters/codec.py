@@ -84,13 +84,13 @@ import struct
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from envlogger.proto import storage_pb2
-
 import numpy as np
 
 
 # A type annotation that represents all the possible number types we support.
-ScalarNumber = Union[float, int, np.float32, np.float64, np.int32, np.int64,
-                     np.uint32, np.uint64]
+ScalarNumber = Union[
+    float, int, np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64
+]
 
 
 # Dimension size reserved for scalars. Please see proto definition.
@@ -115,6 +115,7 @@ def _python_int_to_bytes(py_int: int) -> bytes:
 
   Args:
     py_int: The integer to be encoded.
+
   Returns:
     The integer represented as bytes.
   """
@@ -126,8 +127,9 @@ def _python_int_to_bytes(py_int: int) -> bytes:
   return py_int.to_bytes(num_bytes_needed, byteorder='big', signed=True)
 
 
-def _set_datum_values_from_scalar(scalar: Union[ScalarNumber, bool, str, bytes],
-                                  datum: storage_pb2.Datum) -> bool:
+def _set_datum_values_from_scalar(
+    scalar: Union[ScalarNumber, bool, str, bytes], datum: storage_pb2.Datum
+) -> bool:
   """Populates `datum` using `scalar` in a best effort way.
 
   Notice that unrecognized scalar datum will be ignored.
@@ -135,6 +137,7 @@ def _set_datum_values_from_scalar(scalar: Union[ScalarNumber, bool, str, bytes],
   Args:
     scalar: The source of the data.
     datum: The destination of the copy.
+
   Returns:
     True if the population was successful, False otherwise.
   """
@@ -215,8 +218,9 @@ def _set_datum_values_from_scalar(scalar: Union[ScalarNumber, bool, str, bytes],
   return False
 
 
-def _set_datum_values_from_array(array: np.ndarray,
-                                 values: storage_pb2.Datum.Values) -> None:
+def _set_datum_values_from_array(
+    array: np.ndarray, values: storage_pb2.Datum.Values
+) -> None:
   """Populates `values` from entries in `array`.
 
   Args:
@@ -243,10 +247,12 @@ def _set_datum_values_from_array(array: np.ndarray,
         vs.append(cast_type(x))
       return
 
-  for key, dtype, cast_type in [('int8_values', np.int8, '>b'),
-                                ('int16_values', np.int16, '>h'),
-                                ('uint8_values', np.uint8, '>B'),
-                                ('uint16_values', np.uint16, '>H')]:
+  for key, dtype, cast_type in [
+      ('int8_values', np.int8, '>b'),
+      ('int16_values', np.int16, '>h'),
+      ('uint8_values', np.uint8, '>B'),
+      ('uint16_values', np.uint16, '>H'),
+  ]:
     if np.issubdtype(array.dtype, dtype):
       setattr(values, key, array.astype(cast_type).tobytes())
       return
@@ -307,7 +313,8 @@ def encode(
             'We assume list is homogeneous, i.e., data are of the same type.'
             f' Expecting value of type {type_x} (type of the first element).'
             f' Got {x} of type {type(x)}, index: {index},'
-            f' Whole list: {user_data}')
+            f' Whole list: {user_data}'
+        )
       # Copy each element to the array.
       output.array.values.add().CopyFrom(encode(x))
     return output
@@ -344,7 +351,7 @@ def encode(
 
 
 def decode_datum(
-    datum: storage_pb2.Datum
+    datum: storage_pb2.Datum,
 ) -> Union[np.ndarray, ScalarNumber, bool, str, bytes]:
   """Creates a numpy array or scalar from a Datum protobuf.
 
@@ -362,13 +369,15 @@ def decode_datum(
   values = datum.values
 
   # Normal values.
-  for vs, dtype in [(values.float_values, np.float32),
-                    (values.double_values, np.float64),
-                    (values.int32_values, np.int32),
-                    (values.int64_values, np.int64),
-                    (values.uint32_values, np.uint32),
-                    (values.uint64_values, np.uint64),
-                    (values.bool_values, bool)]:
+  for vs, dtype in [
+      (values.float_values, np.float32),
+      (values.double_values, np.float64),
+      (values.int32_values, np.int32),
+      (values.int64_values, np.int64),
+      (values.uint32_values, np.uint32),
+      (values.uint64_values, np.uint64),
+      (values.bool_values, bool),
+  ]:
     if vs:
       if is_scalar:
         return dtype(vs[0])
@@ -397,12 +406,15 @@ def decode_datum(
       return values.bytes_values[0]
     array = np.array(list(values.bytes_values), dtype=object)
   elif values.bigint_values:
+
     def from_bigint(int_bytes):
       return int.from_bytes(int_bytes, byteorder='big', signed=True)
+
     if is_scalar:
       return from_bigint(values.bigint_values[0])
     raise TypeError(
-        f'Unsupported Datum of arbitrarily big ints: {values.bigint_values}')
+        f'Unsupported Datum of arbitrarily big ints: {values.bigint_values}'
+    )
 
   if array is None:
     return None
