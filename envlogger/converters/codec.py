@@ -129,7 +129,7 @@ def _python_int_to_bytes(py_int: int) -> bytes:
 
 def _set_datum_values_from_scalar(
     scalar: Union[ScalarNumber, bool, str, bytes], datum: storage_pb2.Datum
-) -> bool:
+) -> None:
   """Populates `datum` using `scalar` in a best effort way.
 
   Notice that unrecognized scalar datum will be ignored.
@@ -140,82 +140,37 @@ def _set_datum_values_from_scalar(
 
   Returns:
     True if the population was successful, False otherwise.
-  """
-  values = datum.values
-  shape = datum.shape
 
+  Raises:
+    TypeError for unsupported types.
+  """
+  datum.shape.dim.add().size = _SCALAR_DIM_SIZE
+
+  values = datum.values
   if isinstance(scalar, str):
     values.string_values.append(scalar)
-    shape.dim.add().size = _SCALAR_DIM_SIZE
-    return True
-  if isinstance(scalar, bytes):
+  elif isinstance(scalar, bytes):
     values.bytes_values.append(scalar)
-    shape.dim.add().size = _SCALAR_DIM_SIZE
-    return True
-
-  try:
-    fdtype = np.finfo(scalar).dtype
-    if fdtype == np.float32:
-      values.float_values.append(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-    if fdtype == np.float64:
-      values.double_values.append(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-  except ValueError:
-    pass
-
-  try:
-    # Vanilla Python ints.
-    if isinstance(scalar, int) and not isinstance(scalar, bool):
-      values.bigint_values.append(_python_int_to_bytes(scalar))
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-
-    # Numpy ints.
-    idtype = np.iinfo(scalar).dtype
-    if idtype == np.int8:
-      values.int8_values = int8struct.pack(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-    if idtype == np.int16:
-      values.int16_values = int16struct.pack(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-    if idtype == np.int32:
-      values.int32_values.append(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-    if idtype == np.int64:
-      values.int64_values.append(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-    if idtype == np.uint8:
-      values.uint8_values = uint8struct.pack(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-    if idtype == np.uint16:
-      values.uint16_values = uint16struct.pack(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-    if idtype == np.uint32:
-      values.uint32_values.append(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-    if idtype == np.uint64:
-      values.uint64_values.append(scalar)
-      shape.dim.add().size = _SCALAR_DIM_SIZE
-      return True
-  except ValueError:
-    pass
-
-  if isinstance(scalar, bool) or isinstance(scalar, np.bool_):
+  elif isinstance(scalar, bool) or isinstance(scalar, np.bool_):
     values.bool_values.append(bool(scalar))
-    shape.dim.add().size = _SCALAR_DIM_SIZE
-    return True
-
-  return False
+  elif isinstance(scalar, int):
+    values.bigint_values.append(_python_int_to_bytes(scalar))
+  elif (dtype := np.result_type(scalar)) == 'int8':
+    values.int8_values = int8struct.pack(scalar)
+  elif dtype == 'int16':
+    values.int16_values = int16struct.pack(scalar)
+  elif dtype == 'uint8':
+    values.uint8_values = uint8struct.pack(scalar)
+  elif dtype == 'uint16':
+    values.uint16_values = uint16struct.pack(scalar)
+  elif dtype == 'float32':
+    values.float_values.append(scalar)
+  elif dtype == 'float64':
+    values.double_values.append(scalar)
+  elif dtype in ['int32', 'int64', 'uint32', 'uint64']:
+    getattr(values, f'{dtype}_values').append(scalar)
+  else:
+    raise TypeError(f'Unknown type: {type(scalar)}, value: {scalar}')
 
 
 def _set_datum_values_from_array(
@@ -325,10 +280,8 @@ def _encode_scalar(
 ) -> storage_pb2.Data:
   """Encodes scalar data."""
   output = storage_pb2.Data()
-  datum = output.datum
-  if _set_datum_values_from_scalar(data, datum):
-    return output
-  raise TypeError(f'Unsupported data type: {type(data)}')
+  _set_datum_values_from_scalar(data, output.datum)
+  return output
 
 
 def encode(
