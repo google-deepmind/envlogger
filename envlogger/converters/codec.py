@@ -260,6 +260,77 @@ def _set_datum_values_from_array(
   raise TypeError(f'Unsupported `array.dtype`: {array.dtype}')
 
 
+def _encode_list(data: List[Any]) -> storage_pb2.Data:
+  """Encodes list data."""
+  output = storage_pb2.Data()
+  type_x = None
+  for index, x in enumerate(data):
+    # Ensure that all elements have the same type.
+    # This is intentionally verbose so that we can provide a useful message
+    # when an exception is raised.
+    if type_x is None:
+      type_x = type(x)
+    elif not isinstance(x, type_x):
+      raise TypeError(
+          'We assume list is homogeneous, i.e., data are of the same type.'
+          f' Expecting value of type {type_x} (type of the first element).'
+          f' Got {x} of type {type(x)}, index: {index},'
+          f' Whole list: {data}'
+      )
+    # Copy each element to the array.
+    output.array.values.add().CopyFrom(encode(x))
+  return output
+
+
+def _encode_tuple(data: Tuple[Any]) -> storage_pb2.Data:
+  """Encodes tuple data."""
+  output = storage_pb2.Data()
+  for x in data:
+    output.tuple.values.add().CopyFrom(encode(x))
+  return output
+
+
+def _encode_dict(data: Dict[str, Any]) -> storage_pb2.Data:
+  """Encodes dict data."""
+  output = storage_pb2.Data()
+  for k, v in data.items():
+    if isinstance(k, str):
+      output.dict.values[k].CopyFrom(encode(v))
+    else:
+      t = output.dict.kvs.values.add().tuple
+      t.values.add().CopyFrom(encode(k))
+      t.values.add().CopyFrom(encode(v))
+  return output
+
+
+def _encode_ndarray(data: np.ndarray) -> storage_pb2.Data:
+  """Encodes ndarray data."""
+  output = storage_pb2.Data()
+  datum = output.datum
+
+  # Set shape.
+  for dim in data.shape:
+    if dim > 0:
+      proto_dim = datum.shape.dim.add()
+      proto_dim.size = dim
+
+  # Copy values.
+  _set_datum_values_from_array(data, datum.values)
+
+  return output
+
+
+def _encode_scalar(
+    data: Union[ScalarNumber, bool, str, bytes]
+) -> storage_pb2.Data:
+  """Encodes scalar data."""
+  output = storage_pb2.Data()
+  datum = output.datum
+  if _set_datum_values_from_scalar(data, datum):
+    return output
+  raise TypeError(f'Unsupported data type: {type(data)}')
+
+
 def encode(
     user_data: Union[np.ndarray, List[Any], Tuple[Any, ...], Dict[str, Any]]
 ) -> storage_pb2.Data:
@@ -294,60 +365,18 @@ def encode(
         Python's and we enforce that all elements in the list have the exact
         same type. We do not support something like [123, 'hello', True].
   """
-  output = storage_pb2.Data()
   if user_data is None:
-    return output
-
-  datum = output.datum
+    return storage_pb2.Data()
 
   if isinstance(user_data, list):
-    type_x = None
-    for index, x in enumerate(user_data):
-      # Ensure that all elements have the same type.
-      # This is intentionally verbose so that we can provide a useful message
-      # when an exception is raised.
-      if type_x is None:
-        type_x = type(x)
-      elif not isinstance(x, type_x):
-        raise TypeError(
-            'We assume list is homogeneous, i.e., data are of the same type.'
-            f' Expecting value of type {type_x} (type of the first element).'
-            f' Got {x} of type {type(x)}, index: {index},'
-            f' Whole list: {user_data}'
-        )
-      # Copy each element to the array.
-      output.array.values.add().CopyFrom(encode(x))
-    return output
+    return _encode_list(user_data)
   if isinstance(user_data, tuple):
-    for x in user_data:
-      output.tuple.values.add().CopyFrom(encode(x))
-    return output
+    return _encode_tuple(user_data)
   if isinstance(user_data, dict):
-    for k, v in user_data.items():
-      if isinstance(k, str):
-        output.dict.values[k].CopyFrom(encode(v))
-      else:
-        t = output.dict.kvs.values.add().tuple
-        t.values.add().CopyFrom(encode(k))
-        t.values.add().CopyFrom(encode(v))
-    return output
+    return _encode_dict(user_data)
   if isinstance(user_data, np.ndarray):
-    pass  # The "base" ndarray case.
-  else:  # Try to encode scalars.
-    if _set_datum_values_from_scalar(user_data, datum):
-      return output
-    raise TypeError(f'Unsupported data type: {type(user_data)}')
-
-  # Set shape.
-  for dim in user_data.shape:
-    if dim > 0:
-      proto_dim = datum.shape.dim.add()
-      proto_dim.size = dim
-
-  # Copy values.
-  _set_datum_values_from_array(user_data, datum.values)
-
-  return output
+    return _encode_ndarray(user_data)
+  return _encode_scalar(user_data)
 
 
 def decode_datum(
