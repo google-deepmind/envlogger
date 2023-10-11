@@ -36,12 +36,9 @@
 namespace envlogger {
 namespace {
 
-using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::FloatEq;
 using ::testing::IsTrue;
-using ::testing::Key;
-using ::testing::Lt;
 using ::testing::SizeIs;
 using ::testing::Value;
 
