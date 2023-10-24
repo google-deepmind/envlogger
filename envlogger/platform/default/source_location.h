@@ -60,8 +60,8 @@ class source_location {
 }  // namespace envlogger
 
 // If a function takes a source_location parameter, pass this as the argument.
-#define LOC                                                               \
+#define LOC                                                             \
   ::envlogger::internal::source_location::DoNotInvokeDirectly(__LINE__, \
-                                                                __FILE__)
+                                                              __FILE__)
 
 #endif  // THIRD_PARTY_PY_ENVLOGGER_PLATFORM_DEFAULT_SOURCE_LOCATION_H_
