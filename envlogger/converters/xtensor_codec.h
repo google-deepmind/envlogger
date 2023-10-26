@@ -131,28 +131,30 @@ class DataView {
   // `data` MUST outlive this DataView instance.
   explicit DataView(const Data* data);
 
-  // Returns the type that this view holds, VALUE_NOT_SET if nullptr.
-  Data::ValueCase Type() const;
-
   // Returns the number of elements that this view has.
   // Returns 0 if data is nullptr or Type() == Data::kDatum.
   size_t size() const;
 
   // Returns whether this view is empty.
-  bool empty() const;
+  bool empty() const { return size() == 0; }
 
-  const Data* data() const;
+  const Data* data() const { return data_; }
+  const Data& operator*() const { return *data(); }
+  const Data* operator->() const { return data(); }
 
-  // Returns the value if this data is an array or tuple.
-  // Returns nullptr if data is nullptr or index not in [0, size()).
-  const Data* operator[](int index) const;
+  // Returns a DataView of value[index] if the value of the data is an array
+  // or tuple.
+  //
+  // Dies if out of bound or data_ is not subscriptable.
+  DataView operator[](int index) const;
 
-  // Returns the value if this data is a dict.
-  // Returns nullptr if the key is not found.
+  // Returns a DataView of value[key] if the value of this data is a dict.
+  //
+  // Dies if the key is not in the dict or data_ is not a dict.
   //
   // Notice that we take a const string ref instead of a string view to avoid a
   // costly conversion in order to lookup the internal proto map.
-  const Data* operator[](const std::string& key) const;
+  DataView operator[](const std::string& key) const;
 
   const_iterator begin() const;
   const_iterator end() const;

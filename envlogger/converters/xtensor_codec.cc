@@ -22,6 +22,7 @@
 
 #include "glog/logging.h"
 #include "google/protobuf/repeated_field.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include <gmpxx.h>
 #include "riegeli/bytes/string_writer.h"
@@ -620,17 +621,9 @@ std::optional<BasicType> Decode(const Datum& datum) {
 // DataView
 ////////////////////////////////////////////////////////////////////////////////
 
-DataView::DataView(const Data* data) : data_(data) {}
-
-Data::ValueCase DataView::Type() const {
-  if (data_ == nullptr) return Data::VALUE_NOT_SET;
-
-  return data_->value_case();
-}
+DataView::DataView(const Data* data) : data_(data) { CHECK(data_ != nullptr); }
 
 size_t DataView::size() const {
-  if (data_ == nullptr) return 0;
-
   switch (data_->value_case()) {
     case Data::kArray:
       return data_->array().values().size();
@@ -643,30 +636,27 @@ size_t DataView::size() const {
   }
 }
 
-bool DataView::empty() const { return size() == 0; }
+DataView DataView::operator[](int index) const {
+  const auto value_type = data_->value_case();
+  CHECK(value_type == Data::kArray || value_type == Data::kTuple)
+      << "Expected array or tuple, got: " << data_->value_case();
 
-const Data* DataView::data() const { return data_; }
+  CHECK(index >= 0 && index < static_cast<int>(size())) << absl::StrFormat(
+      "Expected index between [0, %d), got: %d", size(), index);
 
-const Data* DataView::operator[](int index) const {
-  if (data_ == nullptr || index < 0 || index >= static_cast<int>(size()))
-    return nullptr;
-
-  const auto type = Type();
-  if (type == Data::kArray) return &data_->array().values(index);
-  if (type == Data::kTuple) return &data_->tuple().values(index);
-
-  return nullptr;
+  if (value_type == Data::kArray) {
+    return DataView(&data_->array().values(index));
+  }
+  return DataView(&data_->tuple().values(index));
 }
 
-const Data* DataView::operator[](const std::string& key) const {
-  if (data_ != nullptr && Type() == Data::kDict) {
-    const auto it = data_->dict().values().find(key);
-    if (it == data_->dict().values().end()) return nullptr;
+DataView DataView::operator[](const std::string& key) const {
+  CHECK(data_->value_case() == Data::kDict)
+      << "Expected dict, got: " << data_->value_case();
 
-    return &it->second;
-  }
-
-  return nullptr;
+  const auto it = data_->dict().values().find(key);
+  CHECK(it != data_->dict().values().end()) << "Non-existing key: " << key;
+  return DataView(&it->second);
 }
 
 const google::protobuf::Map<std::string, Data>& DataView::items() const {
@@ -678,7 +668,8 @@ const google::protobuf::Map<std::string, Data>& DataView::items() const {
 DataView::const_iterator DataView::begin() const {
   // Dicts should use .items() and should always return nothing if using
   // .begin() and .end() directly.
-  return DataView::const_iterator(this, Type() == Data::kDict ? size() : 0);
+  return DataView::const_iterator(
+      this, data_->value_case() == Data::kDict ? size() : 0);
 }
 
 DataView::const_iterator DataView::end() const {

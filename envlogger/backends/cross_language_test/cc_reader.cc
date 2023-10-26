@@ -54,18 +54,19 @@ int main(int argc, char** argv) {
         << "All steps should be readable. Step " << i << " is not available.";
 
     envlogger::DataView step_view(std::addressof(*step));
-    EXPECT_THAT(step_view.Type(), Eq(envlogger::Data::ValueCase::kTuple))
+    EXPECT_THAT(step_view->value_case(), Eq(envlogger::Data::ValueCase::kTuple))
         << "Each step should be a tuple.";
     EXPECT_THAT(step_view, SizeIs(3))
         << "Each step should consist of (timestep, action, custom data)";
-    const envlogger::Data* timestep = step_view[0];
-    const envlogger::Data* action = step_view[1];
-    const envlogger::Data* custom_data = step_view[2];
-    VLOG(1) << "timestep: " << timestep->ShortDebugString();
-    VLOG(1) << "action: " << action->ShortDebugString();
-    VLOG(1) << "custom_data: " << custom_data->ShortDebugString();
-    envlogger::DataView timestep_view(timestep);
-    EXPECT_THAT(timestep_view.Type(), Eq(envlogger::Data::ValueCase::kTuple))
+    const envlogger::Data& timestep = *step_view[0];
+    const envlogger::Data& action = *step_view[1];
+    const envlogger::Data& custom_data = *step_view[2];
+    VLOG(1) << "timestep: " << timestep.ShortDebugString();
+    VLOG(1) << "action: " << action.ShortDebugString();
+    VLOG(1) << "custom_data: " << custom_data.ShortDebugString();
+    envlogger::DataView timestep_view(&timestep);
+    EXPECT_THAT(timestep_view->value_case(),
+                Eq(envlogger::Data::ValueCase::kTuple))
         << "Each timestep should be a tuple.";
     EXPECT_THAT(timestep_view, SizeIs(4))
         << "Each timestep should consist of (step type, reward, discount, "
@@ -73,10 +74,10 @@ int main(int argc, char** argv) {
 
     // Check timestep values.
     // Check step type.
-    const envlogger::Data* step_type = timestep_view[0];
-    VLOG(2) << "step_type: " << step_type->ShortDebugString();
+    const envlogger::Data& step_type = *timestep_view[0];
+    VLOG(2) << "step_type: " << step_type.ShortDebugString();
     std::optional<envlogger::BasicType> decoded_step_type =
-        envlogger::Decode(step_type->datum());
+        envlogger::Decode(step_type.datum());
     EXPECT_THAT(decoded_step_type.has_value(), IsTrue())
         << "Failed to decode step_type";
     EXPECT_THAT(absl::holds_alternative<mpz_class>(*decoded_step_type),
@@ -85,30 +86,30 @@ int main(int argc, char** argv) {
         absl::get<mpz_class>(*decoded_step_type);
     EXPECT_THAT(cmp(step_type_decoded, i ? 1 : 0), Eq(0));
     // Check reward.
-    const envlogger::Data* reward = timestep_view[1];
-    VLOG(2) << "reward: " << reward->ShortDebugString();
+    const envlogger::Data& reward = *timestep_view[1];
+    VLOG(2) << "reward: " << reward.ShortDebugString();
     std::optional<envlogger::BasicType> decoded_reward =
-        envlogger::Decode(reward->datum());
+        envlogger::Decode(reward.datum());
     EXPECT_THAT(decoded_reward.has_value(), IsTrue())
         << "Failed to decode reward";
     EXPECT_THAT(absl::holds_alternative<double>(*decoded_reward), IsTrue());
     const double r = absl::get<double>(*decoded_reward);
     EXPECT_THAT(r, DoubleEq(i / 100.0));
     // Check discount.
-    const envlogger::Data* discount = timestep_view[2];
-    VLOG(2) << "discount: " << discount->ShortDebugString();
+    const envlogger::Data& discount = *timestep_view[2];
+    VLOG(2) << "discount: " << discount.ShortDebugString();
     std::optional<envlogger::BasicType> decoded_discount =
-        envlogger::Decode(discount->datum());
+        envlogger::Decode(discount.datum());
     EXPECT_THAT(decoded_discount.has_value(), IsTrue())
         << "Failed to decode discount";
     EXPECT_THAT(absl::holds_alternative<double>(*decoded_discount), IsTrue());
     const double gamma = absl::get<double>(*decoded_discount);
     EXPECT_THAT(gamma, DoubleEq(0.99));
     // Check observation.
-    const envlogger::Data* observation = timestep_view[3];
-    VLOG(2) << "observation: " << observation->ShortDebugString();
+    const envlogger::Data& observation = *timestep_view[3];
+    VLOG(2) << "observation: " << observation.ShortDebugString();
     std::optional<envlogger::BasicType> decoded_obs =
-        envlogger::Decode(observation->datum());
+        envlogger::Decode(observation.datum());
     EXPECT_THAT(decoded_obs.has_value(), IsTrue())
         << "Failed to decode observation";
     EXPECT_THAT(absl::holds_alternative<xt::xarray<float>>(*decoded_obs),
@@ -119,7 +120,7 @@ int main(int argc, char** argv) {
 
     // Check action.
     std::optional<envlogger::BasicType> decoded_action =
-        envlogger::Decode(action->datum());
+        envlogger::Decode(action.datum());
     EXPECT_THAT(decoded_action.has_value(), IsTrue())
         << "Failed to decode action";
     EXPECT_THAT(absl::holds_alternative<int>(*decoded_action), IsTrue());
@@ -127,8 +128,7 @@ int main(int argc, char** argv) {
     EXPECT_THAT(a, Eq(100 - i));
 
     // There should be no custom data, but it should still be a valid pointer.
-    EXPECT_THAT(custom_data, Not(Eq(nullptr)));
-    EXPECT_THAT(*custom_data, EqualsProto(envlogger::Data()));
+    EXPECT_THAT(custom_data, EqualsProto(envlogger::Data()));
   }
 
   reader.Close();

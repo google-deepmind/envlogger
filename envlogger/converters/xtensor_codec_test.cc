@@ -910,11 +910,57 @@ TEST(XtensorCodecTest, Uint16DecodeXtarray) {
 // DataView tests
 ////////////////////////////////////////////////////////////////////////////////
 
-TEST(DataViewTest, Nullptr) {
-  const DataView view(/*data=*/nullptr);
-  EXPECT_THAT(view.Type(), Eq(Data::VALUE_NOT_SET));
-  EXPECT_THAT(view, IsEmpty());
-  EXPECT_THAT(view[0], IsNull());
+TEST(DataViewDeathTest, Nullptr) { EXPECT_DEATH(DataView(nullptr), ".*"); }
+
+TEST(DataViewDeathTest, NullData) {
+  const Data* data = nullptr;
+  EXPECT_DEATH(DataView{data}, ".*");
+}
+
+TEST(DataViewDeathTest, UnsubscriptableDatum) {
+  const Data data = ParseTextProtoOrDie(R"pb(
+    datum: {
+      shape: { dim: { size: 2 } }
+      values: { int32_values: [ -1, 1 ] }
+    }
+  )pb");
+  const DataView view(&data);
+  EXPECT_DEATH(view[0], "Expected array or tuple, got: 1");
+}
+
+TEST(DataViewTest, OutOfBound) {
+  const Data data = ParseTextProtoOrDie(R"pb(
+    array: {
+      values: {
+        datum: {
+          shape: { dim: { size: 4 } }
+          values: { int32_values: [ 1, 4, 9, 16 ] }
+        }
+      }
+    }
+  )pb");
+  const DataView view(&data);
+  EXPECT_DEATH(view[-1],
+               R"regex(Expected index between \[0, 1\), got: -1)regex");
+  EXPECT_DEATH(view[2], R"regex(Expected index between \[0, 1\), got: 2)regex");
+}
+
+TEST(DataViewTest, NonExistingKey) {
+  const Data data = ParseTextProtoOrDie(R"pb(
+    dict: {
+      values: {
+        key: "hello"
+        value: {
+          datum: {
+            shape: { dim: { size: 4 } }
+            values: { int32_values: [ 1, 4, 9, 16 ] }
+          }
+        }
+      }
+    }
+  )pb");
+  const DataView view(&data);
+  ASSERT_DEATH(view["foobar"], "Non-existing key: foobar");
 }
 
 TEST(DataViewTest, Datum) {
@@ -925,11 +971,8 @@ TEST(DataViewTest, Datum) {
     }
   )pb");
   const DataView view(&data);
-  EXPECT_THAT(view.Type(), Eq(Data::kDatum));
   EXPECT_THAT(view, IsEmpty());
-  EXPECT_THAT(view[0], IsNull());
-  EXPECT_THAT(view.data(), NotNull());
-  EXPECT_THAT(*view.data(), EqualsProto(data));
+  EXPECT_THAT(*view, EqualsProto(data));
 }
 
 TEST(DataViewTest, SingleElementArray) {
@@ -944,13 +987,7 @@ TEST(DataViewTest, SingleElementArray) {
     }
   )pb");
   const DataView view(&data);
-  EXPECT_THAT(view.Type(), Eq(Data::kArray));
-  EXPECT_THAT(view, SizeIs(1));
-  const auto result = view[0];
-  EXPECT_THAT(result, NotNull());
-  EXPECT_THAT(*result, EqualsProto(data.array().values(0)));
-  EXPECT_THAT(view[-1], IsNull());
-  EXPECT_THAT(view[1234561], IsNull());
+  EXPECT_THAT(*view[0], EqualsProto(data.array().values(0)));
 }
 
 TEST(DataViewTest, SingleElementTuple) {
@@ -965,13 +1002,8 @@ TEST(DataViewTest, SingleElementTuple) {
     }
   )pb");
   const DataView view(&data);
-  EXPECT_THAT(view.Type(), Eq(Data::kTuple));
   EXPECT_THAT(view, SizeIs(1));
-  const auto result = view[0];
-  EXPECT_THAT(result, NotNull());
-  EXPECT_THAT(*result, EqualsProto(data.tuple().values(0)));
-  EXPECT_THAT(view[-1], IsNull());
-  EXPECT_THAT(view[1234561], IsNull());
+  EXPECT_THAT(*view[0], EqualsProto(data.tuple().values(0)));
 }
 
 TEST(DataViewTest, SingleElementDict) {
@@ -989,12 +1021,8 @@ TEST(DataViewTest, SingleElementDict) {
     }
   )pb");
   const DataView view(&data);
-  EXPECT_THAT(view.Type(), Eq(Data::kDict));
   EXPECT_THAT(view, SizeIs(1));
-  const auto result = view["hello"];
-  EXPECT_THAT(result, NotNull());
-  EXPECT_THAT(*result, EqualsProto(data.dict().values().at("hello")));
-  EXPECT_THAT(view["doesnotexist"], IsNull());
+  EXPECT_THAT(*view["hello"], EqualsProto(data.dict().values().at("hello")));
 }
 
 TEST(DataViewTest, MultipleElementsArray) {
@@ -1021,7 +1049,6 @@ TEST(DataViewTest, MultipleElementsArray) {
     }
   )pb");
   const DataView view(&data);
-  EXPECT_THAT(view.Type(), Eq(Data::kArray));
   EXPECT_THAT(view, SizeIs(3));
   // ElementsAre() should iterate over the elements with a const iterator.
   EXPECT_THAT(view, ElementsAre(EqualsProto(data.array().values(0)),
@@ -1056,7 +1083,6 @@ TEST(DataViewTest, MultipleElementsTuple) {
     }
   )pb");
   const DataView view(&data);
-  EXPECT_THAT(view.Type(), Eq(Data::kTuple));
   EXPECT_THAT(view, SizeIs(3));
   // ElementsAre() should iterate over the elements with a const iterator.
   EXPECT_THAT(view, ElementsAre(EqualsProto(data.tuple().values(0)),
@@ -1100,7 +1126,6 @@ TEST(DataViewTest, MultipleElementsDict) {
     }
   )pb");
   const DataView view(&data);
-  EXPECT_THAT(view.Type(), Eq(Data::kDict));
   EXPECT_THAT(view, SizeIs(3));
   // Check the unordered contents of this dict with .items().
   EXPECT_THAT(view.items(),
@@ -1111,6 +1136,137 @@ TEST(DataViewTest, MultipleElementsDict) {
   // .begin() and .end() on the actual view should return nothing.
   const std::vector<Data> v(view.begin(), view.end());
   EXPECT_THAT(v, IsEmpty());
+}
+
+TEST(DataViewTest, ChainingAccessor) {
+  // Equivalent to Python object:
+  //
+  //   data = [{
+  //       'a': np.array([1, 2, 3]),
+  //       'b': [4, 5, 6],
+  //       'd': {
+  //           'd1': {
+  //               'd2': "hello"
+  //           }
+  //       },
+  //       'e': {
+  //           'e1': [{
+  //               'e2': 'world'
+  //           }]
+  //       }
+  //   }]
+  const Data data = ParseTextProtoOrDie(R"pb(
+    array {
+      values {
+        dict {
+          values {
+            key: "a"
+            value {
+              datum {
+                shape { dim { size: 3 } }
+                values { int64_values: 1 int64_values: 2 int64_values: 3 }
+              }
+            }
+          }
+          values {
+            key: "b"
+            value {
+              array {
+                values {
+                  datum {
+                    shape { dim { size: -438 } }
+                    values { bigint_values: "\004" }
+                  }
+                }
+                values {
+                  datum {
+                    shape { dim { size: -438 } }
+                    values { bigint_values: "\005" }
+                  }
+                }
+                values {
+                  datum {
+                    shape { dim { size: -438 } }
+                    values { bigint_values: "\006" }
+                  }
+                }
+              }
+            }
+          }
+          values {
+            key: "d"
+            value {
+              dict {
+                values {
+                  key: "d1"
+                  value {
+                    dict {
+                      values {
+                        key: "d2"
+                        value {
+                          datum {
+                            shape { dim { size: -438 } }
+                            values { string_values: "hello" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          values {
+            key: "e"
+            value {
+              dict {
+                values {
+                  key: "e1"
+                  value {
+                    array {
+                      values {
+                        dict {
+                          values {
+                            key: "e2"
+                            value {
+                              datum {
+                                shape { dim { size: -438 } }
+                                values { string_values: "world" }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  )pb");
+  const DataView view(&data);
+  EXPECT_THAT(*view[0]["a"],
+              EqualsProto(data.array().values(0).dict().values().at("a")));
+  EXPECT_THAT(
+      *view[0]["b"][0],
+      EqualsProto(
+          data.array().values(0).dict().values().at("b").array().values(0)));
+  EXPECT_THAT(*view[0]["e"]["e1"][0]["e2"], EqualsProto(data.array()
+                                                            .values(0)
+                                                            .dict()
+                                                            .values()
+                                                            .at("e")
+                                                            .dict()
+                                                            .values()
+                                                            .at("e1")
+                                                            .array()
+                                                            .values(0)
+                                                            .dict()
+                                                            .values()
+                                                            .at("e2")));
 }
 
 }  // namespace
