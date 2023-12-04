@@ -26,7 +26,6 @@
 
 #include "glog/logging.h"
 #include "google/protobuf/message.h"
-#include <cstdint>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"

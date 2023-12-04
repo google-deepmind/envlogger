@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "google/protobuf/message.h"
-#include <cstdint>
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "envlogger/backends/cc/episode_info.h"
