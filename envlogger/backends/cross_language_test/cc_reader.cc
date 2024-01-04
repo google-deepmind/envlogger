@@ -34,7 +34,6 @@ using ::testing::DoubleEq;
 using ::testing::Eq;
 using ::testing::FloatEq;
 using ::testing::IsTrue;
-using ::testing::Not;
 using ::testing::SizeIs;
 
 int main(int argc, char** argv) {
