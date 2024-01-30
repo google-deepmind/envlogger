@@ -1,4 +1,4 @@
-# Copyright 2023 DeepMind Technologies Limited..
+# Copyright 2024 DeepMind Technologies Limited..
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR/..
 
-# Default to Python 3.10.
-PY3_VERSION=${1:-10}
+# Default to Python 3.11.
+PY3_VERSION=${1:-11}
 echo Python version 3.${PY3_VERSION}
 
 # Default image label to "envlogger"
