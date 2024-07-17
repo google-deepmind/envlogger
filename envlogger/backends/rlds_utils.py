@@ -68,6 +68,9 @@ def to_rlds_step(prev_step: step_data.StepData,
 
 def _find_extra_shard(split_info: tfds.core.SplitInfo) -> Optional[Any]:
   """Returns the filename of the extra shard, or None if all shards are in the metadata."""
+  if split_info.filename_template is None:
+    # Filename template is not initialized.
+    return None
   filepath = split_info.filename_template.sharded_filepath(
       shard_index=split_info.num_shards, num_shards=split_info.num_shards + 1)
   if tf.io.gfile.exists(filepath):
