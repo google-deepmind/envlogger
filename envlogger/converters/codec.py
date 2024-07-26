@@ -194,7 +194,7 @@ def _set_datum_values_from_array(
       (values.uint32_values, np.uint32, np.uint32),
       (values.uint64_values, np.uint64, np.uint64),
       (values.bool_values, np.bool_, bool),
-      (values.string_values, np.unicode_, np.unicode_),
+      (values.string_values, np.str_, np.str_),
       (values.bytes_values, np.bytes_, np.bytes_),
   ]:
     if np.issubdtype(array.dtype, dtype):
