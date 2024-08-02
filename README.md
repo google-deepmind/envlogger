@@ -42,7 +42,7 @@ with envlogger.EnvLogger(
 ```
 
 Full example of random agent in Catch is available here:
-[random_agent_catch.py](https://github.com/deepmind/envlogger/tree/main/envloggerexamples/random_agent_catch.py)
+[random_agent_catch.py](https://github.com/google-deepmind/envlogger/tree/main/envlogger/examples/random_agent_catch.py)
 
 
 ### Step metadata
@@ -128,7 +128,7 @@ envlogger.EnvLogger(
   )
 ```
 
-A full example is available here [random_agent_catch.py](https://github.com/deepmind/envlogger/tree/main/envloggerexamples/tfds_random_agent_catch.py)
+A full example is available here [random_agent_catch.py](https://github.com/google-deepmind/envlogger/tree/main/envlogger/examples/tfds_random_agent_catch.py)
 
 
 [RLDS]: http://github.com/google-research/rlds
