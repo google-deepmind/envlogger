@@ -47,10 +47,11 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
     short-lived, then a large portion of the trajectories can disappear.
 
     Args:
-      data_directory: Destination for the episode data.
+      data_directory: Destination for the episode data. IMPORTANT:
+        `data_directory` MUST exist _before_ calling `__init__()`.
       max_episodes_per_file: maximum number of episodes stored in one file.
-      writer_options: Comma-separated list of options that are passed to the
-        Riegeli RecordWriter as is.
+      writer_options: Comma-separated list of options that are passed to Riegeli
+        RecordWriter as is.
       flush_scheduler: This controls when data is flushed to permanent storage.
         If `None`, it defaults to a step-wise Bernoulli scheduler with 1/5000
         chances of flushing.

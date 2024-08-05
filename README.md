@@ -10,8 +10,8 @@ timesteps or by specific episodes.
 ## Metadata
 
 To better categorize your logged data, you may want to add some tags in the
-metadata when you construct the logger wrapper.  The metadata is written once
-per `EnvLogger` instance.
+metadata when you construct the logger wrapper. The metadata is written once per
+`EnvLogger` instance.
 
 ```python
 env = envlogger.EnvLogger(
@@ -23,6 +23,8 @@ env = envlogger.EnvLogger(
     })
 ```
 ## How to use Envlogger
+
+NOTE: Ensure that `data_directory` exists _before_ instantiating the wrapper.
 
 Most of the time, it is just a one-liner wrapper, e.g.
 
