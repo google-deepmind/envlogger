@@ -15,14 +15,15 @@
 
 """Tests writing trajectories in one language and reading from another."""
 
+from collections.abc import Sequence
 import os
 import shutil
 import subprocess
-from typing import Sequence
 
 from absl import logging
 from absl.testing import absltest
 from absl.testing import parameterized
+
 from rules_python.python.runfiles import runfiles
 
 

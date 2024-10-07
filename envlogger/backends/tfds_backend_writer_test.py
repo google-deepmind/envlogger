@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for tfds_backend_writer."""
-
-from typing import List
-
 from absl.testing import absltest
 import dm_env
 from envlogger import step_data
@@ -97,8 +93,9 @@ class TfdsBackendWriterEpisodeTest(absltest.TestCase):
 
 class TfdsBackendWriterTest(absltest.TestCase):
 
-  def _assert_steps(self, expected_steps: List[step_data.StepData],
-                    steps: tf.data.Dataset):
+  def _assert_steps(
+      self, expected_steps: list[step_data.StepData], steps: tf.data.Dataset
+  ):
     steps = steps.as_numpy_iterator()
     for idx, rlds_step in enumerate(steps):
       step = expected_steps[idx + 1] if idx < len(expected_steps) - 1 else None

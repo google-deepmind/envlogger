@@ -16,7 +16,7 @@
 """Abstract trajectory logging interface."""
 
 import abc
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from envlogger import step_data
 from envlogger.backends import schedulers
@@ -25,9 +25,11 @@ from envlogger.backends import schedulers
 class BackendWriter(metaclass=abc.ABCMeta):
   """Abstract trajectory logging interface."""
 
-  def __init__(self,
-               metadata: Optional[Dict[str, Any]] = None,
-               scheduler: Optional[schedulers.Scheduler] = None):
+  def __init__(
+      self,
+      metadata: Optional[dict[str, Any]] = None,
+      scheduler: Optional[schedulers.Scheduler] = None,
+  ):
     """BackendWriter base class.
 
     Args:

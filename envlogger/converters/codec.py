@@ -81,7 +81,7 @@ encode({'primes': np.array([2, 3, 5, 7, 11], dtype=np.int64)})
 """
 
 import struct
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from envlogger.proto import storage_pb2
 import numpy as np
@@ -215,7 +215,7 @@ def _set_datum_values_from_array(
   raise TypeError(f'Unsupported `array.dtype`: {array.dtype}')
 
 
-def _encode_list(data: List[Any]) -> storage_pb2.Data:
+def _encode_list(data: list[Any]) -> storage_pb2.Data:
   """Encodes list data."""
   output = storage_pb2.Data()
   type_x = None
@@ -237,7 +237,7 @@ def _encode_list(data: List[Any]) -> storage_pb2.Data:
   return output
 
 
-def _encode_tuple(data: Tuple[Any]) -> storage_pb2.Data:
+def _encode_tuple(data: tuple[Any, ...]) -> storage_pb2.Data:
   """Encodes tuple data."""
   output = storage_pb2.Data()
   for x in data:
@@ -245,7 +245,7 @@ def _encode_tuple(data: Tuple[Any]) -> storage_pb2.Data:
   return output
 
 
-def _encode_dict(data: Dict[str, Any]) -> storage_pb2.Data:
+def _encode_dict(data: dict[str, Any]) -> storage_pb2.Data:
   """Encodes dict data."""
   output = storage_pb2.Data()
   for k, v in data.items():
@@ -285,7 +285,7 @@ def _encode_scalar(
 
 
 def encode(
-    user_data: Union[np.ndarray, List[Any], Tuple[Any, ...], Dict[str, Any]]
+    user_data: Union[np.ndarray, list[Any], tuple[Any, ...], dict[str, Any]],
 ) -> storage_pb2.Data:
   """Converts common Python data objects to storage_pb2.Data() proto.
 
@@ -413,9 +413,9 @@ def decode(
         str,
         bytes,
         np.ndarray,
-        List[Any],
-        Tuple[Any, ...],
-        Dict[Any, Any],
+        list[Any],
+        tuple[Any, ...],
+        dict[Any, Any],
     ]
 ]:
   """Converts from storage_pb2.Data to common Python data objects.

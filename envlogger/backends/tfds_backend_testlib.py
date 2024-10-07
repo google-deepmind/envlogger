@@ -15,7 +15,7 @@
 
 """Utils to test the backends."""
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from absl import logging
 from envlogger import step_data
@@ -30,7 +30,7 @@ import tensorflow_datasets as tfds
 def generate_episode_data(
     backend: backend_writer.BackendWriter,
     num_episodes: int = 2,
-) -> List[List[step_data.StepData]]:
+) -> list[list[step_data.StepData]]:
   """Runs a Catch environment for `num_episodes` and logs them.
 
   Args:
@@ -87,7 +87,7 @@ def tfds_backend_catch_env(
     data_directory: str,
     max_episodes_per_file: int = 1,
     split_name: Optional[str] = None,
-    ds_metadata: Optional[Dict[Any, Any]] = None,
+    ds_metadata: Optional[dict[Any, Any]] = None,
     store_ds_metadata: bool = True,
 ) -> tfds_backend_writer.TFDSBackendWriter:
   """Creates a TFDS Backend Writer for the Catch Environment.

@@ -16,7 +16,7 @@
 """For reading trajectory data from riegeli files."""
 
 import copy
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from absl import logging
 import dm_env
@@ -79,7 +79,7 @@ class RiegeliBackendReader(backend_reader.BackendReader):
       self._reader.close()
     self._reader = None
 
-  def _decode_step_data(self, data: Tuple[Any, Any, Any]) -> step_data.StepData:
+  def _decode_step_data(self, data: tuple[Any, Any, Any]) -> step_data.StepData:
     """Recovers dm_env.TimeStep from logged data (either dict or tuple)."""
     # Recover the TimeStep from the first tuple element.
     timestep = dm_env.TimeStep(

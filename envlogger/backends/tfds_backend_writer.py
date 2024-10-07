@@ -15,7 +15,7 @@
 
 """TFDS backend for Envlogger."""
 import dataclasses
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from absl import logging
 from envlogger import step_data
@@ -31,8 +31,8 @@ DatasetConfig = tfds.rlds.rlds_base.DatasetConfig
 class Episode(object):
   """Episode that is being constructed."""
   prev_step: step_data.StepData
-  steps: Optional[List[rlds_utils.Step]] = None
-  metadata: Optional[Dict[str, Any]] = None
+  steps: Optional[list[rlds_utils.Step]] = None
+  metadata: Optional[dict[str, Any]] = None
 
   def add_step(self, step: step_data.StepData) -> None:
     rlds_step = rlds_utils.to_rlds_step(self.prev_step, step)
@@ -41,7 +41,7 @@ class Episode(object):
     self.steps.append(rlds_step)
     self.prev_step = step
 
-  def get_rlds_episode(self) -> Dict[str, Any]:
+  def get_rlds_episode(self) -> dict[str, Any]:
     last_step = rlds_utils.to_rlds_step(self.prev_step, None)
     if self.steps is None:
       self.steps = []
@@ -118,7 +118,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
     else:
       self._current_episode.add_step(data)
 
-  def set_episode_metadata(self, data: Dict[str, Any]) -> None:
+  def set_episode_metadata(self, data: dict[str, Any]) -> None:
     self._current_episode.metadata = data
 
   def close(self) -> None:

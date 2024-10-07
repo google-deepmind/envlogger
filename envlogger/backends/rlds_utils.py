@@ -15,7 +15,7 @@
 
 """Utils to convert Envlogger data into RLDS."""
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from absl import logging
 from envlogger import step_data
@@ -23,7 +23,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-Step = Dict[str, Any]
+Step = dict[str, Any]
 
 
 def to_rlds_step(prev_step: step_data.StepData,

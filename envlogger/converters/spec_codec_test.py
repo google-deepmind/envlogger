@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for spec_codec."""
-
-from typing import Any, Dict
+from typing import Any
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -59,8 +57,9 @@ class CustomSpecsEnvironment(dm_env.Environment):
 
 class ArraySpecCodecTest(parameterized.TestCase):
 
-  def _compare_spec_dicts(self, actual: Dict[str, Any], expected: Dict[str,
-                                                                       Any]):
+  def _compare_spec_dicts(
+      self, actual: dict[str, Any], expected: dict[str, Any]
+  ):
     """Checks that `actual` spec dict is equal to `expected`."""
     # Check 'name'.
     self.assertIn(

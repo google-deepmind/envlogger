@@ -15,7 +15,7 @@
 
 """A simple python binary that creates a simple RL trajectory."""
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from absl import app
 from absl import flags

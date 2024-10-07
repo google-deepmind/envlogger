@@ -21,8 +21,9 @@ Data can be read back using:
 
 """
 
+from collections.abc import Callable
 import pickle
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import dm_env
 from envlogger import environment_wrapper
@@ -33,6 +34,7 @@ from envlogger.backends import in_memory_backend
 from envlogger.backends import riegeli_backend_writer
 from envlogger.converters import spec_codec
 
+
 _DEFAULT_BACKEND = backend_type.BackendType.RIEGELI
 
 
@@ -42,15 +44,20 @@ class EnvLogger(environment_wrapper.EnvironmentWrapper):
   def __init__(
       self,
       env: dm_env.Environment,
-      step_fn: Optional[Callable[[dm_env.TimeStep, Any, dm_env.Environment],
-                                 Any]] = None,
-      episode_fn: Optional[Callable[[dm_env.TimeStep, Any, dm_env.Environment],
-                                    Any]] = None,
-      metadata: Optional[Dict[str, Any]] = None,
-      backend: Union[backend_writer.BackendWriter, backend_type.BackendType,
-                     Callable[...,
-                              backend_writer.BackendWriter]] = _DEFAULT_BACKEND,
-      **backend_kwargs):
+      step_fn: Optional[
+          Callable[[dm_env.TimeStep, Any, dm_env.Environment], Any]
+      ] = None,
+      episode_fn: Optional[
+          Callable[[dm_env.TimeStep, Any, dm_env.Environment], Any]
+      ] = None,
+      metadata: Optional[dict[str, Any]] = None,
+      backend: Union[
+          backend_writer.BackendWriter,
+          backend_type.BackendType,
+          Callable[..., backend_writer.BackendWriter],
+      ] = _DEFAULT_BACKEND,
+      **backend_kwargs
+  ):
     """Constructor.
 
     Usage:

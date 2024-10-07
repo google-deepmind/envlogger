@@ -15,7 +15,8 @@
 
 """Common logging scheduling strategies."""
 
-from typing import Callable, List, Optional, Union
+from collections.abc import Callable
+from typing import Optional, Union
 
 from envlogger import step_data
 import numpy as np
@@ -108,7 +109,7 @@ class ListStepScheduler:
   you can use Numpy's functions such as logspace() to generate non-linear steps.
   """
 
-  def __init__(self, desired_steps: Union[List[int], np.ndarray]):
+  def __init__(self, desired_steps: Union[list[int], np.ndarray]):
     if (isinstance(desired_steps, np.ndarray) and
         not (desired_steps.dtype == np.int32 or
              desired_steps.dtype == np.int64)):
@@ -136,7 +137,7 @@ class ListEpisodeScheduler:
   you can use Numpy's functions such as logspace() to generate non-linear steps.
   """
 
-  def __init__(self, desired_episodes: Union[List[int], np.ndarray]):
+  def __init__(self, desired_episodes: Union[list[int], np.ndarray]):
     if (isinstance(desired_episodes, np.ndarray) and
         not (desired_episodes.dtype == np.int32 or
              desired_episodes.dtype == np.int64)):

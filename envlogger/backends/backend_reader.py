@@ -16,7 +16,8 @@
 """Abstract interface for reading trajectories."""
 
 import abc
-from typing import Any, Callable, Dict, Generic, Iterator, List, Optional, Sequence, TypeVar, Union
+from collections.abc import Callable, Iterator, Sequence
+from typing import Any, Generic, Optional, TypeVar, Union
 
 from absl import logging
 from envlogger import step_data
@@ -41,7 +42,7 @@ class _SequenceAdapter(Generic[T], Sequence[T]):
     self._index = 0
     self._get_nth_item = get_nth_item
 
-  def __getitem__(self, index: Union[int, slice]) -> Union[T, List[T]]:
+  def __getitem__(self, index: Union[int, slice]) -> Union[T, list[T]]:
     """Retrieves items from this sequence.
 
     Args:
@@ -161,7 +162,7 @@ class BackendReader(metaclass=abc.ABCMeta):
     pass
 
   @abc.abstractmethod
-  def metadata(self) -> Dict[str, Any]:
+  def metadata(self) -> dict[str, Any]:
     pass
 
   @property

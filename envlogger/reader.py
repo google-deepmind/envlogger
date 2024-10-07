@@ -15,8 +15,9 @@
 
 """Reader of EnvironmentLogger data."""
 
+from collections.abc import Sequence
 import copy
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Optional, Union
 
 from absl import logging
 from envlogger import step_data

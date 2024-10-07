@@ -21,7 +21,7 @@ import os
 import pickle
 import tempfile
 import threading
-from typing import List, Optional
+from typing import Optional
 from unittest import mock
 import uuid
 
@@ -109,8 +109,9 @@ class RandomDataEnvironment(dm_env.Environment):
     return np.random.rand(self._data_size,)
 
 
-def _train(env: dm_env.Environment,
-           num_episodes: int) -> List[step_data.StepData]:
+def _train(
+    env: dm_env.Environment, num_episodes: int
+) -> list[step_data.StepData]:
   logging.info('Training a random agent for %r episodes...', num_episodes)
   num_actions = 3
   episodes_data = []

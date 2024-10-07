@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for in_memory_backend."""
-
 import operator
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from absl import logging
 from absl.testing import absltest
@@ -29,9 +27,8 @@ import numpy as np
 
 
 def _collect_episode_data(
-    num_episodes: int,
-    scheduler: Optional[schedulers.Scheduler] = None
-) -> Tuple[List[step_data.StepData], in_memory_backend.InMemoryBackendWriter]:
+    num_episodes: int, scheduler: Optional[schedulers.Scheduler] = None
+) -> tuple[list[step_data.StepData], in_memory_backend.InMemoryBackendWriter]:
 
   logging.info('Creating Catch environment...')
   env = catch_env.Catch()

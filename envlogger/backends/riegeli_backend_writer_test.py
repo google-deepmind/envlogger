@@ -20,7 +20,7 @@ in environment_logger_test.
 """
 
 import operator
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 from absl import logging
 from absl.testing import absltest
@@ -43,8 +43,8 @@ class RiegeliBackendTest(parameterized.TestCase):
       metadata: Optional[Any] = None,
       scheduler: Optional[schedulers.Scheduler] = None,
       max_episodes_per_file: int = 1,
-      writer_options: str = 'transpose,brotli:6,chunk_size:1M'
-  ) -> Tuple[List[step_data.StepData], str]:
+      writer_options: str = 'transpose,brotli:6,chunk_size:1M',
+  ) -> tuple[list[step_data.StepData], str]:
 
     if env is None:
       logging.info('Creating Catch environment...')

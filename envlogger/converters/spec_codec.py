@@ -16,7 +16,7 @@
 """Encoder/decoder for dm_env.specs.Array (and subclasses).
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import dm_env
 from dm_env import specs
@@ -32,7 +32,8 @@ _ENVIRONMENT_SPEC_NAMES = [
 
 
 def encode_environment_specs(
-    env: Optional[dm_env.Environment]) -> Dict[str, Any]:
+    env: Optional[dm_env.Environment],
+) -> dict[str, Any]:
   """Encodes all the specs from a given environment."""
   if env:
     return {
@@ -45,7 +46,8 @@ def encode_environment_specs(
 
 
 def decode_environment_specs(
-    encoded_specs: Dict[str, Any]) -> Dict[str, Optional[specs.Array]]:
+    encoded_specs: dict[str, Any],
+) -> dict[str, Optional[specs.Array]]:
   """Decodes all the specs of an environment."""
   if encoded_specs:
     return {spec_name: decode(encoded_specs[spec_name])  # pytype: disable=bad-return-type  # always-use-return-annotations
@@ -53,7 +55,7 @@ def decode_environment_specs(
   return {spec_name: None for spec_name in _ENVIRONMENT_SPEC_NAMES}
 
 
-def _array_spec_to_dict(array_spec: specs.Array) -> Dict[str, Any]:
+def _array_spec_to_dict(array_spec: specs.Array) -> dict[str, Any]:
   """Encodes an Array spec as a dictionary."""
   dict_spec = {
       'shape': np.array(array_spec.shape, dtype=np.int64),
@@ -71,8 +73,8 @@ def _array_spec_to_dict(array_spec: specs.Array) -> Dict[str, Any]:
 
 
 def encode(
-    spec: Union[specs.Array, List[Any], Tuple[Any], Dict[str, Any]]
-) -> Union[List[Any], Tuple[Any], Dict[str, Any]]:
+    spec: Union[specs.Array, list[Any], tuple[Any, ...], dict[str, Any]],
+) -> Union[list[Any], tuple[Any, ...], dict[str, Any]]:
   """Encodes `spec` using plain Python objects.
 
   This function supports bare Array specs, lists of Array specs, Tuples of Array
@@ -100,8 +102,8 @@ def encode(
 
 
 def decode(
-    spec: Union[List[Any], Tuple[Any], Dict[str, Any]]
-) -> Union[specs.Array, List[Any], Tuple[Any], Dict[str, Any]]:
+    spec: Union[list[Any], tuple[Any, ...], dict[str, Any]],
+) -> Union[specs.Array, list[Any], tuple[Any, ...], dict[str, Any]]:
   """Parses `spec` into the supported dm_env spec formats."""
   if isinstance(spec, dict):
     if 'shape' in spec and 'dtype' in spec:
