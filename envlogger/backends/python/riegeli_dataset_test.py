@@ -105,9 +105,9 @@ class RiegeliDatasetTest(absltest.TestCase):
   def test_dynamic_data_payload(self):
     """Checks that we can read and write dynamically obtained proto messages."""
     pool = descriptor_pool.Default()
-    factory = message_factory.MessageFactory(pool)
-    prototype = factory.GetPrototype(
-        pool.FindMessageTypeByName('envlogger.Datum.Values'))
+    prototype = message_factory.GetMessageClass(
+        pool.FindMessageTypeByName('envlogger.Datum.Values')
+    )
 
     writer = riegeli_dataset_writer.RiegeliDatasetWriter()
     try:
