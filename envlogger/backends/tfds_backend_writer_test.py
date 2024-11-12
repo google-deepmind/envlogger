@@ -175,7 +175,7 @@ class TfdsBackendWriterTest(absltest.TestCase):
 
     builder = tfds.builder_from_directory(data_dir)
     info = builder.info
-    self.assertIsNone(info.metadata)
+    self.assertEmpty(info.metadata)
 
   def test_backend_writer_ignore_dataset_metadata(self):
     num_episodes = 5
@@ -191,7 +191,7 @@ class TfdsBackendWriterTest(absltest.TestCase):
 
     builder = tfds.builder_from_directory(data_dir)
     info = builder.info
-    self.assertIsNone(info.metadata)
+    self.assertEmpty(info.metadata)
 
 
 if __name__ == '__main__':
