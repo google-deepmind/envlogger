@@ -399,7 +399,7 @@ def decode_datum(
     )
 
   if array is None:
-    return None
+    return None  # pytype: disable=bad-return-type
 
   return np.reshape(array, shape)
 
