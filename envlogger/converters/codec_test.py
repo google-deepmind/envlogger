@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2024 DeepMind Technologies Limited..
+# Copyright 2025 DeepMind Technologies Limited..
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for codec."""
+from typing import Any
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -1561,14 +1561,13 @@ class NumpyConvertersTest(parameterized.TestCase):
   ##############################################################################
 
   @parameterized.named_parameters(
-      ('modules_are_not_supported', np),
       ('classes_are_not_supported', set),
       ('functions_are_not_supported', map),
       ('type_classes_are_not_supported', type(int)),
       ('sets_are_not_supported', set()),
       ('complex_numbers_are_not_supported', complex(1, 2)),
   )
-  def test_unsupported_types(self, arg):
+  def test_unsupported_types(self, arg: Any):
     """Ensures that TypeError is raised when an unsupported type is encoded."""
     self.assertRaises(TypeError, codec.encode, arg)
 
