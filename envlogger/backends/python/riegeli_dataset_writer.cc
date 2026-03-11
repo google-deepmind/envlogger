@@ -1,4 +1,4 @@
-// Copyright 2025 DeepMind Technologies Limited..
+// Copyright 2026 DeepMind Technologies Limited..
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ void OptimizeDataProto(envlogger::Data* data) {
             datum->mutable_values()->mutable_float_values_buffer());
         writer.SetWriteSizeHint(datum->values().float_values_size() *
                                 sizeof(float));
-        riegeli::WriteBigEndianFloats(datum->values().float_values(), writer);
+        riegeli::WriteBigEndians<float>(datum->values().float_values(), writer);
         writer.Close();
         datum->mutable_values()->clear_float_values();
       }

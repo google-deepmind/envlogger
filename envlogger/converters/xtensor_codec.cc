@@ -1,4 +1,4 @@
-// Copyright 2025 DeepMind Technologies Limited..
+// Copyright 2026 DeepMind Technologies Limited..
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ inline T LoadScalar(const char* p) {
 // Specialization of the above for floats.
 template <>
 inline float LoadScalar(const char* p) {
-  return riegeli::ReadBigEndianFloat(p);
+  return riegeli::ReadBigEndian<float>(p);
 }
 
 template <typename T>
@@ -360,7 +360,7 @@ Datum Encode(const xt::xarray<float>& value, bool as_bytes) {
         datum.mutable_values()->mutable_float_values_buffer());
     writer.SetWriteSizeHint(value.size() * sizeof(float));
     for (const float f : xt::ravel<xt::layout_type::row_major>(value)) {
-      riegeli::WriteBigEndianFloat(f, writer);
+      riegeli::WriteBigEndian<float>(f, writer);
     }
     writer.Close();
   } else {
