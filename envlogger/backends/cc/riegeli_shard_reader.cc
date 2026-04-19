@@ -14,7 +14,6 @@
 
 #include "envlogger/backends/cc/riegeli_shard_reader.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <iterator>
 #include <memory>
@@ -37,6 +36,7 @@
 #include "envlogger/platform/riegeli_file_reader.h"
 #include "envlogger/platform/status_macros.h"
 #include "envlogger/proto/storage.pb.h"
+#include "riegeli/base/maker.h"
 #include "riegeli/records/record_reader.h"
 #include "xtensor/xarray.hpp"
 #include "xtensor/xaxis_iterator.hpp"
@@ -49,7 +49,8 @@ absl::StatusOr<riegeli::RecordReader<RiegeliFileReader>> CreateReader(
     absl::string_view filepath) {
   VLOG(1) << "Creating the reader for filepath: " << filepath;
   std::string reader_filepath(filepath);
-  riegeli::RecordReader reader{RiegeliFileReader(reader_filepath)};
+  riegeli::RecordReader reader(
+      riegeli::Maker<RiegeliFileReader>(reader_filepath));
   if (!reader.ok()) return reader.status();
   return reader;
 }

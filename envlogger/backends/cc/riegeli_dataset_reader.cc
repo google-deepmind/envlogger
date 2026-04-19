@@ -15,6 +15,7 @@
 #include "envlogger/backends/cc/riegeli_dataset_reader.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -24,24 +25,20 @@
 #include <utility>
 #include <vector>
 
-#include "glog/logging.h"
-#include "google/protobuf/message.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "absl/time/clock.h"
-#include "absl/time/time.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/backends/cc/riegeli_dataset_io_constants.h"
 #include "envlogger/backends/cc/riegeli_shard_reader.h"
-#include "envlogger/backends/cc/riegeli_shard_writer.h"
 #include "envlogger/platform/bundle.h"
 #include "envlogger/platform/filesystem.h"
 #include "envlogger/platform/riegeli_file_reader.h"
 #include "envlogger/platform/status_macros.h"
 #include "envlogger/proto/storage.pb.h"
+#include "riegeli/base/maker.h"
 #include "riegeli/records/record_reader.h"
-#include "riegeli/records/record_writer.h"
 
 namespace envlogger {
 
@@ -49,7 +46,7 @@ namespace {
 
 // Returns the first Data record in the file pointed by `filepath`.
 absl::StatusOr<Data> ReadFirstRiegeliRecord(const absl::string_view filepath) {
-  riegeli::RecordReader reader{RiegeliFileReader(filepath)};
+  riegeli::RecordReader reader(riegeli::Maker<RiegeliFileReader>(filepath));
   ENVLOGGER_RETURN_IF_ERROR(reader.status());
 
   Data data;
