@@ -26,7 +26,6 @@ from envlogger.backends.python import riegeli_dataset_reader
 from envlogger.backends.python import riegeli_dataset_writer
 from envlogger.converters import codec
 from envlogger.proto import storage_pb2
-
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
