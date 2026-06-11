@@ -15,11 +15,11 @@
 
 """Install script for setuptools."""
 
+import importlib.resources
 import os
 import posixpath
 import shutil
 
-import pkg_resources
 import setuptools
 from setuptools.command import build_ext
 from setuptools.command import build_py
@@ -30,9 +30,7 @@ __version__ = '1.2'
 
 _ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-_ENVLOGGER_PROTOS = (
-    'proto/storage.proto',
-)
+_ENVLOGGER_PROTOS = ('envlogger/proto/storage.proto',)
 
 
 class _GenerateProtoFiles(setuptools.Command):
@@ -52,20 +50,26 @@ class _GenerateProtoFiles(setuptools.Command):
     # setup_requires dependencies.
     from grpc_tools import protoc
 
-    grpc_protos_include = pkg_resources.resource_filename(
-        'grpc_tools', '_proto')
+    grpc_protos_include = str(
+        importlib.resources.files('grpc_tools').joinpath('_proto')
+    )
 
-    for proto_path in _ENVLOGGER_PROTOS:
-      proto_args = [
-          'grpc_tools.protoc',
-          '--proto_path={}'.format(grpc_protos_include),
-          '--proto_path={}'.format(_ROOT_DIR),
-          '--python_out={}'.format(_ROOT_DIR),
-          '--grpc_python_out={}'.format(_ROOT_DIR),
-          os.path.join(_ROOT_DIR, proto_path),
-      ]
-      if protoc.main(proto_args) != 0:
-        raise RuntimeError('ERROR: {}'.format(proto_args))
+    cwd = os.getcwd()
+    try:
+      os.chdir(_ROOT_DIR)
+      for proto_path in _ENVLOGGER_PROTOS:
+        proto_args = [
+            'grpc_tools.protoc',
+            '--proto_path={}'.format(grpc_protos_include),
+            '--proto_path=.',
+            '--python_out=.',
+            '--grpc_python_out=.',
+            proto_path,
+        ]
+        if protoc.main(proto_args) != 0:
+          raise RuntimeError('ERROR: {}'.format(proto_args))
+    finally:
+      os.chdir(cwd)
 
 
 class _BuildPy(build_py.build_py):
