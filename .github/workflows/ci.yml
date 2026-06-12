@@ -50,4 +50,4 @@ jobs:
         run: |
           # Find all test files, print their names and execute them in parallel
           # with a maximum of 20 proccesses.
-          find . -type f -name "*_test.py" -print0 | xargs -t -0 -n1 -P 20 python3
+          find envlogger -type f -name "*_test.py" -print0 | xargs -t -0 -n1 -P 20 python3
