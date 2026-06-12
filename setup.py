@@ -105,14 +105,22 @@ class _BuildExt(build_ext.build_ext):
     if not os.path.exists(self.build_temp):
       os.makedirs(self.build_temp)
 
-    bazel_argv = [
-        'bazel',
-        'build',
-        '...',
-        '--symlink_prefix=' + os.path.join(self.build_temp, 'bazel-'),
-        '--compilation_mode=' + ('dbg' if self.debug else 'opt'),
-        '--verbose_failures',
+    bazel_targets = [
+        t if t.endswith('.so') else t + '.so'
+        for t in [ext.bazel_target for ext in self.extensions]
     ]
+    bazel_argv = (
+        [
+            'bazel',
+            'build',
+        ]
+        + bazel_targets
+        + [
+            '--symlink_prefix=' + os.path.join(self.build_temp, 'bazel-'),
+            '--compilation_mode=' + ('dbg' if self.debug else 'opt'),
+            '--verbose_failures',
+        ]
+    )
 
     self.spawn(bazel_argv)
 
