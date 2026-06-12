@@ -175,7 +175,7 @@ setuptools.setup(
         'absl-py',
         'dm_env',
         'numpy',
-        'protobuf>=3.14',
+        'protobuf>=3.14,<7.0.0',
         'setuptools!=50.0.0',  # https://github.com/pypa/setuptools/issues/2350
     ],
     extras_require={
@@ -183,4 +183,5 @@ setuptools.setup(
             'tensorflow',
             'tfds-nightly',
         ],
-    })
+    },
+)
