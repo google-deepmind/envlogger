@@ -41,10 +41,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Cache Bazel
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/bazel
+          key: ${{ runner.os }}-bazel-${{ matrix.python-version }}-${{ hashFiles('.bazelrc', 'WORKSPACE.bazel', '**/BUILD.bazel', 'patches/*') }}
+          restore-keys: |
+            ${{ runner.os }}-bazel-${{ matrix.python-version }}-
+            ${{ runner.os }}-bazel-
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip setuptools
-          pip install .[tfds]
+          pip install -v .[tfds]
 
       - name: Run tests
         run: |
