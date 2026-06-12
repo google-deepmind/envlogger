@@ -17,7 +17,7 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])
 
 cc_library(
-    name = "zstdlib",
+    name = "zstd",
     srcs = glob([
         "common/*.c",
         "common/*.h",
@@ -25,6 +25,9 @@ cc_library(
         "compress/*.h",
         "decompress/*.c",
         "decompress/*.h",
-    ]),
+        "decompress/*.S",
+    ]) + [
+        "zstd_errors.h",
+    ],
     hdrs = ["zstd.h"],
 )

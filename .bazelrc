@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+build --noenable_bzlmod
+
 # The `-std=c++17` option is required to compile the Riegeli library and
 # `-D_GLIBCXX_USE_CXX11_ABI=0` option is for compatibility with the shared
 # libraries compiled with the same setting.
@@ -19,4 +21,6 @@
 build -c opt
 build --cxxopt="-mavx"
 build --cxxopt="-std=c++17"
+build --host_cxxopt="-std=c++17"
 build --cxxopt="-D_GLIBCXX_USE_CXX11_ABI=0"
+build --copt="-Wno-error=vla-parameter"

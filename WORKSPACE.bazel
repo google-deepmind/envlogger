@@ -15,24 +15,55 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+http_archive(
+    name = "platforms",
+    sha256 = "218efe8ee736d26a3572663b374a253c012b716d8af0c07e842e82f238a0a7ee",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.10/platforms-0.0.10.tar.gz",
+        "https://github.com/bazelbuild/platforms/releases/download/0.0.10/platforms-0.0.10.tar.gz",
+    ],
+)
+
+load("@platforms//host:extension.bzl", "host_platform_repo")
+host_platform_repo(name = "host_platform")
+
+http_archive(
+    name = "rules_cc",
+    sha256 = "abc605dd850f813bb37004b77db20106a19311a96b2da1c92b789da529d28fe1",
+    strip_prefix = "rules_cc-0.0.17",
+    urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.17/rules_cc-0.0.17.tar.gz"],
+)
+
 # abseil-cpp.
 http_archive(
     name = "com_google_absl",
-    sha256 = "54707f411cb62a26a776dad5fd60829098c181700edcd022ea5c2ca49e9b7ef1",
-    strip_prefix = "abseil-cpp-20220623.1",
-    urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20220623.1.zip"],  # 2022-06-23
+    sha256 = "6a63b94f0d790e373e591b2d60063e935d7ec16db09749d22bdeddc7f0a1a0fb",
+    strip_prefix = "abseil-cpp-20260526.0",
+    urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20260526.0.zip"],
+)
+
+http_archive(
+    name = "abseil-cpp",
+    sha256 = "6a63b94f0d790e373e591b2d60063e935d7ec16db09749d22bdeddc7f0a1a0fb",
+    strip_prefix = "abseil-cpp-20260526.0",
+    urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20260526.0.zip"],
 )
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "f66073dee0bc159157b0bd7f502d7d1ee0bc76b3c1eac9836927511bdc4b3fc1",
-    strip_prefix = "protobuf-3.21.9",
-    urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.21.9.zip"],  # 2019-09-20
+    sha256 = "d2081ab9528292f7980ef2d88d2be472453eea4222141046ad4f660874d5f24e",
+    strip_prefix = "protobuf-32.1",
+    url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v32.1.tar.gz",
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
+
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+
+rules_java_dependencies()
+
 
 http_archive(
     name = "six_archive",
@@ -44,31 +75,37 @@ http_archive(
 # Install `pip` requirements.
 http_archive(
     name = "rules_python",
-    sha256 = "84aec9e21cc56fbc7f1335035a71c850d1b9b5cc6ff497306f84cced9a769841",
-    strip_prefix = "rules_python-0.23.1",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.23.1.tar.gz",
+    sha256 = "e85ae30de33625a63eca7fc40a94fea845e641888e52f32b6beea91e8b1b2793",
+    strip_prefix = "rules_python-0.27.1",
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.27.1.tar.gz",
 )
 
-load("@rules_python//python:repositories.bzl", "py_repositories")
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
 
 py_repositories()
+
+python_register_toolchains(
+    name = "python_3_11",
+    python_version = "3.11",
+)
+
+register_toolchains(
+    "@python_3_11_toolchains//:all",
+)
 
 # Import Bazel protobuf rules.
 http_archive(
     name = "rules_proto",
-    sha256 = "602e7161d9195e50246177e7c55b2f39950a9cf7366f74ed5f22fd45750cd208",
-    strip_prefix = "rules_proto-97d8af4dc474595af3900dd85cb3a29ad28cc313",
+    sha256 = "14a225870ab4e91869652cfd69ef2028277fc1dc4910d65d353b62d6e0ae21f4",
+    strip_prefix = "rules_proto-7.1.0",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
-        "https://github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
+        "https://github.com/bazelbuild/rules_proto/releases/download/7.1.0/rules_proto-7.1.0.tar.gz",
     ],
 )
 
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies")
 
 rules_proto_dependencies()
-
-rules_proto_toolchains()
 
 # Google Test and gmock.
 http_archive(
@@ -83,11 +120,9 @@ http_archive(
 # Riegeli.
 http_archive(
     name = "com_google_riegeli",
-    patch_args = ["-p1"],
-    patches = ["//patches:riegeli.diff"],
-    sha256 = "2eb060d759f4c2cefc099a9442bd1b2040303464879915c692ade46b5b9fdc17",
-    strip_prefix = "riegeli-b2210b97a79a9b7212a8b45590fa03dae0a81d44",
-    url = "https://github.com/google/riegeli/archive/b2210b97a79a9b7212a8b45590fa03dae0a81d44.tar.gz",  # 2022-11-04
+    sha256 = "7c0a8b7d5d8cd55fb7ab66f8afbd22a8a12c030d689ef4b011c518b998817fc1",
+    strip_prefix = "riegeli-16a5703acfef66d26f90af57418295c6995b84ee",
+    url = "https://github.com/google/riegeli/archive/16a5703acfef66d26f90af57418295c6995b84ee.tar.gz",
 )
 
 # Dependencies needed by Riegeli.
@@ -102,24 +137,23 @@ http_archive(
 http_archive(
     name = "net_zstd",
     build_file = "//patches:net_zstd.BUILD.bazel",
-    sha256 = "b6c537b53356a3af3ca3e621457751fa9a6ba96daf3aebb3526ae0f610863532",
-    strip_prefix = "zstd-1.4.5/lib",
-    url = "https://github.com/facebook/zstd/archive/v1.4.5.zip",  # 2020-05-22
+    sha256 = "30f35f71c1203369dc979ecde0400ffea93c27391bfd2ac5a9715d2173d92ff7",
+    strip_prefix = "zstd-1.5.6/lib",
+    url = "https://github.com/facebook/zstd/archive/refs/tags/v1.5.6.tar.gz",
 )
 
 http_archive(
     name = "org_brotli",
-    sha256 = "fec5a1d26f3dd102c542548aaa704f655fecec3622a24ec6e97768dcb3c235ff",
-    strip_prefix = "brotli-68f1b90ad0d204907beb58304d0bd06391001a4d",
-    url = "https://github.com/google/brotli/archive/68f1b90ad0d204907beb58304d0bd06391001a4d.zip",  # 2021-08-18
+    sha256 = "e720a6ca29428b803f4ad165371771f5398faba397edf6778837a18599ea13ff",
+    strip_prefix = "brotli-1.1.0",
+    url = "https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz",
 )
 
 http_archive(
     name = "snappy",
-    build_file = "//patches:snappy.BUILD.bazel",
-    sha256 = "38b4aabf88eb480131ed45bfb89c19ca3e2a62daeb081bdf001cfb17ec4cd303",
-    strip_prefix = "snappy-1.1.8",
-    url = "https://github.com/google/snappy/archive/1.1.8.zip",  # 2020-01-14
+    sha256 = "736aeb64d86566d2236ddffa2865ee5d7a82d26c9016b36218fcc27ea4f09f86",
+    strip_prefix = "snappy-1.2.1",
+    url = "https://github.com/google/snappy/archive/refs/tags/1.2.1.tar.gz",
 )
 
 http_archive(
@@ -190,20 +224,20 @@ http_archive(
 http_archive(
     name = "pybind11",
     build_file = "@pybind11_bazel//:pybind11.BUILD",
-    strip_prefix = "pybind11-2.10.4",
-    urls = ["https://github.com/pybind/pybind11/archive/v2.10.4.tar.gz"],
+    sha256 = "51631e88960a8856f9c497027f55c9f2f9115cafb08c0005439838a05ba17bfc",
+    strip_prefix = "pybind11-2.13.1",
+    urls = ["https://github.com/pybind/pybind11/archive/v2.13.1.tar.gz"],
 )
 
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
 
 python_configure(name = "local_config_python")
 
-git_repository(
+http_archive(
     name = "pybind11_protobuf",
-    commit = "0f9d7e967cb20e3875be04115e7340ab3211ffe2",
-    patch_args = ["-p0"],
-    patches = ["//patches:proto_utils.cc.diff"],
-    remote = "https://github.com/scal444/pybind11_protobuf.git",
+    sha256 = "fbd966129d00174201413b6a00e5d6f0d29ce13197f50a6ffc54ba48027ad05a",
+    strip_prefix = "pybind11_protobuf-8c2fe74d5cfc4c85655bf121c209d15d64600cd3",
+    url = "https://github.com/pybind/pybind11_protobuf/archive/8c2fe74d5cfc4c85655bf121c209d15d64600cd3.zip",
 )
 
 git_repository(

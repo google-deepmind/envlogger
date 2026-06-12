@@ -25,7 +25,7 @@
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
 #include "pybind11//stl.h"
-#include "pybind11_protobuf/proto_casters.h"
+#include "pybind11_protobuf/native_proto_caster.h"
 #include "riegeli/bytes/string_writer.h"
 #include "riegeli/endian/endian_writing.h"
 
@@ -75,7 +75,7 @@ void OptimizeDataProto(envlogger::Data* data) {
 }  // namespace
 
 PYBIND11_MODULE(riegeli_dataset_reader, m) {
-  pybind11::google::ImportProtoModule();
+  pybind11_protobuf::ImportNativeProtoCasters();
   pybind11::module::import("envlogger.backends.python.episode_info");
 
   m.doc() = "RiegeliDatasetReader bindings.";

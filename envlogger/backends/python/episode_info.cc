@@ -20,10 +20,10 @@
 #include "envlogger/proto/storage.pb.h"
 #include "pybind11//pybind11.h"
 #include "pybind11//stl.h"
-#include "pybind11_protobuf/proto_casters.h"
+#include "pybind11_protobuf/native_proto_caster.h"
 
 PYBIND11_MODULE(episode_info, m) {
-  pybind11::google::ImportProtoModule();
+  pybind11_protobuf::ImportNativeProtoCasters();
 
   m.doc() = "EpisodeInfo bindings.";
 

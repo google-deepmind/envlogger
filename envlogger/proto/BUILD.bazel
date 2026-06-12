@@ -13,7 +13,8 @@
 # limitations under the License.
 
 # Protocol buffers for environment logger.
-load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
+load("@com_google_protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -25,7 +26,7 @@ proto_library(
 
 py_proto_library(
     name = "storage_py_pb2",
-    srcs = ["storage.proto"],
+    deps = [":storage_proto"],
 )
 
 cc_proto_library(
