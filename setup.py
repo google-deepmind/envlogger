@@ -19,6 +19,7 @@ import importlib.resources
 import os
 import posixpath
 import shutil
+import sys
 
 import setuptools
 from setuptools.command import build_ext
@@ -101,6 +102,7 @@ class _BuildExt(build_ext.build_ext):
     build_ext.build_ext.run(self)
 
   def bazel_build(self):
+    os.environ['PYTHON_BIN_PATH'] = sys.executable
 
     if not os.path.exists(self.build_temp):
       os.makedirs(self.build_temp)
@@ -119,6 +121,7 @@ class _BuildExt(build_ext.build_ext):
             '--symlink_prefix=' + os.path.join(self.build_temp, 'bazel-'),
             '--compilation_mode=' + ('dbg' if self.debug else 'opt'),
             '--verbose_failures',
+            '--repo_env=PYTHON_BIN_PATH=' + sys.executable,
         ]
     )
 

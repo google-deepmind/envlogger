@@ -219,6 +219,8 @@ http_archive(
     sha256 = "b72c5b44135b90d1ffaba51e08240be0b91707ac60bea08bb4d84b47316211bb",
     strip_prefix = "pybind11_bazel-b162c7c88a253e3f6b673df0c621aca27596ce6b",
     urls = ["https://github.com/pybind/pybind11_bazel/archive/b162c7c88a253e3f6b673df0c621aca27596ce6b.zip"],
+    patches = ["//patches:pybind11_bazel.diff"],
+    patch_args = ["-p1"],
 )
 
 http_archive(

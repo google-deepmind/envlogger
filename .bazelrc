@@ -13,6 +13,7 @@
 # limitations under the License.
 
 build --noenable_bzlmod
+build --enable_workspace
 
 # The `-std=c++17` option is required to compile the Riegeli library and
 # `-D_GLIBCXX_USE_CXX11_ABI=0` option is for compatibility with the shared

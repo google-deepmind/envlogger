@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TEST_TMPDIR: '/tmp'
+      USE_BAZEL_VERSION: 8.2.1
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
@@ -43,19 +44,30 @@ jobs:
 
       - name: Install dependencies
         run: |
+          set -x
           pip install --upgrade pip setuptools wheel
 
           # Build and install Riegeli from source
           git clone --depth=1 https://github.com/google/riegeli.git /tmp/riegeli
           cd /tmp/riegeli
+          # Downgrade protobuf in MODULE.bazel to avoid python runtime incompatibility with TFDS (which needs <7)
+          sed -i 's|version = "34.1"|version = "28.3"|' MODULE.bazel
           if [ -f configure ]; then ./configure; fi
+          # Disable TensorFlow support in Riegeli python build to avoid local_config_tf errors
+          rm -rf python/riegeli/tensorflow
+          sed -i '/riegeli_dataset_ops/d' python/BUILD
+          sed -i 's|cd bazel-bin/python/build_pip_package.runfiles/com_google_riegeli/python|if [ -d bazel-bin/python/build_pip_package.runfiles/_main/python ]; then cd bazel-bin/python/build_pip_package.runfiles/_main/python; else cd bazel-bin/python/build_pip_package.runfiles/com_google_riegeli/python; fi|' python/build_pip_package.sh
+          grep "_main" python/build_pip_package.sh || { echo "Patch failed!"; exit 1; }
           bazel build -c opt --@rules_python//python/config_settings:python_version=${{ matrix.python-version }} python:build_pip_package
-          ./bazel-bin/python/build_pip_package --dest /tmp/riegeli_dist --bdist
+          ./bazel-bin/python/build_pip_package --dest /tmp/riegeli_dist --bdist || { ls -R bazel-bin/python/build_pip_package.runfiles; exit 1; }
           pip install /tmp/riegeli_dist/*.whl
 
           # Go back to project root and install envlogger
           cd $GITHUB_WORKSPACE
           pip install .[tfds]
+          pip list
+          pip install "protobuf<7"
+          pip list
 
       - name: Run tests
         run: |
