@@ -157,6 +157,7 @@ setuptools.setup(
     description='EnvLogger: A tool for recording trajectories.',
     author='DeepMind',
     license='Apache 2.0',
+    python_requires='>=3.11',
     ext_modules=[
         BazelExtension('//envlogger/backends/python:episode_info'),
         BazelExtension('//envlogger/backends/python:riegeli_dataset_reader'),
