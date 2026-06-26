@@ -1,8 +1,8 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # ARG variable for Python 3 minor version.
 # This can be set with `--build-arg PY3_VERSION=10` for Python 3.10.
-ARG PY3_VERSION=10
+ARG PY3_VERSION=11
 
 # Set up timezone to avoid getting stuck at `tzdata` setup.
 ENV TZ=America/Montreal
@@ -19,8 +19,8 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 # Install necessary packages.
 RUN apt-get update && apt-get install -y git curl wget software-properties-common python3.$PY3_VERSION python3.$PY3_VERSION-dev libgmp-dev gcc-9 g++-9 tmux vim
 
-# Install distutils if not Python 3.10 to get `distutils.util`.
-RUN if [ "$PY3_VERSION" != "10" ]; then apt install -y python3-distutils python3-apt; fi
+# Install distutils for Python 3.11 (distutils is removed in 3.12+).
+RUN if [ "$PY3_VERSION" = "11" ]; then apt install -y python3.11-distutils; fi
 
 # Install pip.
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.$PY3_VERSION
