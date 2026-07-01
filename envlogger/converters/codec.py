@@ -164,9 +164,9 @@ def _set_datum_values_from_scalar(
   elif dtype == 'uint16':
     values.uint16_values = uint16struct.pack(scalar)
   elif dtype == 'float32':
-    values.float_values.append(scalar)
+    values.float_values.append(scalar)  # pyrefly: ignore[bad-argument-type]
   elif dtype == 'float64':
-    values.double_values.append(scalar)
+    values.double_values.append(scalar)  # pyrefly: ignore[bad-argument-type]
   elif dtype in ['int32', 'int64', 'uint32', 'uint64']:
     getattr(values, f'{dtype}_values').append(scalar)
   else:
@@ -199,7 +199,7 @@ def _set_datum_values_from_array(
   ]:
     if np.issubdtype(array.dtype, dtype):
       for x in array.flatten():
-        vs.append(cast_type(x))
+        vs.append(cast_type(x))  # pyrefly: ignore[bad-argument-type]
       return
 
   for key, dtype, cast_type in [
@@ -376,7 +376,7 @@ def decode_datum(
   ]:
     if vs:
       if is_scalar:
-        return dtype(converter.unpack(vs)[0])
+        return dtype(converter.unpack(vs)[0])  # pyrefly: ignore[bad-return]
       array = np.frombuffer(vs, dtype=dtype_code).astype(dtype)
 
   if values.string_values:

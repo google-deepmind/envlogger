@@ -96,7 +96,7 @@ class RiegeliBackendReader(backend_reader.BackendReader):
     """Returns the timestep given by offset `i` (0-based)."""
     serialized_data = self._reader.serialized_step(i)
     data = storage_pb2.Data.FromString(serialized_data)
-    return self._decode_step_data(codec.decode(data))
+    return self._decode_step_data(codec.decode(data))  # pyrefly: ignore[bad-argument-type]
 
   def _get_nth_episode_info(self,
                             i: int,

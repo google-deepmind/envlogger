@@ -42,7 +42,7 @@ class _SequenceAdapter(Generic[T], Sequence[T]):
     self._index = 0
     self._get_nth_item = get_nth_item
 
-  def __getitem__(self, index: Union[int, slice]) -> Union[T, list[T]]:
+  def __getitem__(self, index: Union[int, slice]) -> Union[T, list[T]]:  # pyrefly: ignore[bad-override]
     """Retrieves items from this sequence.
 
     Args:
@@ -71,7 +71,7 @@ class _SequenceAdapter(Generic[T], Sequence[T]):
 
   def __iter__(self) -> Iterator[T]:
     while self._index < len(self):
-      yield self[self._index]
+      yield self[self._index]  # pyrefly: ignore[invalid-yield]
       self._index += 1
     self._index = 0
 
@@ -79,7 +79,7 @@ class _SequenceAdapter(Generic[T], Sequence[T]):
     if self._index < len(self):
       index = self._index
       self._index += 1
-      return self[index]
+      return self[index]  # pyrefly: ignore[bad-return]
     else:
       raise StopIteration()
 
