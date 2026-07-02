@@ -17,7 +17,7 @@ RUN apt update && apt install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
 
 # Install necessary packages.
-RUN apt-get update && apt-get install -y git curl wget software-properties-common python3.$PY3_VERSION python3.$PY3_VERSION-dev libgmp-dev gcc-9 g++-9 tmux vim
+RUN apt-get update && apt-get install -y git curl wget software-properties-common python3.$PY3_VERSION python3.$PY3_VERSION-dev libgmp-dev gcc g++ tmux vim
 
 # Install distutils for Python 3.11 (distutils is removed in 3.12+).
 RUN if [ "$PY3_VERSION" = "11" ]; then apt install -y python3.11-distutils; fi
@@ -26,15 +26,14 @@ RUN if [ "$PY3_VERSION" = "11" ]; then apt install -y python3.11-distutils; fi
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.$PY3_VERSION
 
 # Download bazel.
-RUN wget https://github.com/bazelbuild/bazel/releases/download/6.2.1/bazel-6.2.1-linux-x86_64
-RUN chmod +x /bazel-6.2.1-linux-x86_64
-RUN mv /bazel-6.2.1-linux-x86_64 /usr/bin/bazel
+RUN wget https://github.com/bazelbuild/bazel/releases/download/7.1.0/bazel-7.1.0-linux-x86_64
+RUN chmod +x /bazel-7.1.0-linux-x86_64
+RUN mv /bazel-7.1.0-linux-x86_64 /usr/bin/bazel
 
 # Add python alternatives.
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.$PY3_VERSION 1
 
-# Override gcc/g++.
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+
 
 # Install some basic things for all python versions.
 RUN echo 1 | update-alternatives --config python3

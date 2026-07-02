@@ -14,6 +14,7 @@
 
 # Build targets for environment logger.
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("@rules_python//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -92,4 +93,24 @@ py_library(
     srcs = ["step_data.py"],
     deps = [
     ],
+)
+
+# System Python toolchain for OSS build.
+toolchain(
+    name = "python3_system_toolchain",
+    toolchain = "@local_config_python//:py_runtime_pair",
+    toolchain_type = "@rules_python//python:toolchain_type",
+)
+
+py_cc_toolchain(
+    name = "python3_system_cc_toolchain_impl",
+    headers = "@local_config_python//:python_headers",
+    libs = "@local_config_python//:python_lib",
+    python_version = "3.11",
+)
+
+toolchain(
+    name = "python3_system_cc_toolchain",
+    toolchain = ":python3_system_cc_toolchain_impl",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
 )

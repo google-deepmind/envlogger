@@ -15,9 +15,12 @@
 #ifndef THIRD_PARTY_PY_ENVLOGGER_PLATFORM_DEFAULT_PROTO_TESTUTIL_H_
 #define THIRD_PARTY_PY_ENVLOGGER_PLATFORM_DEFAULT_PROTO_TESTUTIL_H_
 
+#include <memory>
+#include <ostream>
 #include <vector>
 
 #include "glog/logging.h"
+#include "google/protobuf/message.h"  // IWYU pragma: keep
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "gmock/gmock.h"
@@ -33,16 +36,30 @@ class ProtoStringMatcher {
  public:
   explicit ProtoStringMatcher(const std::string& expected)
       : expected_proto_str_(expected) {}
-  explicit ProtoStringMatcher(const google::protobuf::Message& expected)
-      : expected_proto_str_(expected.DebugString()) {}
+  explicit ProtoStringMatcher(const google::protobuf::Message& expected) {  // NOLINT
+    google::protobuf::Message* copy = expected.New();
+    copy->CopyFrom(expected);
+    expected_proto_ = std::shared_ptr<const google::protobuf::Message>(copy);
+  }
 
   template <typename Message>
   bool MatchAndExplain(const Message& actual_proto,
                        ::testing::MatchResultListener* listener) const;
 
-  void DescribeTo(::std::ostream* os) const { *os << expected_proto_str_; }
+  void DescribeTo(::std::ostream* os) const {
+    if (expected_proto_) {
+      *os << expected_proto_->ShortDebugString();
+    } else {
+      *os << expected_proto_str_;
+    }
+  }
   void DescribeNegationTo(::std::ostream* os) const {
-    *os << "not equal to expected message: " << expected_proto_str_;
+    *os << "not equal to expected message: ";
+    if (expected_proto_) {
+      *os << expected_proto_->ShortDebugString();
+    } else {
+      *os << expected_proto_str_;
+    }
   }
 
   void SetComparePartially() {
@@ -51,6 +68,7 @@ class ProtoStringMatcher {
 
  private:
   const std::string expected_proto_str_;
+  std::shared_ptr<const google::protobuf::Message> expected_proto_;
   google::protobuf::util::MessageDifferencer::Scope scope_ =
       google::protobuf::util::MessageDifferencer::FULL;
 };
@@ -66,7 +84,12 @@ template <typename Message>
 bool ProtoStringMatcher::MatchAndExplain(
     const Message& actual_proto,
     ::testing::MatchResultListener* listener) const {
-  Message expected_proto = CreateProto<Message>(expected_proto_str_);
+  Message expected_proto;
+  if (expected_proto_) {
+    expected_proto.CopyFrom(*expected_proto_);
+  } else {
+    expected_proto = CreateProto<Message>(expected_proto_str_);
+  }
 
   google::protobuf::util::MessageDifferencer differencer;
   std::string differences;

@@ -1,6 +1,6 @@
 absl-py
 dm_env
 numpy
-protobuf
+protobuf>=3.14,<7.0.0
 tensorflow
 tfds-nightly

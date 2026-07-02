@@ -46,7 +46,6 @@ with envlogger.EnvLogger(
 Full example of random agent in Catch is available here:
 [random_agent_catch.py](https://github.com/google-deepmind/envlogger/tree/main/envlogger/examples/random_agent_catch.py)
 
-
 ### Step metadata
 
 Envlogger also allows to record custom metadata per step by defining a function
@@ -102,9 +101,10 @@ episode.
 Envlogger supports writing data that is directly compatible with
 [TFDS](http://www.tensorflow.org/datasets) and [RLDS].
 
-For that, you need to indicate the specs of your environment in terms of [TFDS
-Features](https://www.tensorflow.org/datasets/features) using an RLDS [DatasetConfig] like in the example
-(note that the config can include `step_metadata_info`and `episode metadata_info`).
+For that, you need to indicate the specs of your environment in terms of
+[TFDS Features](https://www.tensorflow.org/datasets/features) using an
+RLDS [DatasetConfig] like in the example (note that the config can include
+`step_metadata_info` and `episode metadata_info`).
 
 ```
   dataset_config = tfds.rlds.rlds_base.DatasetConfig(
@@ -131,7 +131,6 @@ envlogger.EnvLogger(
 ```
 
 A full example is available here [random_agent_catch.py](https://github.com/google-deepmind/envlogger/tree/main/envlogger/examples/tfds_random_agent_catch.py)
-
 
 [RLDS]: http://github.com/google-research/rlds
 [DatasetConfig]: https://github.com/tensorflow/datasets/blob/fdad1d9e8f1cb34389a336132b2f842cbc7aca57/tensorflow_datasets/rlds/rlds_base.py#L29
@@ -194,8 +193,7 @@ pip install envlogger[tfds]
 ##### Compiling from source
 
 For this option you will need to [install Bazel](https://docs.bazel.build/versions/main/install.html) and [GMP](https://gmplib.org/) (`libgmp-dev` on Debian-based systems).
-Please note that Bazel versions >4.0 are not supported. Our recommended version
-is [3.7.2](https://github.com/bazelbuild/bazel/releases/tag/3.7.2). Then:
+We recommend using [bazelisk](https://github.com/bazelbuild/bazelisk) to manage Bazel versions, which will automatically use the pinned version in `.bazelversion` (currently 7.1.0). Then:
 
 ```
 git clone https://github.com/deepmind/envlogger/
@@ -216,8 +214,10 @@ bazel test --test_output=errors envlogger/...
 
 ## Benchmarks
 
-Wrapping your environment with EnvLogger adds an approximately 2 millisecond overhead per environment step.
-See the following difference in distributions in the case of random agent on a 100 steps per second Catch environment (measured in milliseconds).
+Wrapping your environment with EnvLogger adds an approximately 2 millisecond
+overhead per environment step.
+See the following difference in distributions in the case of random agent on a
+100 steps per second Catch environment (measured in milliseconds).
 
 Percentiles      | 50th      | 95th       | 99th      | 99.9th     | mean (± std)
 ---------------- | --------- | -----------| ----------| -----------| -----------
@@ -225,7 +225,6 @@ w/o EnvLogger    | 10.15     | 10.23      | 11.51     | 14.70      | 10.19 (± 1
 w/ EnvLogger     | 12.65     | 14.39      | 15.94     | 19.43      | 12.88 (± 0.34)
 
 <img src="docs/images/timings.png" width="40%">
-
 
 ## Acknowledgements
 

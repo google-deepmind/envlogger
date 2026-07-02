@@ -84,14 +84,12 @@ load("@rules_python//python:repositories.bzl", "py_repositories", "python_regist
 
 py_repositories()
 
-python_register_toolchains(
-    name = "python_3_11",
-    python_version = "3.11",
+register_toolchains(
+    "//envlogger:python3_system_toolchain",
+    "//envlogger:python3_system_cc_toolchain",
 )
 
-register_toolchains(
-    "@python_3_11_toolchains//:all",
-)
+
 
 # Import Bazel protobuf rules.
 http_archive(
