@@ -14,6 +14,7 @@
 
 # Build targets for environment logger.
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
 load("@rules_python//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
 
 package(default_visibility = ["//visibility:public"])
@@ -113,4 +114,32 @@ toolchain(
     name = "python3_system_cc_toolchain",
     toolchain = ":python3_system_cc_toolchain_impl",
     toolchain_type = "@rules_python//python/cc:toolchain_type",
+)
+
+py_package(
+    name = "envlogger_pkg",
+    packages = ["envlogger"],
+    deps = [":envlogger"],
+)
+
+py_wheel(
+    name = "envlogger_wheel",
+    author = "DeepMind",
+    distribution = "envlogger",
+    extra_requires = {
+        "tfds": [
+            "tensorflow",
+            "tfds-nightly",
+        ],
+    },
+    license = "Apache 2.0",
+    requires = [
+        "absl-py",
+        "dm_env",
+        "numpy",
+        "protobuf>=3.14,<7.0.0",
+    ],
+    summary = "EnvLogger: A tool for recording trajectories.",
+    version = "1.2",
+    deps = [":envlogger_pkg"],
 )

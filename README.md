@@ -201,6 +201,13 @@ cd envlogger
 bazel test --test_output=errors envlogger/...
 ```
 
+To build and install the wheel package:
+
+```
+bazel build -c opt envlogger:envlogger_wheel
+pip install bazel-bin/envlogger/*.whl
+```
+
 ##### Running inside Docker
 
 We provide a Docker image that can be used to run tests in a more controlled
