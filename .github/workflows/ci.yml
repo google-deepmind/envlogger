@@ -49,6 +49,19 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install -r envlogger/requirements.txt
 
+      - name: Build wheel
+        run: |
+          bazel build -c opt envlogger:envlogger_wheel
+
+      - name: Install wheel
+        run: |
+          pip install bazel-bin/envlogger/*.whl
+
+      - name: Sanity check wheel
+        run: |
+          cd /tmp
+          python -c "import envlogger"
+
       - name: Run tests
         run: |
           bazel test -c fastbuild --test_output=errors envlogger/...
