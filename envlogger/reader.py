@@ -58,7 +58,7 @@ class Reader:
     c = copy.copy(self)
 
     c._backend = self._backend.copy()
-    c._observation = self._observation_spec
+    c._observation = self._observation_spec  # pyrefly: ignore[missing-attribute]
     c._action_spec = self._action_spec
     c._reward_spec = self._reward_spec
     c._discount_spec = self._discount_spec

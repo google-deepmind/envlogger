@@ -119,7 +119,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
       self._current_episode.add_step(data)
 
   def set_episode_metadata(self, data: dict[str, Any]) -> None:
-    self._current_episode.metadata = data
+    self._current_episode.metadata = data  # pyrefly: ignore[missing-attribute]
 
   def close(self) -> None:
     logging.info('Deleting the backend with data_dir: %r', self._data_directory)

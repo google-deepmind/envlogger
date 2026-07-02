@@ -104,7 +104,7 @@ def maybe_recover_last_shard(builder: tfds.core.DatasetBuilder):
       continue
     logging.info('Recovering data for shard %s.', extra_shard)
     splits_to_update += 1
-    ds = tf.data.TFRecordDataset(extra_shard)
+    ds = tf.data.TFRecordDataset(extra_shard)  # pyrefly: ignore[bad-instantiation]
     num_examples = 0
     num_bytes = 0
     for ex in ds:
