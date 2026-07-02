@@ -21,6 +21,7 @@ from absl import logging
 from envlogger import step_data
 from envlogger.backends import backend_writer
 from envlogger.backends import rlds_utils
+import numpy as np
 import tensorflow_datasets as tfds
 
 
@@ -49,6 +50,22 @@ class Episode(object):
       self.metadata = {}
 
     return {'steps': self.steps + [last_step], **self.metadata}
+
+
+def _sanitize_metadata(data: Any) -> Any:
+  """Recursively converts numpy types to standard Python types."""
+  if isinstance(data, dict):
+    return {k: _sanitize_metadata(v) for k, v in data.items()}
+  elif isinstance(data, list):
+    return [_sanitize_metadata(x) for x in data]
+  elif isinstance(data, tuple):
+    return tuple(_sanitize_metadata(x) for x in data)
+  elif isinstance(data, np.ndarray):
+    return data.tolist()
+  elif isinstance(data, np.generic):
+    return data.item()
+  else:
+    return data
 
 
 class TFDSBackendWriter(backend_writer.BackendWriter):
@@ -84,7 +101,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
         data_dir=data_directory,
         module_name='')
     if store_ds_metadata:
-      metadata = self._metadata
+      metadata = _sanitize_metadata(self._metadata)
     else:
       metadata = None
     self._data_directory = data_directory
@@ -119,6 +136,7 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
       self._current_episode.add_step(data)
 
   def set_episode_metadata(self, data: dict[str, Any]) -> None:
+    assert self._current_episode is not None
     self._current_episode.metadata = data
 
   def close(self) -> None:

@@ -161,6 +161,37 @@ class TfdsBackendWriterTest(absltest.TestCase):
     info = builder.info
     self.assertDictEqual(info.metadata, {'env_name': 'catch'})
 
+  def test_backend_writer_with_complex_metadata(self):
+    num_episodes = 1
+    max_episodes_per_file = 1
+    data_dir = self.create_tempdir(name='my_data_dir').full_path
+
+    complex_metadata = {
+        'list': [np.int32(1), np.array([2])],
+        'tuple': (np.int64(3), np.array([4, 5])),
+        'scalar': np.float32(6.0),
+    }
+
+    _ = tfds_backend_testlib.generate_episode_data(
+        backend=tfds_backend_testlib.tfds_backend_catch_env(
+            data_directory=data_dir,
+            max_episodes_per_file=max_episodes_per_file,
+            ds_metadata=complex_metadata,
+            store_ds_metadata=True,
+        ),
+        num_episodes=num_episodes,
+    )
+
+    builder = tfds.builder_from_directory(data_dir)
+    info = builder.info
+
+    expected_metadata = {
+        'list': [1, [2]],
+        'tuple': [3, [4, 5]],
+        'scalar': 6.0,
+    }
+    self.assertDictEqual(info.metadata, expected_metadata)
+
   def test_backend_writer_without_dataset_metadata(self):
     num_episodes = 5
     max_episodes_per_file = 3

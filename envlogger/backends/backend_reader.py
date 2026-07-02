@@ -17,7 +17,7 @@
 
 import abc
 from collections.abc import Callable, Iterator, Sequence
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import Any, Generic, Optional, TypeVar, Union, overload
 
 from absl import logging
 from envlogger import step_data
@@ -41,6 +41,14 @@ class _SequenceAdapter(Generic[T], Sequence[T]):
     self._count = count
     self._index = 0
     self._get_nth_item = get_nth_item
+
+  @overload
+  def __getitem__(self, index: int) -> T:
+    ...
+
+  @overload
+  def __getitem__(self, index: slice) -> list[T]:
+    ...
 
   def __getitem__(self, index: Union[int, slice]) -> Union[T, list[T]]:
     """Retrieves items from this sequence.

@@ -14,8 +14,9 @@
 # limitations under the License.
 
 """Utils to test the backends."""
+from collections.abc import Callable
 import time
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from absl import logging
 from envlogger import step_data
@@ -71,16 +72,20 @@ def generate_episode_data(
 def catch_env_tfds_config(
     name: str = 'catch_example') -> tfds.rlds.rlds_base.DatasetConfig:
   """Creates a TFDS DatasetConfig for the Catch environment."""
-  return tfds.rlds.rlds_base.DatasetConfig(
+  return cast(
+      Callable[..., tfds.rlds.rlds_base.DatasetConfig],
+      tfds.rlds.rlds_base.DatasetConfig,
+  )(
       name=name,
       observation_info=tfds.features.Tensor(
-          shape=(10, 5), dtype=tf.float32,
-          encoding=tfds.features.Encoding.ZLIB),
+          shape=(10, 5), dtype=tf.float32, encoding=tfds.features.Encoding.ZLIB
+      ),
       action_info=tf.int64,
       reward_info=tf.float64,
       discount_info=tf.float64,
       step_metadata_info={'timestamp': tf.int64},
-      episode_metadata_info={'episode_id': tf.int64})
+      episode_metadata_info={'episode_id': tf.int64},
+  )
 
 
 def tfds_backend_catch_env(

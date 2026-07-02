@@ -89,7 +89,18 @@ import numpy as np
 
 # A type annotation that represents all the possible number types we support.
 ScalarNumber = Union[
-    float, int, np.float32, np.float64, np.int32, np.int64, np.uint32, np.uint64
+    float,
+    int,
+    np.float32,
+    np.float64,
+    np.int32,
+    np.int64,
+    np.uint32,
+    np.uint64,
+    np.int8,
+    np.int16,
+    np.uint8,
+    np.uint16,
 ]
 
 
@@ -164,9 +175,9 @@ def _set_datum_values_from_scalar(
   elif dtype == 'uint16':
     values.uint16_values = uint16struct.pack(scalar)
   elif dtype == 'float32':
-    values.float_values.append(scalar)
+    values.float_values.append(float(scalar))
   elif dtype == 'float64':
-    values.double_values.append(scalar)
+    values.double_values.append(float(scalar))
   elif dtype in ['int32', 'int64', 'uint32', 'uint64']:
     getattr(values, f'{dtype}_values').append(scalar)
   else:
@@ -187,19 +198,20 @@ def _set_datum_values_from_array(
     setattr(values, 'float_values_buffer', array.astype('>f').tobytes())
     return
 
-  for vs, dtype, cast_type in [
-      (values.double_values, np.float64, np.float64),
-      (values.int32_values, np.int32, np.int32),
-      (values.int64_values, np.int64, np.int64),
-      (values.uint32_values, np.uint32, np.uint32),
-      (values.uint64_values, np.uint64, np.uint64),
-      (values.bool_values, np.bool_, bool),
-      (values.string_values, np.str_, np.str_),
-      (values.bytes_values, np.bytes_, np.bytes_),
+  for field_name, dtype, cast_type in [
+      ('double_values', np.float64, float),
+      ('int32_values', np.int32, int),
+      ('int64_values', np.int64, int),
+      ('uint32_values', np.uint32, int),
+      ('uint64_values', np.uint64, int),
+      ('bool_values', np.bool_, bool),
+      ('string_values', np.str_, str),
+      ('bytes_values', np.bytes_, bytes),
   ]:
     if np.issubdtype(array.dtype, dtype):
+      container = getattr(values, field_name)
       for x in array.flatten():
-        vs.append(cast_type(x))
+        container.append(cast_type(x))
       return
 
   for key, dtype, cast_type in [

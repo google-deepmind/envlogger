@@ -16,7 +16,7 @@
 """For reading trajectory data from riegeli files."""
 
 import copy
-from typing import Any
+from typing import Any, cast
 
 from absl import logging
 import dm_env
@@ -63,7 +63,11 @@ class RiegeliBackendReader(backend_reader.BackendReader):
       else:
         raise
 
-    self._metadata = codec.decode(self._reader.metadata()) or {}
+    decoded_metadata = codec.decode(self._reader.metadata())
+    if isinstance(decoded_metadata, dict):
+      self._metadata = cast(dict[str, Any], decoded_metadata)
+    else:
+      self._metadata = {}
     super().__init__()
 
   def _copy(self) -> 'RiegeliBackendReader':
@@ -96,7 +100,8 @@ class RiegeliBackendReader(backend_reader.BackendReader):
     """Returns the timestep given by offset `i` (0-based)."""
     serialized_data = self._reader.serialized_step(i)
     data = storage_pb2.Data.FromString(serialized_data)
-    return self._decode_step_data(codec.decode(data))
+    decoded_data = codec.decode(data)
+    return self._decode_step_data(cast(tuple[Any, Any, Any], decoded_data))
 
   def _get_nth_episode_info(self,
                             i: int,

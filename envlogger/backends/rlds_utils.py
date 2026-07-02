@@ -15,7 +15,8 @@
 
 """Utils to convert Envlogger data into RLDS."""
 
-from typing import Any, Optional
+from collections.abc import Callable
+from typing import Any, Optional, cast
 
 from absl import logging
 from envlogger import step_data
@@ -104,7 +105,9 @@ def maybe_recover_last_shard(builder: tfds.core.DatasetBuilder):
       continue
     logging.info('Recovering data for shard %s.', extra_shard)
     splits_to_update += 1
-    ds = tf.data.TFRecordDataset(extra_shard)
+    ds = cast(Callable[..., tf.data.Dataset], tf.data.TFRecordDataset)(
+        extra_shard
+    )
     num_examples = 0
     num_bytes = 0
     for ex in ds:

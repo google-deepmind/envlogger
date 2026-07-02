@@ -49,9 +49,9 @@ class Catch(dm_env.Environment):
     self._columns = columns
     self._rng = np.random.RandomState(seed)
     self._board = np.zeros((rows, columns), dtype=np.float32)
-    self._ball_x = None
-    self._ball_y = None
-    self._paddle_x = None
+    self._ball_x = 0
+    self._ball_y = 0
+    self._paddle_x = 0
     self._paddle_y = self._rows - 1
     self._reset_next_step = True
 

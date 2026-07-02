@@ -16,7 +16,9 @@
 """A simple binary to run catch for a while and record its trajectories.
 """
 
+from collections.abc import Callable
 import time
+from typing import cast
 
 from absl import app
 from absl import flags
@@ -46,15 +48,19 @@ def main(unused_argv):
   def step_fn(unused_timestep, unused_action, unused_env):
     return {'timestamp': time.time()}
 
-  dataset_config = tfds.rlds.rlds_base.DatasetConfig(
+  dataset_config = cast(
+      Callable[..., tfds.rlds.rlds_base.DatasetConfig],
+      tfds.rlds.rlds_base.DatasetConfig,
+  )(
       name='catch_example',
       observation_info=tfds.features.Tensor(
-          shape=(10, 5), dtype=tf.float32,
-          encoding=tfds.features.Encoding.ZLIB),
+          shape=(10, 5), dtype=tf.float32, encoding=tfds.features.Encoding.ZLIB
+      ),
       action_info=tf.int64,
       reward_info=tf.float64,
       discount_info=tf.float64,
-      step_metadata_info={'timestamp': tf.float32})
+      step_metadata_info={'timestamp': tf.float32},
+  )
 
   logging.info('Wrapping environment with EnvironmentLogger...')
   with envlogger.EnvLogger(
