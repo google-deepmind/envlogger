@@ -171,6 +171,6 @@ py_wheel(
         "protobuf>=3.14,<7.0.0",
     ],
     summary = "EnvLogger: A tool for recording trajectories.",
-    version = "1.2",
+    version = "1.3",
     deps = [":envlogger_pkg"],
 )
