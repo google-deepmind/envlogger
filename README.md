@@ -183,6 +183,13 @@ You can install EnvLogger via `pip`:
 pip install envlogger
 ```
 
+> **Note**: `envlogger` requires the GNU Multiple Precision (GMP) library at
+> runtime. On Debian-based systems (like Ubuntu), you must install
+> `libgmpxx4ldbl` before importing `envlogger`:
+> ```bash
+> sudo apt-get install libgmpxx4ldbl
+> ```
+
 If you want to use the TFDS backend, you need to install the package with
 extra dependencies:
 
