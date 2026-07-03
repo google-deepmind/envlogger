@@ -784,7 +784,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     a = np.array(1.5, dtype=np.float32)
     expected = storage_pb2.Data()
     datum = expected.datum
-    datum.values.float_values_buffer = a.astype('>f').tobytes()
+    datum.values.float_values.append(1.5)
     self.assertEqual(codec.encode(a), expected)
 
   def test_encode_one_float_elem_ndarray(self):
@@ -793,7 +793,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     expected = storage_pb2.Data()
     datum = expected.datum
     datum.shape.dim.add().size = 1
-    datum.values.float_values_buffer = a.astype('>f').tobytes()
+    datum.values.float_values.append(1.5)
     self.assertEqual(codec.encode(a), expected)
 
   def test_identity_one_float_elem_ndarray(self):

@@ -194,11 +194,8 @@ def _set_datum_values_from_array(
     values: The destination of the copy.
   """
 
-  if array.dtype == np.float32:
-    setattr(values, 'float_values_buffer', array.astype('>f').tobytes())
-    return
-
   for field_name, dtype, cast_type in [
+      ('float_values', np.float32, float),
       ('double_values', np.float64, float),
       ('int32_values', np.int32, int),
       ('int64_values', np.int64, int),
@@ -210,8 +207,20 @@ def _set_datum_values_from_array(
   ]:
     if np.issubdtype(array.dtype, dtype):
       container = getattr(values, field_name)
-      for x in array.flatten():
-        container.append(cast_type(x))
+      if dtype in (
+          np.float32,
+          np.float64,
+          np.int32,
+          np.int64,
+          np.uint32,
+          np.uint64,
+          np.bool_,
+      ):
+        if array.size > 0:
+          container.extend(array.flatten())
+      else:
+        for x in array.flatten():
+          container.append(cast_type(x))
       return
 
   for key, dtype, cast_type in [

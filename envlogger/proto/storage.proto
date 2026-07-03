@@ -61,7 +61,7 @@ message Datum {
     // 32-bit float.
     repeated float float_values = 1;
     // float32 values encoded as big-endian bytes.
-    bytes float_values_buffer = 15;
+    bytes float_values_buffer = 15 [deprecated = true];
     // 64-bit float.
     repeated double double_values = 2;
     // 32-bit signed integer.
