@@ -116,6 +116,21 @@ toolchain(
     toolchain_type = "@rules_python//python/cc:toolchain_type",
 )
 
+config_setting(
+    name = "py311",
+    flag_values = {"@rules_python//python/config_settings:python_version": "3.11"},
+)
+
+config_setting(
+    name = "py312",
+    flag_values = {"@rules_python//python/config_settings:python_version": "3.12"},
+)
+
+config_setting(
+    name = "py313",
+    flag_values = {"@rules_python//python/config_settings:python_version": "3.13"},
+)
+
 py_package(
     name = "envlogger_pkg",
     packages = ["envlogger"],
@@ -124,6 +139,12 @@ py_package(
 
 py_wheel(
     name = "envlogger_wheel",
+    abi = select({
+        ":py311": "cp311",
+        ":py312": "cp312",
+        ":py313": "cp313",
+        "//conditions:default": "none",
+    }),
     author = "DeepMind",
     distribution = "envlogger",
     extra_requires = {
@@ -133,6 +154,16 @@ py_wheel(
         ],
     },
     license = "Apache 2.0",
+    platform = select({
+        "@platforms//os:linux": "manylinux2014_x86_64",
+        "//conditions:default": "any",
+    }),
+    python_tag = select({
+        ":py311": "cp311",
+        ":py312": "cp312",
+        ":py313": "cp313",
+        "//conditions:default": "py3",
+    }),
     requires = [
         "absl-py",
         "dm_env",

@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: tests
+name: Release
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - 'v*'
   workflow_dispatch:
-    inputs:
-      git-ref:
-        description: Git Ref (Optional)
-        required: false
 
 jobs:
   build:
@@ -34,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
@@ -53,15 +48,41 @@ jobs:
         run: |
           bazel build -c opt --@rules_python//python/config_settings:python_version=${{ matrix.python-version }} envlogger:envlogger_wheel
 
-      - name: Install wheel
+      - name: Copy wheel to dist
         run: |
-          pip install bazel-bin/envlogger/*.whl
+          mkdir -p dist
+          cp bazel-bin/envlogger/*.whl dist/
 
-      - name: Sanity check wheel
-        run: |
-          cd /tmp
-          python -c "import envlogger"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: releases-${{ matrix.python-version }}
+          path: dist/*
 
-      - name: Run tests
-        run: |
-          bazel test -c fastbuild --test_output=errors --@rules_python//python/config_settings:python_version=${{ matrix.python-version }} envlogger/...
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts (3.11)
+        uses: actions/download-artifact@v4
+        with:
+          name: releases-3.11
+          path: dist
+
+      - name: Download artifacts (3.12)
+        uses: actions/download-artifact@v4
+        with:
+          name: releases-3.12
+          path: dist
+
+      - name: Download artifacts (3.13)
+        uses: actions/download-artifact@v4
+        with:
+          name: releases-3.13
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
