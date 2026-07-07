@@ -33,6 +33,7 @@
 #include <iterator>
 #include <optional>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -141,11 +142,11 @@ class DataView {
   const Data& operator*() const { return *data(); }
   const Data* operator->() const { return data(); }
 
-  // Returns a DataView of value[index] if the value of the data is an array
-  // or tuple.
+  // Returns a DataView of value[key_or_index] if the value of the data is an
+  // array or tuple (index), or a dict with integer keys (key).
   //
-  // Dies if out of bound or data_ is not subscriptable.
-  DataView operator[](int index) const;
+  // Dies if out of bound, key not found, or data_ is not subscriptable.
+  DataView operator[](int64_t key_or_index) const;
 
   // Returns a DataView of value[key] if the value of this data is a dict.
   //
@@ -158,13 +159,17 @@ class DataView {
   const_iterator begin() const;
   const_iterator end() const;
 
-  // Accessor for dictionary contents.
+  // Accessor for dictionary contents (string keys only).
   //
   // Also supports iteration like:
   // for (const auto [key, value] : my_view.items()) {
   //   ...
   // }
   const google::protobuf::Map<std::string, Data>& items() const;
+
+  // Accessor for dictionary contents with arbitrary key types.
+  // Returns a list of key-value pairs.
+  std::vector<std::pair<DataView, DataView>> kvs() const;
 
  private:
   const Data* data_ = nullptr;

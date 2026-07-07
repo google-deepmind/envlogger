@@ -15,13 +15,17 @@
 #include "envlogger/converters/xtensor_codec.h"
 
 #include <cstdint>
+#include <limits>
 #include <optional>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <variant>
 #include <vector>
 
 #include "glog/logging.h"
 #include "google/protobuf/repeated_field.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include <gmpxx.h>
@@ -46,6 +50,45 @@ std::vector<int> ShapeVector(const envlogger::Datum::Shape& shape) {
 
 bool IsScalar(const std::vector<int>& shape) {
   return shape.size() == 1 && shape[0] == SCALAR_DIM_SIZE;
+}
+
+std::optional<int64_t> GetAsInt64(const Data& data) {
+  if (data.value_case() != Data::kDatum) return std::nullopt;
+  auto decoded = Decode(data.datum());
+  if (!decoded) return std::nullopt;
+
+  return std::visit(
+      [](auto&& arg) -> std::optional<int64_t> {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_integral_v<T> && !std::is_same_v<T, bool>) {
+          bool safe = false;
+          if constexpr (std::is_signed_v<T>) {
+            if constexpr (sizeof(T) <= sizeof(int64_t)) {
+              safe = true;
+            } else {
+              safe = arg >= std::numeric_limits<int64_t>::min() &&
+                     arg <= std::numeric_limits<int64_t>::max();
+            }
+          } else {
+            if constexpr (sizeof(T) < sizeof(int64_t)) {
+              safe = true;
+            } else {
+              safe = arg <= static_cast<T>(std::numeric_limits<int64_t>::max());
+            }
+          }
+          if (safe) {
+            return static_cast<int64_t>(arg);
+          }
+          return std::nullopt;
+        }
+        if constexpr (std::is_same_v<T, mpz_class>) {
+          if (arg.fits_slong_p()) {
+            return static_cast<int64_t>(arg.get_si());
+          }
+        }
+        return std::nullopt;
+      },
+      *decoded);
 }
 
 // Converts `value` arbitrary precision integer to a binary string.
@@ -630,24 +673,38 @@ size_t DataView::size() const {
     case Data::kTuple:
       return data_->tuple().values().size();
     case Data::kDict:
-      return data_->dict().values().size();
+      return data_->dict().values().size() +
+             data_->dict().kvs().values().size();
     default:
       return 0;
   }
 }
 
-DataView DataView::operator[](int index) const {
+DataView DataView::operator[](int64_t key_or_index) const {
   const auto value_type = data_->value_case();
-  CHECK(value_type == Data::kArray || value_type == Data::kTuple)
-      << "Expected array or tuple, got: " << data_->value_case();
-
-  CHECK(index >= 0 && index < static_cast<int>(size())) << absl::StrFormat(
-      "Expected index between [0, %d), got: %d", size(), index);
-
-  if (value_type == Data::kArray) {
-    return DataView(&data_->array().values(index));
+  if (value_type == Data::kArray || value_type == Data::kTuple) {
+    CHECK(key_or_index >= 0 && key_or_index < static_cast<int64_t>(size()))
+        << absl::StrFormat("Expected index between [0, %v), got: %v", size(),
+                           key_or_index);
+    if (value_type == Data::kArray) {
+      return DataView(&data_->array().values(key_or_index));
+    }
+    return DataView(&data_->tuple().values(key_or_index));
+  } else if (value_type == Data::kDict) {
+    for (const auto& kv_data : data_->dict().kvs().values()) {
+      CHECK(kv_data.value_case() == Data::kTuple &&
+            kv_data.tuple().values_size() == 2)
+          << "Expected key-value tuple, got: " << kv_data.value_case();
+      const auto& k = kv_data.tuple().values(0);
+      const auto& v = kv_data.tuple().values(1);
+      auto k_int = GetAsInt64(k);
+      if (k_int && *k_int == key_or_index) {
+        return DataView(&v);
+      }
+    }
+    LOG(FATAL) << "Non-existing key: " << key_or_index;
   }
-  return DataView(&data_->tuple().values(index));
+  LOG(FATAL) << "Expected array, tuple or dict, got: " << value_type;
 }
 
 DataView DataView::operator[](const std::string& key) const {
@@ -661,6 +718,21 @@ DataView DataView::operator[](const std::string& key) const {
 
 const google::protobuf::Map<std::string, Data>& DataView::items() const {
   return data_->dict().values();
+}
+
+std::vector<std::pair<DataView, DataView>> DataView::kvs() const {
+  CHECK(data_->value_case() == Data::kDict)
+      << "Expected dict, got: " << data_->value_case();
+  std::vector<std::pair<DataView, DataView>> result;
+  result.reserve(data_->dict().kvs().values().size());
+  for (const auto& kv_data : data_->dict().kvs().values()) {
+    CHECK(kv_data.value_case() == Data::kTuple &&
+          kv_data.tuple().values_size() == 2)
+        << "Expected key-value tuple, got: " << kv_data.value_case();
+    result.push_back({DataView(&kv_data.tuple().values(0)),
+                      DataView(&kv_data.tuple().values(1))});
+  }
+  return result;
 }
 
 // Iterator implementation.

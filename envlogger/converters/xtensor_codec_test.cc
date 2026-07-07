@@ -923,7 +923,7 @@ TEST(DataViewDeathTest, UnsubscriptableDatum) {
     }
   )pb");
   const DataView view(&data);
-  EXPECT_DEATH(view[0], "Expected array or tuple, got: 1");
+  EXPECT_DEATH(view[0], "Expected array, tuple or dict, got: 1");
 }
 
 TEST(DataViewTest, OutOfBound) {
@@ -1134,6 +1134,128 @@ TEST(DataViewTest, MultipleElementsDict) {
   // .begin() and .end() on the actual view should return nothing.
   const std::vector<Data> v(view.begin(), view.end());
   EXPECT_THAT(v, IsEmpty());
+}
+
+TEST(DataViewTest, DictWithIntegerKeys) {
+  const Data data = ParseTextProtoOrDie(R"pb(
+    dict: {
+      values: {
+        key: "string_key"
+        value: {
+          datum: {
+            shape: { dim: { size: -438 } }
+            values: { string_values: [ "val1" ] }
+          }
+        }
+      }
+      kvs: {
+        values: {
+          tuple: {
+            values: {
+              datum: {
+                shape: { dim: { size: -438 } }
+                values: { int32_values: [ 5 ] }
+              }
+            }
+            values: {
+              datum: {
+                shape: { dim: { size: -438 } }
+                values: { string_values: [ "val2" ] }
+              }
+            }
+          }
+        }
+        values: {
+          tuple: {
+            values: {
+              datum: {
+                shape: { dim: { size: -438 } }
+                values: { int64_values: [ 100 ] }
+              }
+            }
+            values: {
+              datum: {
+                shape: { dim: { size: -438 } }
+                values: { string_values: [ "val3" ] }
+              }
+            }
+          }
+        }
+      }
+    }
+  )pb");
+  const DataView view(&data);
+  EXPECT_THAT(view, SizeIs(3));
+
+  // Lookup string key
+  EXPECT_THAT(view["string_key"].data()->datum().values().string_values(0),
+              Eq("val1"));
+
+  // Lookup integer keys
+  EXPECT_THAT(view[5].data()->datum().values().string_values(0), Eq("val2"));
+  EXPECT_THAT(view[100].data()->datum().values().string_values(0), Eq("val3"));
+
+  // Check kvs()
+  auto kvs = view.kvs();
+  ASSERT_THAT(kvs, SizeIs(2));
+
+  auto key0 = Decode(kvs[0].first.data()->datum());
+  ASSERT_TRUE(key0.has_value());
+  EXPECT_THAT(std::get<int32_t>(*key0), Eq(5));
+
+  auto val0 = Decode(kvs[0].second.data()->datum());
+  ASSERT_TRUE(val0.has_value());
+  EXPECT_THAT(std::get<std::string>(*val0), Eq("val2"));
+
+  auto key1 = Decode(kvs[1].first.data()->datum());
+  ASSERT_TRUE(key1.has_value());
+  EXPECT_THAT(std::get<int64_t>(*key1), Eq(100));
+
+  auto val1 = Decode(kvs[1].second.data()->datum());
+  ASSERT_TRUE(val1.has_value());
+  EXPECT_THAT(std::get<std::string>(*val1), Eq("val3"));
+}
+
+TEST(DataViewTest, DictWithArbitraryKeys) {
+  Data data;
+  auto* dict = data.mutable_dict();
+  auto* kvs = dict->mutable_kvs();
+
+  auto add_kv = [kvs](auto&& key_val, const std::string& val_str) {
+    auto* kv = kvs->add_values();
+    auto* tuple = kv->mutable_tuple();
+
+    // Key
+    auto* key_data = tuple->add_values();
+    *key_data->mutable_datum() = Encode(key_val);
+
+    // Value
+    auto* val_data = tuple->add_values();
+    *val_data->mutable_datum() = Encode(val_str);
+  };
+
+  // Add keys in order to trigger coverage
+  // 1. double key (should return std::nullopt in GetAsInt64)
+  add_kv(1.23, "double_val");
+  // 2. bool key (should return std::nullopt in GetAsInt64)
+  add_kv(true, "bool_val");
+  // 3. huge bigint key (should return std::nullopt in GetAsInt64)
+  add_kv(mpz_class("123456789012345678901234567890"), "huge_bigint_val");
+  // 4. huge uint64 key (should return std::nullopt in GetAsInt64)
+  add_kv(static_cast<uint64_t>(9223372036854775808ULL), "huge_uint64_val");
+  // 5. bigint key that fits (should return 123456789012345LL in GetAsInt64)
+  add_kv(mpz_class("123456789012345"), "fits_bigint_val");
+
+  const DataView view(&data);
+  EXPECT_THAT(view, SizeIs(5));
+
+  // Lookup the fits_bigint_val. This will iterate over all previous keys,
+  // calling GetAsInt64 on each, covering all the branches in GetAsInt64.
+  EXPECT_THAT(view[123456789012345LL].data()->datum().values().string_values(0),
+              Eq("fits_bigint_val"));
+
+  // Verify that looking up keys that don't fit or are not integral fails.
+  EXPECT_DEATH(view[999], "Non-existing key: 999");
 }
 
 TEST(DataViewTest, ChainingAccessor) {
