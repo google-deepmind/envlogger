@@ -352,6 +352,7 @@ class ArraySpecCodecTest(parameterized.TestCase):
   def test_encode_dict_of_specs(self, input_spec, expected_spec_dict):
     """Checks that we can encode dicts of Array specs."""
     actual_spec_dict = spec_codec.encode(input_spec)
+    assert isinstance(actual_spec_dict, dict)
     self.assertLen(actual_spec_dict, len(expected_spec_dict))
     for actual, expected in zip(sorted(actual_spec_dict.items()),
                                 sorted(expected_spec_dict.items())):

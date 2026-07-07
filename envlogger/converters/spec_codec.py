@@ -16,7 +16,7 @@
 """Encoder/decoder for dm_env.specs.Array (and subclasses).
 """
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import dm_env
 from dm_env import specs
@@ -32,7 +32,7 @@ _ENVIRONMENT_SPEC_NAMES = [
 
 
 def encode_environment_specs(
-    env: Optional[dm_env.Environment],
+    env: dm_env.Environment | None,
 ) -> dict[str, Any]:
   """Encodes all the specs from a given environment."""
   if env:
@@ -47,7 +47,7 @@ def encode_environment_specs(
 
 def decode_environment_specs(
     encoded_specs: dict[str, Any],
-) -> dict[str, Optional[specs.Array]]:
+) -> dict[str, specs.Array | None]:
   """Decodes all the specs of an environment."""
   if encoded_specs:
     return {spec_name: decode(encoded_specs[spec_name])  # pytype: disable=bad-return-type  # always-use-return-annotations
@@ -73,8 +73,8 @@ def _array_spec_to_dict(array_spec: specs.Array) -> dict[str, Any]:
 
 
 def encode(
-    spec: Union[specs.Array, list[Any], tuple[Any, ...], dict[str, Any]],
-) -> Union[list[Any], tuple[Any, ...], dict[str, Any]]:
+    spec: specs.Array | list[Any] | tuple[Any, ...] | dict[str, Any],
+) -> list[Any] | tuple[Any, ...] | dict[str, Any]:
   """Encodes `spec` using plain Python objects.
 
   This function supports bare Array specs, lists of Array specs, Tuples of Array
@@ -102,8 +102,8 @@ def encode(
 
 
 def decode(
-    spec: Union[list[Any], tuple[Any, ...], dict[str, Any]],
-) -> Union[specs.Array, list[Any], tuple[Any, ...], dict[str, Any]]:
+    spec: list[Any] | tuple[Any, ...] | dict[str, Any],
+) -> specs.Array | list[Any] | tuple[Any, ...] | dict[str, Any]:
   """Parses `spec` into the supported dm_env spec formats."""
   if isinstance(spec, dict):
     if 'shape' in spec and 'dtype' in spec:

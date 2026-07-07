@@ -72,7 +72,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports float32 so we expect no precision loss in encoding."""
     expected = storage_pb2.Data()
     datum = expected.datum
-    datum.values.float_values.append(np.float32(3.14))
+    datum.values.float_values.append(float(np.float32(3.14)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode(np.float32(3.14)), expected)
 
@@ -80,7 +80,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports float32 so we expect no precision loss in decoding."""
     user_data = storage_pb2.Data()
     datum = user_data.datum
-    datum.values.float_values.append(np.float32(3.14))
+    datum.values.float_values.append(float(np.float32(3.14)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertTrue(
@@ -161,7 +161,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports int32 so we expect no precision loss in encoding."""
     expected = storage_pb2.Data()
     datum = expected.datum
-    datum.values.int32_values.append(np.int32(3))
+    datum.values.int32_values.append(int(np.int32(3)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode(np.int32(3)), expected)
 
@@ -169,7 +169,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports int32 so we expect no precision loss in encoding."""
     user_data = storage_pb2.Data()
     datum = user_data.datum
-    datum.values.int32_values.append(np.int32(-32))
+    datum.values.int32_values.append(int(np.int32(-32)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertTrue(
@@ -194,7 +194,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports int64 so we expect no precision loss in encoding."""
     expected = storage_pb2.Data()
     datum = expected.datum
-    datum.values.int64_values.append(np.int64(-3))
+    datum.values.int64_values.append(int(np.int64(-3)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode(np.int64(-3)), expected)
 
@@ -202,7 +202,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports int64 so we expect no precision loss in decoding."""
     user_data = storage_pb2.Data()
     datum = user_data.datum
-    datum.values.int64_values.append(np.int64(-64))
+    datum.values.int64_values.append(int(np.int64(-64)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertTrue(
@@ -227,7 +227,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports uint32 so we expect no precision loss in encoding."""
     expected = storage_pb2.Data()
     datum = expected.datum
-    datum.values.uint32_values.append(np.uint32(12345))
+    datum.values.uint32_values.append(int(np.uint32(12345)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode(np.uint32(12345)), expected)
 
@@ -235,7 +235,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports uint32 so we expect no precision loss in decoding."""
     user_data = storage_pb2.Data()
     datum = user_data.datum
-    datum.values.uint32_values.append(np.uint32(32))
+    datum.values.uint32_values.append(int(np.uint32(32)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertTrue(
@@ -260,7 +260,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports uint64 so we expect no precision loss in encoding."""
     expected = storage_pb2.Data()
     datum = expected.datum
-    datum.values.uint64_values.append(np.uint64(12345))
+    datum.values.uint64_values.append(int(np.uint64(12345)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode(np.uint64(12345)), expected)
 
@@ -268,7 +268,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Proto supports uint64 so we expect no precision loss in decoding."""
     user_data = storage_pb2.Data()
     datum = user_data.datum
-    datum.values.uint64_values.append(np.uint64(64))
+    datum.values.uint64_values.append(int(np.uint64(64)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertTrue(
@@ -659,7 +659,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Tests that a Python list of one element is represented by an Array."""
     expected = storage_pb2.Data()
     datum = expected.array.values.add().datum
-    datum.values.float_values.append(np.float32(3.14))
+    datum.values.float_values.append(float(np.float32(3.14)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode([np.float32(3.14)]), expected)
 
@@ -667,7 +667,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Tests that we get a Python list from a proto Array."""
     user_data = storage_pb2.Data()
     datum = user_data.array.values.add().datum
-    datum.values.float_values.append(np.float32(3.14))
+    datum.values.float_values.append(float(np.float32(3.14)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertNotEmpty(decoded)
@@ -679,18 +679,18 @@ class NumpyConvertersTest(parameterized.TestCase):
     expected = storage_pb2.Data()
     array1 = expected.array.values.add().array
     datum1 = array1.values.add().datum
-    datum1.values.float_values.append(np.float32(1.2))
+    datum1.values.float_values.append(float(np.float32(1.2)))
     datum1.shape.dim.add().size = -438
     datum2 = array1.values.add().datum
-    datum2.values.float_values.append(np.float32(3.4))
+    datum2.values.float_values.append(float(np.float32(3.4)))
     datum2.shape.dim.add().size = -438
 
     array2 = expected.array.values.add().array
     datum3 = array2.values.add().datum
-    datum3.values.float_values.append(np.float32(5.6))
+    datum3.values.float_values.append(float(np.float32(5.6)))
     datum3.shape.dim.add().size = -438
     datum4 = array2.values.add().datum
-    datum4.values.float_values.append(np.float32(7.8))
+    datum4.values.float_values.append(float(np.float32(7.8)))
     datum4.shape.dim.add().size = -438
 
     self.assertEqual(
@@ -705,7 +705,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Tests that a Python list of one element is represented by an Array."""
     expected = storage_pb2.Data()
     datum = expected.array.values.add().datum
-    datum.values.double_values.append(np.float64(6.28))
+    datum.values.double_values.append(float(np.float64(6.28)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode([np.float64(6.28)]), expected)
 
@@ -713,7 +713,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Tests that we get a Python list from a proto Array."""
     user_data = storage_pb2.Data()
     datum = user_data.array.values.add().datum
-    datum.values.double_values.append(np.float64(6.28))
+    datum.values.double_values.append(float(np.float64(6.28)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertNotEmpty(decoded)
@@ -728,7 +728,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Tests that a Python list of one element is represented by an Array."""
     expected = storage_pb2.Data()
     datum = expected.array.values.add().datum
-    datum.values.int32_values.append(np.int32(-12345))
+    datum.values.int32_values.append(int(np.int32(-12345)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode([np.int32(-12345)]), expected)
 
@@ -736,7 +736,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Tests that a Python list of one element is represented by an Array."""
     user_data = storage_pb2.Data()
     datum = user_data.array.values.add().datum
-    datum.values.int32_values.append(np.int32(-12345))
+    datum.values.int32_values.append(int(np.int32(-12345)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertNotEmpty(decoded)
@@ -751,7 +751,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Tests that a Python list of one element is represented by an Array."""
     expected = storage_pb2.Data()
     datum = expected.array.values.add().datum
-    datum.values.int64_values.append(np.int64(-1234567890123456))
+    datum.values.int64_values.append(int(np.int64(-1234567890123456)))
     datum.shape.dim.add().size = -438
     self.assertEqual(codec.encode([np.int64(-1234567890123456)]), expected)
 
@@ -759,7 +759,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     """Tests that a Python list of one element is represented by an Array."""
     user_data = storage_pb2.Data()
     datum = user_data.array.values.add().datum
-    datum.values.int64_values.append(np.int64(-1234567890123456))
+    datum.values.int64_values.append(int(np.int64(-1234567890123456)))
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertNotEmpty(decoded)
@@ -1524,7 +1524,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     t1 = d.values.add().tuple
     k1 = t1.values.add().datum
     k1.shape.dim.add().size = -438
-    k1.values.int64_values.append(np.int64(1729))
+    k1.values.int64_values.append(int(np.int64(1729)))
     v1 = t1.values.add().datum
     v1.shape.dim.add().size = -438
     v1.values.int32_values.append(12345)
@@ -1537,7 +1537,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     t1 = d.values.add().tuple
     k1 = t1.values.add().datum
     k1.shape.dim.add().size = -438
-    k1.values.int64_values.append(np.int64(1729))
+    k1.values.int64_values.append(int(np.int64(1729)))
     v1 = t1.values.add().datum
     v1.shape.dim.add().size = -438
     v1.values.int32_values.append(12345)

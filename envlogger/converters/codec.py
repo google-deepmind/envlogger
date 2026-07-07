@@ -81,27 +81,27 @@ encode({'primes': np.array([2, 3, 5, 7, 11], dtype=np.int64)})
 """
 
 import struct
-from typing import Any, Optional, Union
+from typing import Any
 
 from envlogger.proto import storage_pb2
 import numpy as np
 
 
 # A type annotation that represents all the possible number types we support.
-ScalarNumber = Union[
-    float,
-    int,
-    np.float32,
-    np.float64,
-    np.int32,
-    np.int64,
-    np.uint32,
-    np.uint64,
-    np.int8,
-    np.int16,
-    np.uint8,
-    np.uint16,
-]
+ScalarNumber = (
+    float
+    | int
+    | np.float32
+    | np.float64
+    | np.int32
+    | np.int64
+    | np.uint32
+    | np.uint64
+    | np.int8
+    | np.int16
+    | np.uint8
+    | np.uint16
+)
 
 
 # Dimension size reserved for scalars. Please see proto definition.
@@ -139,7 +139,7 @@ def _python_int_to_bytes(py_int: int) -> bytes:
 
 
 def _set_datum_values_from_scalar(
-    scalar: Union[ScalarNumber, bool, str, bytes], datum: storage_pb2.Datum
+    scalar: ScalarNumber | bool | str | bytes, datum: storage_pb2.Datum
 ) -> None:
   """Populates `datum` using `scalar` in a best effort way.
 
@@ -296,9 +296,7 @@ def _encode_ndarray(data: np.ndarray) -> storage_pb2.Data:
   return output
 
 
-def _encode_scalar(
-    data: Union[ScalarNumber, bool, str, bytes]
-) -> storage_pb2.Data:
+def _encode_scalar(data: ScalarNumber | bool | str | bytes) -> storage_pb2.Data:
   """Encodes scalar data."""
   output = storage_pb2.Data()
   _set_datum_values_from_scalar(data, output.datum)
@@ -306,7 +304,17 @@ def _encode_scalar(
 
 
 def encode(
-    user_data: Union[np.ndarray, list[Any], tuple[Any, ...], dict[str, Any]],
+    user_data: (
+        np.ndarray
+        | list[Any]
+        | tuple[Any, ...]
+        | dict[str, Any]
+        | ScalarNumber
+        | bool
+        | str
+        | bytes
+        | None
+    ),
 ) -> storage_pb2.Data:
   """Converts common Python data objects to storage_pb2.Data() proto.
 
@@ -355,7 +363,7 @@ def encode(
 
 def decode_datum(
     datum: storage_pb2.Datum,
-) -> Union[np.ndarray, ScalarNumber, bool, str, bytes]:
+) -> np.ndarray | ScalarNumber | bool | str | bytes:
   """Creates a numpy array or scalar from a Datum protobuf.
 
   Args:
@@ -426,19 +434,18 @@ def decode_datum(
 
 
 def decode(
-    user_data: storage_pb2.Data,
-) -> Optional[
-    Union[
-        ScalarNumber,
-        bool,
-        str,
-        bytes,
-        np.ndarray,
-        list[Any],
-        tuple[Any, ...],
-        dict[Any, Any],
-    ]
-]:
+    user_data: storage_pb2.Data | None,
+) -> (
+    ScalarNumber
+    | bool
+    | str
+    | bytes
+    | np.ndarray
+    | list[Any]
+    | tuple[Any, ...]
+    | dict[Any, Any]
+    | None
+):
   """Converts from storage_pb2.Data to common Python data objects.
 
   This function converts a storage_pb2.Data protobuf to numpy arrays, lists of
