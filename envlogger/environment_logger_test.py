@@ -21,7 +21,6 @@ import os
 import pickle
 import tempfile
 import threading
-from typing import Optional
 from unittest import mock
 import uuid
 
@@ -309,12 +308,12 @@ class EnvLoggerTest(parameterized.TestCase):
     """Checks that `episode_fn` produces expected custom data."""
     v = 100
 
-    def increment_fn(timestep, unused_action, unused_env) -> Optional[int]:
+    def increment_fn(timestep, unused_action, unused_env) -> int | None:
       """Increments `v` on the last timestep and returns it in even episodes."""
       nonlocal v
       if timestep.first():
         v += 1
-      return np.int32(v) if v % 2 == 0 else None
+      return v if v % 2 == 0 else None
 
     env = catch_env.Catch()
     env = environment_logger.EnvLogger(
