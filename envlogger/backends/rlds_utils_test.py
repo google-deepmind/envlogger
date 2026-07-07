@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for rlds_utils."""
+"""Tests for validating the behavior of RLDS utility functions."""
 
 from absl.testing import absltest
 import dm_env
@@ -106,6 +106,7 @@ class RldsUtilsTest(absltest.TestCase):
     rlds_step = rlds_utils.to_rlds_step(prev_step, None)
     for key in rlds_step.keys():
       if isinstance(rlds_step[key], dict):  # obs, action, reward dicts
+        assert isinstance(expected_step[key], dict)
         for rv, ev in zip(rlds_step[key].values(), expected_step[key].values()):
           np.testing.assert_equal(rv, ev)
       else:
@@ -199,20 +200,17 @@ class RldsUtilsTest(absltest.TestCase):
     builder = tfds.builder_from_directory(data_dir)
     expected_splits = builder.info.splits
     # Remove info from the metadata
+    original_split = builder.info.splits['split']
     builder.info.set_splits(
-        tfds.core.splits.SplitDict([
-            tfds.core.SplitInfo(
-                name='split',
-                shard_lengths=[],
-                num_bytes=0,
-                filename_template=tfds.core.ShardedFileTemplate(
-                    dataset_name=builder.name,
-                    split='split',
-                    filetype_suffix='tfrecord',
-                    data_dir=data_dir,
-                    template='{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}',
-                ))
-        ]))
+        tfds.core.splits.SplitDict(
+            [
+                original_split.replace(
+                    shard_lengths=[],
+                    num_bytes=0,
+                )
+            ]
+        )
+    )
     builder.info.write_to_directory(data_dir)
 
     new_builder = rlds_utils.maybe_recover_last_shard(builder)
@@ -244,21 +242,14 @@ class RldsUtilsTest(absltest.TestCase):
     # Remove info from the metadata
     # Since we don't know how many bytes each shard has, we let it as it was.
     # We check later that the number of bytes increased.
+    original_split = builder.info.splits['split']
     builder.info.set_splits(
         tfds.core.splits.SplitDict([
-            tfds.core.SplitInfo(
-                name='split',
+            original_split.replace(
                 shard_lengths=[expected_splits['split'].shard_lengths[0]],
-                num_bytes=expected_splits['split'].num_bytes,
-                filename_template=tfds.core.ShardedFileTemplate(
-                    dataset_name=builder.name,
-                    split='split',
-                    filetype_suffix='tfrecord',
-                    data_dir=data_dir,
-                    template='{DATASET}-{SPLIT}.{FILEFORMAT}-{SHARD_INDEX}',
-                ),
             )
-        ]))
+        ])
+    )
     builder.info.write_to_directory(data_dir)
 
     new_builder = rlds_utils.maybe_recover_last_shard(builder)

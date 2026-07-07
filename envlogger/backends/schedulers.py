@@ -16,7 +16,6 @@
 """Common logging scheduling strategies."""
 
 from collections.abc import Callable
-from typing import Optional, Union
 
 from envlogger import step_data
 import numpy as np
@@ -37,7 +36,7 @@ class NStepScheduler:
     self._step_interval = step_interval
     self._step_counter = 0
 
-  def __call__(self, unused_data: step_data.StepData):
+  def __call__(self, unused_data: step_data.StepData | None = None):
     """Returns `True` every N times it is called."""
 
     should_log = self._step_counter % self._step_interval == 0
@@ -48,7 +47,7 @@ class NStepScheduler:
 class BernoulliStepScheduler:
   """Returns `True` with a given probability."""
 
-  def __init__(self, keep_probability: float, seed: Optional[int] = None):
+  def __init__(self, keep_probability: float, seed: int | None = None):
     if keep_probability < 0.0 or keep_probability > 1.0:
       raise ValueError(
           f'keep_probability must be in [0,1], got: {keep_probability}')
@@ -56,7 +55,7 @@ class BernoulliStepScheduler:
     self._keep_probability = keep_probability
     self._rng = np.random.default_rng(seed)
 
-  def __call__(self, unused_data: step_data.StepData):
+  def __call__(self, unused_data: step_data.StepData | None = None):
     """Returns `True` with probability `self._keep_probability`."""
 
     return self._rng.random() < self._keep_probability
@@ -85,7 +84,7 @@ class NEpisodeScheduler:
 class BernoulliEpisodeScheduler:
   """Returns `True` with a given probability at every episode."""
 
-  def __init__(self, keep_probability: float, seed: Optional[int] = None):
+  def __init__(self, keep_probability: float, seed: int | None = None):
     if keep_probability < 0.0 or keep_probability > 1.0:
       raise ValueError(
           f'keep_probability must be in [0,1], got: {keep_probability}')
@@ -109,7 +108,7 @@ class ListStepScheduler:
   you can use Numpy's functions such as logspace() to generate non-linear steps.
   """
 
-  def __init__(self, desired_steps: Union[list[int], np.ndarray]):
+  def __init__(self, desired_steps: list[int] | np.ndarray):
     if (isinstance(desired_steps, np.ndarray) and
         not (desired_steps.dtype == np.int32 or
              desired_steps.dtype == np.int64)):
@@ -122,7 +121,7 @@ class ListStepScheduler:
     self._desired_steps = set(desired_steps)
     self._step_counter = 0
 
-  def __call__(self, data: step_data.StepData):
+  def __call__(self, data: step_data.StepData | None = None):
     """Returns `True` every N episodes."""
 
     should_log = self._step_counter in self._desired_steps
@@ -137,7 +136,7 @@ class ListEpisodeScheduler:
   you can use Numpy's functions such as logspace() to generate non-linear steps.
   """
 
-  def __init__(self, desired_episodes: Union[list[int], np.ndarray]):
+  def __init__(self, desired_episodes: list[int] | np.ndarray):
     if (isinstance(desired_episodes, np.ndarray) and
         not (desired_episodes.dtype == np.int32 or
              desired_episodes.dtype == np.int64)):
