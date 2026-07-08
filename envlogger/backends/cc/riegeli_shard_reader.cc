@@ -20,26 +20,25 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
-#include "glog/logging.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/time.h"
-#include "absl/types/variant.h"
 #include "envlogger/backends/cc/episode_info.h"
 #include "envlogger/converters/make_visitor.h"
 #include "envlogger/converters/xtensor_codec.h"
 #include "envlogger/platform/filesystem.h"
-#include "envlogger/platform/riegeli_file_reader.h"
 #include "envlogger/platform/status_macros.h"
 #include "envlogger/proto/storage.pb.h"
 #include "riegeli/base/maker.h"
 #include "riegeli/records/record_reader.h"
-#include "xtensor/xarray.hpp"
 #include "xtensor/xaxis_iterator.hpp"
+#include "xtensor/xtensor_forward.hpp"
 
 namespace envlogger {
 namespace {
@@ -97,7 +96,7 @@ absl::Status RiegeliShardReader::Init(
                              CreateReader(step_offsets_filepath));
   while (step_offsets_reader.ReadRecord(value)) {
     const std::optional<BasicType> step_offsets_decoded = Decode(value);
-    if (step_offsets_decoded) absl::visit(steps_visitor, *step_offsets_decoded);
+    if (step_offsets_decoded) std::visit(steps_visitor, *step_offsets_decoded);
   }
 
   // Read episode index.
@@ -106,7 +105,7 @@ absl::Status RiegeliShardReader::Init(
   while (episode_index_reader.ReadRecord(value)) {
     const std::optional<BasicType> episode_index_decoded = Decode(value);
     if (episode_index_decoded)
-      absl::visit(episode_index_visitor, *episode_index_decoded);
+      std::visit(episode_index_visitor, *episode_index_decoded);
   }
 
   if (shard_->step_offsets.empty()) {
