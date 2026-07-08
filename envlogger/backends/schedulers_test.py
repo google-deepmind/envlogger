@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for schedulers."""
+"""Tests for EnvLogger backend flush schedulers (e.g. step, episode, time)."""
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -362,6 +362,47 @@ class DefaultSchedulersTest(parameterized.TestCase):
       else:
         for timestep in _create_episode(num_transitions=np.random.randint(100)):
           self.assertFalse(scheduler(timestep))
+
+
+class TimeSchedulerTest(parameterized.TestCase):
+
+  def test_invalid_args(self):
+    self.assertRaises(
+        ValueError, schedulers.TimeScheduler, time_interval_seconds=-1
+    )
+    self.assertRaises(
+        ValueError, schedulers.TimeScheduler, time_interval_seconds=0
+    )
+
+  def test_time_scheduler(self):
+    """TimeScheduler should return True only after the time interval has passed."""
+    current_time = 0.0
+
+    def mock_clock():
+      return current_time
+
+    # 10 seconds interval
+    scheduler = schedulers.TimeScheduler(
+        time_interval_seconds=10.0, clock_fn=mock_clock
+    )
+
+    # First call at t=0 should be False
+    self.assertFalse(scheduler(None))
+
+    # Advance time by 5 seconds
+    current_time = 5.0
+    self.assertFalse(scheduler(None))
+
+    # Advance time by another 5 seconds (total 10)
+    current_time = 10.0
+    self.assertTrue(scheduler(None))
+
+    # Next call immediately after should be False
+    self.assertFalse(scheduler(None))
+
+    # Advance time by 11 seconds (total 21)
+    current_time = 21.0
+    self.assertTrue(scheduler(None))
 
 
 if __name__ == '__main__':

@@ -16,6 +16,7 @@
 """Common logging scheduling strategies."""
 
 from collections.abc import Callable
+import time
 
 from envlogger import step_data
 import numpy as np
@@ -155,3 +156,32 @@ class ListEpisodeScheduler:
     if data.timestep.last():
       self._episode_counter += 1
     return should_log
+
+
+class TimeScheduler:
+  """Returns `True` if at least `time_interval_seconds` have passed.
+
+  This is useful for time-based flushing.
+  """
+
+  def __init__(
+      self,
+      time_interval_seconds: float,
+      clock_fn: Callable[[], float] = time.time,
+  ):
+    if time_interval_seconds <= 0:
+      raise ValueError(
+          f'time_interval_seconds must be positive, got {time_interval_seconds}'
+      )
+
+    self._time_interval_seconds = time_interval_seconds
+    self._clock_fn = clock_fn
+    self._last_flush_time = self._clock_fn()
+
+  def __call__(self, unused_data: step_data.StepData | None = None) -> bool:
+    """Returns `True` if at least `time_interval_seconds` have passed."""
+    current_time = self._clock_fn()
+    if current_time - self._last_flush_time >= self._time_interval_seconds:
+      self._last_flush_time = current_time
+      return True
+    return False

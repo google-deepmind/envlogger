@@ -205,6 +205,18 @@ class RiegeliBackendTest(parameterized.TestCase):
                           -len(episode) - 1)
 
 
+  def test_default_scheduler(self):
+    """RiegeliBackendWriter should use TimeScheduler(600) by default."""
+    temp_dir = self.create_tempdir()
+    backend = riegeli_backend_writer.RiegeliBackendWriter(
+        data_directory=temp_dir.full_path
+    )
+    scheduler = backend._flush_scheduler
+    self.assertIsInstance(scheduler, schedulers.TimeScheduler)
+    assert isinstance(scheduler, schedulers.TimeScheduler)
+    self.assertEqual(scheduler._time_interval_seconds, 600.0)
+    backend.close()
+
 
 if __name__ == '__main__':
   absltest.main()
