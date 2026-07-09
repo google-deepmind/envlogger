@@ -76,7 +76,7 @@ def catch_env_tfds_config(
       Callable[..., tfds.rlds.rlds_base.DatasetConfig],
       tfds.rlds.rlds_base.DatasetConfig,
   )(
-      name=name,
+      name=name,  # pyrefly: ignore[unexpected-keyword]
       observation_info=tfds.features.Tensor(
           shape=(10, 5), dtype=tf.float32, encoding=tfds.features.Encoding.ZLIB
       ),
