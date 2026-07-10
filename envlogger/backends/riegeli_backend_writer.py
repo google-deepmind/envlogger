@@ -15,6 +15,7 @@
 
 """For writing trajectory data to riegeli files."""
 
+import datetime
 from typing import Any, Optional
 
 from absl import logging
@@ -53,14 +54,16 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
       writer_options: Comma-separated list of options that are passed to Riegeli
         RecordWriter as is.
       flush_scheduler: This controls when data is flushed to permanent storage.
-        If `None`, it defaults to a step-wise Bernoulli scheduler with 1/5000
-        chances of flushing.
+        If `None`, it defaults to a time-based scheduler with a 10-minute
+        interval.
       **base_kwargs: arguments for the base class.
     """
     super().__init__(**base_kwargs)
     self._data_directory = data_directory
     if flush_scheduler is None:
-      self._flush_scheduler = schedulers.BernoulliStepScheduler(1.0 / 5000)
+      self._flush_scheduler = schedulers.TimeScheduler(
+          datetime.timedelta(minutes=10)
+      )
     else:
       self._flush_scheduler = flush_scheduler
     self._data_writer = riegeli_dataset_writer.RiegeliDatasetWriter()

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for schedulers."""
+import datetime
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -362,6 +362,163 @@ class DefaultSchedulersTest(parameterized.TestCase):
       else:
         for timestep in _create_episode(num_transitions=np.random.randint(100)):
           self.assertFalse(scheduler(timestep))
+
+  @parameterized.named_parameters(
+      ('negative_seconds', -5),
+      ('zero_seconds', 0),
+      ('negative_timedelta', datetime.timedelta(seconds=-1)),
+      ('zero_timedelta', datetime.timedelta(seconds=0)),
+  )
+  def test_time_scheduler_invalid_args(self, interval):
+    """TimeScheduler should raise an error if given invalid intervals."""
+    self.assertRaises(ValueError, schedulers.TimeScheduler, interval=interval)
+
+  def test_time_scheduler_logic(self):
+    """TimeScheduler should return True only after the interval has elapsed."""
+    current_time = 100.0
+
+    def mock_clock() -> float:
+      return current_time
+
+    scheduler = schedulers.TimeScheduler(interval=5, clock=mock_clock)
+
+    self.assertFalse(scheduler(None))
+
+    current_time = 104.0
+    self.assertFalse(scheduler(None))
+
+    current_time = 105.0
+    self.assertTrue(scheduler(None))
+
+    self.assertFalse(scheduler(None))
+
+    current_time = 111.0
+    self.assertTrue(scheduler(None))
+
+  def test_time_scheduler_timedelta_logic(self):
+    current_time = 100.0
+
+    def mock_clock() -> float:
+      return current_time
+
+    scheduler = schedulers.TimeScheduler(
+        interval=datetime.timedelta(seconds=5), clock=mock_clock
+    )
+
+    self.assertFalse(scheduler(None))
+
+    current_time = 105.0
+    self.assertTrue(scheduler(None))
+
+  def test_time_scheduler_boundary_conditions(self):
+    """TimeScheduler should trigger exactly at the boundary."""
+    current_time = 100.0
+
+    def mock_clock() -> float:
+      return current_time
+
+    scheduler = schedulers.TimeScheduler(interval=5.0, clock=mock_clock)
+    epsilon = 1e-6
+
+    # Verify T_0
+    self.assertFalse(scheduler(None))
+
+    # T_0 + interval - epsilon -> should not trigger
+    current_time = 100.0 + 5.0 - epsilon
+    self.assertFalse(scheduler(None))
+
+    # T_0 + interval -> should trigger
+    current_time = 100.0 + 5.0
+    self.assertTrue(scheduler(None))
+
+    # Immediately after -> should not trigger
+    self.assertFalse(scheduler(None))
+
+    # T_1 = 105.0
+    # T_1 + interval - epsilon -> should not trigger
+    current_time = 105.0 + 5.0 - epsilon
+    self.assertFalse(scheduler(None))
+
+    # T_1 + interval + epsilon -> should trigger
+    current_time = 105.0 + 5.0 + epsilon
+    self.assertTrue(scheduler(None))
+
+  def test_time_scheduler_timedelta_boundary_conditions(self):
+    """TimeScheduler should preserve microsecond precision with timedelta."""
+    current_time = 100.0
+
+    def mock_clock() -> float:
+      return current_time
+
+    interval = datetime.timedelta(microseconds=10)
+    scheduler = schedulers.TimeScheduler(interval=interval, clock=mock_clock)
+
+    # interval in seconds is 0.00001
+    interval_seconds = 0.00001
+    epsilon = 1e-6  # 1 microsecond
+
+    # Verify T_0
+    self.assertFalse(scheduler(None))
+
+    # T_0 + interval - epsilon -> should not trigger
+    current_time = 100.0 + interval_seconds - epsilon
+    self.assertFalse(scheduler(None))
+
+    # T_0 + interval -> should trigger
+    current_time = 100.0 + interval_seconds
+    self.assertTrue(scheduler(None))
+
+  def test_time_scheduler_large_time_jump(self):
+    """TimeScheduler should trigger once and reset baseline on large jump."""
+    current_time = 100.0
+
+    def mock_clock() -> float:
+      return current_time
+
+    scheduler = schedulers.TimeScheduler(interval=5.0, clock=mock_clock)
+
+    # Verify T_0
+    self.assertFalse(scheduler(None))
+
+    # Jump to 112.0 (elapsed 12.0)
+    current_time = 112.0
+    self.assertTrue(scheduler(None))  # Should trigger
+
+    # Subsequent call at same time should not trigger
+    self.assertFalse(scheduler(None))
+
+    # T_1 is now 112.0
+    # T_1 + 1.0 -> should not trigger
+    current_time = 113.0
+    self.assertFalse(scheduler(None))
+
+    # T_1 + 5.0 -> should trigger
+    current_time = 117.0
+    self.assertTrue(scheduler(None))
+
+  def test_time_scheduler_backward_clock(self):
+    """TimeScheduler should handle backward clock jumps gracefully."""
+    current_time = 100.0
+
+    def mock_clock() -> float:
+      return current_time
+
+    scheduler = schedulers.TimeScheduler(interval=5.0, clock=mock_clock)
+
+    # Verify T_0
+    self.assertFalse(scheduler(None))
+
+    # Move clock backward to 95.0
+    current_time = 95.0
+    self.assertFalse(scheduler(None))
+
+    # Move clock back to 100.0
+    current_time = 100.0
+    self.assertFalse(scheduler(None))
+
+    # Move clock to 105.0 (T_0 + 5.0) -> should trigger
+    current_time = 105.0
+    self.assertTrue(scheduler(None))
 
 
 if __name__ == '__main__':

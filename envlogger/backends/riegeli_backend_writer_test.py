@@ -21,6 +21,7 @@ in environment_logger_test.
 
 import operator
 from typing import Any, Optional
+from unittest import mock
 
 from absl import logging
 from absl.testing import absltest
@@ -204,6 +205,29 @@ class RiegeliBackendTest(parameterized.TestCase):
         self.assertRaises(IndexError, operator.getitem, episode,
                           -len(episode) - 1)
 
+
+  def test_default_scheduler_is_time_based(self):
+    writer = riegeli_backend_writer.RiegeliBackendWriter(
+        data_directory=self.create_tempdir().full_path
+    )
+    scheduler = writer._flush_scheduler
+    self.assertIsInstance(scheduler, schedulers.TimeScheduler)
+    self.assertEqual(scheduler._interval_seconds, 600.0)
+
+  def test_flush_scheduler_is_called(self):
+    mock_flush_scheduler = mock.create_autospec(
+        schedulers.TimeScheduler, instance=True, return_value=True
+    )
+
+    writer = riegeli_backend_writer.RiegeliBackendWriter(
+        data_directory=self.create_tempdir().full_path,
+        flush_scheduler=mock_flush_scheduler,
+    )
+
+    step = step_data.StepData(dm_env.restart(observation=None), action=None)
+    writer.record_step(step, is_new_episode=True)
+
+    mock_flush_scheduler.assert_called_once_with(step)
 
 
 if __name__ == '__main__':

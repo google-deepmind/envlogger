@@ -16,6 +16,8 @@
 """Common logging scheduling strategies."""
 
 from collections.abc import Callable
+import datetime
+import time
 
 from envlogger import step_data
 import numpy as np
@@ -155,3 +157,33 @@ class ListEpisodeScheduler:
     if data.timestep.last():
       self._episode_counter += 1
     return should_log
+
+
+class TimeScheduler:
+  """Returns `True` after a specific time interval has elapsed."""
+
+  def __init__(
+      self,
+      interval: datetime.timedelta | float | int,
+      clock: Callable[[], float] = time.monotonic,
+  ):
+    """Initializes the time scheduler class."""
+
+    if isinstance(interval, datetime.timedelta):
+      self._interval_seconds = interval.total_seconds()
+    else:
+      self._interval_seconds = float(interval)
+
+    if self._interval_seconds <= 0:
+      raise ValueError(f'interval must be positive, got {interval!r}')
+
+    self._clock = clock
+    self._last_trigger_time = self._clock()
+
+  def __call__(self, unused_data: step_data.StepData | None = None) -> bool:
+    """Returns `True` if the interval has elapsed since the last trigger."""
+    now = self._clock()
+    if now - self._last_trigger_time >= self._interval_seconds:
+      self._last_trigger_time = now
+      return True
+    return False
