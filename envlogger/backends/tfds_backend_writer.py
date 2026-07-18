@@ -16,6 +16,7 @@
 """TFDS backend for Envlogger."""
 import dataclasses
 from typing import Any, Optional
+import warnings
 
 from absl import logging
 from envlogger import step_data
@@ -69,7 +70,12 @@ def _sanitize_metadata(data: Any) -> Any:
 
 
 class TFDSBackendWriter(backend_writer.BackendWriter):
-  """Backend that writes trajectory data in TFDS format (and RLDS structure)."""
+  """Backend that writes trajectory data in TFDS format (and RLDS structure).
+
+  .. deprecated::
+    `TFDSBackendWriter` is deprecated and will be removed in a future version
+    of EnvLogger. Please migrate to `RiegeliBackendWriter`.
+  """
 
 
   def __init__(self,
@@ -92,6 +98,12 @@ class TFDSBackendWriter(backend_writer.BackendWriter):
         metadata.
       **base_kwargs: arguments for the base class.
     """
+    warnings.warn(
+        'TFDSBackendWriter is deprecated and will be removed in a future'
+        ' version of EnvLogger. Please migrate to RiegeliBackendWriter.',
+        category=FutureWarning,
+        stacklevel=2,
+    )
     super().__init__(**base_kwargs)
     if not split_name:
       split_name = 'train'
