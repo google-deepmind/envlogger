@@ -15,6 +15,11 @@
 build --noenable_bzlmod
 build --enable_workspace
 
+# Bazel repository and disk cache directories for CI and local builds.
+build --repository_cache=~/.cache/bazel-repo
+build --disk_cache=~/.cache/bazel-disk
+
+
 # The `-std=c++17` option is required to compile the Riegeli library and
 # `-D_GLIBCXX_USE_CXX11_ABI=0` option is for compatibility with the shared
 # libraries compiled with the same setting.

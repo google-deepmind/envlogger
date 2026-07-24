@@ -34,6 +34,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Cache Bazel Artifacts
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cache/bazel-repo
+            ~/.cache/bazel-disk
+          key: bazel-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/BUILD*', '**/WORKSPACE*', '**/requirements*.txt') }}
+          restore-keys: |
+            bazel-${{ runner.os }}-${{ matrix.python-version }}-
+            bazel-${{ runner.os }}-
+
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with:
