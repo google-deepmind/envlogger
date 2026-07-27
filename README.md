@@ -108,6 +108,11 @@ with envlogger.EnvLogger(
     data_directory='/tmp/experiment_logs') as env:
 ```
 
+### Recording human-generated data
+
+Please see [RLDS Creator] if you want to record data from a human interacting
+with an environment.
+
 [RLDS Creator]: http://github.com/google-research/rlds-creator
 
 ## Reading stored trajectories
