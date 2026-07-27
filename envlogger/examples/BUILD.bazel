@@ -25,13 +25,3 @@ py_binary(
         "//envlogger/testing:catch_env",
     ],
 )
-
-py_binary(
-    name = "tfds_random_agent_catch",
-    srcs = ["tfds_random_agent_catch.py"],
-    deps = [
-        "//envlogger",
-        "//envlogger/backends:tfds_backend_writer",
-        "//envlogger/testing:catch_env",
-    ],
-)

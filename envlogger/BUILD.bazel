@@ -147,12 +147,6 @@ py_wheel(
     }),
     author = "DeepMind",
     distribution = "envlogger",
-    extra_requires = {
-        "tfds": [
-            "tensorflow",
-            "tfds-nightly",
-        ],
-    },
     license = "Apache 2.0",
     platform = select({
         "@platforms//os:linux": "manylinux2014_x86_64",

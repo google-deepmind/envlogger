@@ -28,7 +28,11 @@ from envlogger import environment_logger
 from envlogger.backends import riegeli_backend_writer
 import numpy as np
 import tensorflow as tf
-import tensorflow_datasets as tfds
+
+try:
+  import tensorflow_datasets as tfds
+except ImportError:
+  tfds = None
 import tree
 
 # RLDS dataset string key constants (eliminates dependency on rlds package).
@@ -316,6 +320,12 @@ def main(argv: Sequence[str]) -> None:
 
   if not _OUTPUT_DIR.value:
     raise app.UsageError('--output_dir must be specified.')
+
+  if tfds is None:
+    raise ImportError(
+        'convert_tfds_to_riegeli requires `tensorflow_datasets`. Please install'
+        ' it via `pip install tensorflow_datasets`.'
+    )
 
   if _TFDS_DIR.value:
     builder = tfds.builder_from_directory(_TFDS_DIR.value)

@@ -15,6 +15,7 @@
 
 """Tests for converting TFDS datasets to EnvLogger Riegeli format."""
 
+import unittest
 from unittest import mock
 
 from absl import flags
@@ -68,6 +69,9 @@ def _create_dummy_rlds_dataset(
   )
 
 
+@unittest.skipIf(
+    convert_tfds_to_riegeli.tfds is None, 'tensorflow_datasets is not installed'
+)
 class ConvertTfdsToRiegeliTest(absltest.TestCase):
 
   def test_convert_tf_dataset_to_riegeli(self):
