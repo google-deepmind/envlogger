@@ -15,8 +15,6 @@
 
 """Base class for implementing environment wrappers.."""
 
-import pickle
-
 import dm_env
 
 
@@ -38,10 +36,14 @@ class EnvironmentWrapper(dm_env.Environment):
     return getattr(self._environment, name)
 
   def __getstate__(self):
-    return pickle.dumps(self._environment)
+    raise TypeError(
+        'EnvironmentWrapper instances cannot be serialized/pickled.'
+    )
 
   def __setstate__(self, state):
-    self._environment = pickle.loads(state)
+    raise TypeError(
+        'EnvironmentWrapper instances cannot be serialized/pickled.'
+    )
 
   def step(self, action) -> dm_env.TimeStep:
     return self._environment.step(action)

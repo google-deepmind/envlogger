@@ -155,23 +155,5 @@ PYBIND11_MODULE(riegeli_dataset_reader, m) {
       .def("episode", &envlogger::RiegeliDatasetReader::Episode,
            pybind11::arg("episode_index"),
            pybind11::arg("include_metadata") = false)
-      .def("close", &envlogger::RiegeliDatasetReader::Close)
-      // Pickling support.
-      .def(pybind11::pickle(
-          [](const envlogger::RiegeliDatasetReader& self) {  // __getstate__().
-            pybind11::dict output;
-            output["data_dir"] = self.DataDir();
-            return output;
-          },
-          [](pybind11::dict d) {  // __setstate__().
-            const std::string data_dir = d["data_dir"].cast<std::string>();
-            auto reader = std::make_unique<envlogger::RiegeliDatasetReader>();
-            const absl::Status status = reader->Init(data_dir);
-            if (!status.ok()) {
-              throw std::runtime_error(
-                  "Failed to initialize RiegeliDatasetReader: " +
-                  status.ToString());
-            }
-            return reader;
-          }));
+      .def("close", &envlogger::RiegeliDatasetReader::Close);
 }

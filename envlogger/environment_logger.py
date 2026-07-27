@@ -22,7 +22,6 @@ Data can be read back using:
 """
 
 from collections.abc import Callable
-import pickle
 from typing import Any, Optional, Union
 
 import dm_env
@@ -158,17 +157,15 @@ class EnvLogger(environment_wrapper.EnvironmentWrapper):
     self._backend.close()
 
   def __getstate__(self):
-    return {
-        'env': pickle.dumps(self._environment),
-        'step_fn': pickle.dumps(self._step_fn),
-        'episode_fn': pickle.dumps(self._episode_fn),
-        'reset_next_step': pickle.dumps(self._reset_next_step),
-        'backend': pickle.dumps(self._backend),
-    }
+    raise TypeError(
+        'EnvLogger instances cannot be serialized/pickled. Create the'
+        ' EnvLogger instance within the worker process using an environment'
+        ' factory function instead.'
+    )
 
   def __setstate__(self, state):
-    self._environment = pickle.loads(state['env'])
-    self._step_fn = pickle.loads(state['step_fn'])
-    self._episode_fn = pickle.loads(state['episode_fn'])
-    self._reset_next_step = pickle.loads(state['reset_next_step'])
-    self._backend = pickle.loads(state['backend'])
+    raise TypeError(
+        'EnvLogger instances cannot be serialized/pickled. Create the'
+        ' EnvLogger instance within the worker process using an environment'
+        ' factory function instead.'
+    )

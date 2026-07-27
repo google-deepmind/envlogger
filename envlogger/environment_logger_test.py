@@ -512,22 +512,18 @@ class EnvLoggerTest(parameterized.TestCase):
     for copy in copies:
       copy.close()
 
-  def test_envlogger_pickling(self):
-    """Checks EnvLogger pickling support."""
+  def test_envlogger_pickling_raises_type_error(self):
+    """Checks that EnvLogger pickling raises TypeError."""
 
     env = catch_env.Catch()
     env = environment_logger.EnvLogger(
         env,
         backend=backend_type.BackendType.RIEGELI,
         data_directory=self.dataset_path)
-    _ = _train(env, num_episodes=7)
-
-    serialized = pickle.dumps(env)
-    another_env = pickle.loads(serialized)
-
-    # The env should also work as usual.
-    another_data = _train(another_env, num_episodes=11)
-    self.assertNotEmpty(another_data)
+    with self.assertRaisesRegex(
+        TypeError, 'EnvLogger instances cannot be serialized/pickled'
+    ):
+      pickle.dumps(env)
 
 
 
