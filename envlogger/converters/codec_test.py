@@ -671,8 +671,8 @@ class NumpyConvertersTest(parameterized.TestCase):
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertNotEmpty(decoded)
-    self.assertIsInstance(decoded[0], np.float32)
-    self.assertListEqual(decoded, [np.float32(3.14)])
+    self.assertIsInstance(decoded[0], np.float32)  # pyrefly: ignore[bad-index, unsupported-operation]
+    self.assertListEqual(decoded, [np.float32(3.14)])  # pyrefly: ignore[bad-argument-type]
 
   def test_encode_float32_nested_list(self):
     """Ensures that [[1.2, 3.4], [5.6, 7.8]] is represented correctly."""
@@ -717,8 +717,8 @@ class NumpyConvertersTest(parameterized.TestCase):
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertNotEmpty(decoded)
-    self.assertIsInstance(decoded[0], np.float64)
-    self.assertListEqual(decoded, [np.float64(6.28)])
+    self.assertIsInstance(decoded[0], np.float64)  # pyrefly: ignore[bad-index, unsupported-operation]
+    self.assertListEqual(decoded, [np.float64(6.28)])  # pyrefly: ignore[bad-argument-type]
 
   ##############################################################################
   # int32
@@ -740,8 +740,8 @@ class NumpyConvertersTest(parameterized.TestCase):
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertNotEmpty(decoded)
-    self.assertIsInstance(decoded[0], np.int32)
-    self.assertListEqual(decoded, [np.int32(-12345)])
+    self.assertIsInstance(decoded[0], np.int32)  # pyrefly: ignore[bad-index, unsupported-operation]
+    self.assertListEqual(decoded, [np.int32(-12345)])  # pyrefly: ignore[bad-argument-type]
 
   ##############################################################################
   # int64
@@ -763,8 +763,8 @@ class NumpyConvertersTest(parameterized.TestCase):
     datum.shape.dim.add().size = -438
     decoded = codec.decode(user_data)
     self.assertNotEmpty(decoded)
-    self.assertIsInstance(decoded[0], np.int64)
-    self.assertListEqual(decoded, [np.int64(-1234567890123456)])
+    self.assertIsInstance(decoded[0], np.int64)  # pyrefly: ignore[bad-index, unsupported-operation]
+    self.assertListEqual(decoded, [np.int64(-1234567890123456)])  # pyrefly: ignore[bad-argument-type]
 
   # Homogeneity.
 
@@ -816,7 +816,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     # 3.141519 in big-endian byte array.
     user_data.datum.values.float_values_buffer = b'\x40\x49\x0f\xd0'
     decoded = codec.decode(user_data)
-    self.assertEqual(decoded.dtype, np.float32)
+    self.assertEqual(decoded.dtype, np.float32)  # pyrefly: ignore[missing-attribute]
     np.testing.assert_equal(decoded, np.array([3.14159], dtype=np.float32))
 
   def test_encode_one_double_elem_scalar_ndarray(self):
@@ -1082,7 +1082,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     user_data.datum.shape.dim.add().size = 1
     user_data.datum.values.int8_values = b'\x91'
     decoded = codec.decode(user_data)
-    self.assertEqual(decoded.dtype, np.int8)
+    self.assertEqual(decoded.dtype, np.int8)  # pyrefly: ignore[missing-attribute]
     np.testing.assert_equal(decoded, np.array([-111], dtype=np.int8))
 
   def test_decode_two_int8_elem_ndarray(self):
@@ -1123,7 +1123,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     user_data.datum.shape.dim.add().size = 1
     user_data.datum.values.int16_values = b'\xfe\xa7'
     decoded = codec.decode(user_data)
-    self.assertEqual(decoded.dtype, np.int16)
+    self.assertEqual(decoded.dtype, np.int16)  # pyrefly: ignore[missing-attribute]
     np.testing.assert_equal(decoded, np.array([-345], dtype=np.int16))
 
   def test_decode_two_int16_elem_ndarray(self):
@@ -1497,7 +1497,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     v1 = t1.values.add().datum
     v1.shape.dim.add().size = -438
     v1.values.int64_values.append(456)
-    self.assertEqual(codec.encode({123: np.int64(456)}), expected)
+    self.assertEqual(codec.encode({123: np.int64(456)}), expected)  # pyrefly: ignore[bad-argument-type]
 
   def test_decode_dict_int_keys(self):
     """Dict with Python int keys."""
@@ -1515,7 +1515,7 @@ class NumpyConvertersTest(parameterized.TestCase):
   def test_identity_dict_int_keys(self):
     """Dict with Python int keys."""
     self.assertEqual(
-        codec.decode(codec.encode({123: np.int64(456)})), {123: np.int64(456)})
+        codec.decode(codec.encode({123: np.int64(456)})), {123: np.int64(456)})  # pyrefly: ignore[bad-argument-type]
 
   def test_encode_dict_int64_keys(self):
     """Dict with Python int64 keys."""
@@ -1528,7 +1528,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     v1 = t1.values.add().datum
     v1.shape.dim.add().size = -438
     v1.values.int32_values.append(12345)
-    self.assertEqual(codec.encode({np.int64(1729): np.int32(12345)}), expected)
+    self.assertEqual(codec.encode({np.int64(1729): np.int32(12345)}), expected)  # pyrefly: ignore[bad-argument-type]
 
   def test_decode_dict_int64_keys(self):
     """Dict with Python int64 keys."""
@@ -1546,13 +1546,13 @@ class NumpyConvertersTest(parameterized.TestCase):
   def test_identity_dict_int64_keys(self):
     """Dict with Python int keys."""
     self.assertEqual(
-        codec.decode(codec.encode({np.int64(1729): np.int32(12345)})),
+        codec.decode(codec.encode({np.int64(1729): np.int32(12345)})),  # pyrefly: ignore[bad-argument-type]
         {np.int64(1729): np.int32(12345)})
 
   def test_identity_dict_mixed_keytypes(self):
     """Dict with Python mixed key types."""
     data = {123: np.int64(456), np.int64(1729): np.int32(12345), 'hello': True}
-    self.assertEqual(codec.decode(codec.encode(data)), data)
+    self.assertEqual(codec.decode(codec.encode(data)), data)  # pyrefly: ignore[bad-argument-type]
 
   ##############################################################################
   #

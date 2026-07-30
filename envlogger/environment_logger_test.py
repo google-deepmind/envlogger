@@ -400,7 +400,7 @@ class EnvLoggerTest(parameterized.TestCase):
         previous = None
         for record in riegeli_reader.read_messages(storage_pb2.Datum):
           decoded = codec.decode_datum(record)
-          for episode_start, _ in decoded:
+          for episode_start, _ in decoded:  # pyrefly: ignore[not-iterable]
             if previous is None:
               continue
 
@@ -458,10 +458,10 @@ class EnvLoggerTest(parameterized.TestCase):
 
     def my_episode_fn(timestep, unused_action, unused_env):
       if timestep.last():
-        my_episode_fn.x += 1
-      return my_episode_fn.x
+        my_episode_fn.x += 1  # pyrefly: ignore[missing-attribute]
+      return my_episode_fn.x  # pyrefly: ignore[missing-attribute]
 
-    my_episode_fn.x = 0
+    my_episode_fn.x = 0  # pyrefly: ignore[missing-attribute]
 
     with environment_logger.EnvLogger(
         catch_env.Catch(),
@@ -504,7 +504,7 @@ class EnvLoggerTest(parameterized.TestCase):
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=n) as executor:
       for copy in copies:
-        futures.append(executor.submit(lambda c=copy: _check_data(c)))
+        futures.append(executor.submit(lambda c=copy: _check_data(c)))  # pyrefly: ignore[missing-argument]
     for f in futures:
       f.result(timeout=5)  # Wait for up to 5 seconds.
 

@@ -123,12 +123,12 @@ class DefaultSchedulersTest(parameterized.TestCase):
 
     # Run one trial with `seed`.
     scheduler = schedulers.BernoulliStepScheduler(
-        keep_probability=0.5, seed=seed)
+        keep_probability=0.5, seed=seed)  # pyrefly: ignore[bad-argument-type]
     outcomes = [scheduler(None) for _ in range(100)]
 
     # Repeat the trial with the same `seed`.
     other_scheduler = schedulers.BernoulliStepScheduler(
-        keep_probability=0.5, seed=seed)
+        keep_probability=0.5, seed=seed)  # pyrefly: ignore[bad-argument-type]
     other_outcomes = [other_scheduler(None) for _ in range(100)]
 
     # Assert that the outcomes are exactly the same.
@@ -240,7 +240,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
 
     # Run one trial with `seed`.
     scheduler = schedulers.BernoulliEpisodeScheduler(
-        keep_probability=0.5, seed=seed)
+        keep_probability=0.5, seed=seed)  # pyrefly: ignore[bad-argument-type]
     outcomes = []
     for episode in episodes:
       for timestep in episode:
@@ -248,7 +248,7 @@ class DefaultSchedulersTest(parameterized.TestCase):
 
     # Repeat the trial with the same `seed`.
     other_scheduler = schedulers.BernoulliEpisodeScheduler(
-        keep_probability=0.5, seed=seed)
+        keep_probability=0.5, seed=seed)  # pyrefly: ignore[bad-argument-type]
     other_outcomes = []
     for episode in episodes:
       for timestep in episode:

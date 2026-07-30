@@ -154,7 +154,7 @@ class ArraySpecCodecTest(parameterized.TestCase):
   )
   def test_encode_array(self, input_spec, expected_spec_dict):
     """Checks that we can encode specs.Arrays."""
-    self._compare_spec_dicts(spec_codec.encode(input_spec), expected_spec_dict)
+    self._compare_spec_dicts(spec_codec.encode(input_spec), expected_spec_dict)  # pyrefly: ignore[bad-argument-type]
 
   # Single specs.BoundedArray.
 
@@ -237,7 +237,7 @@ class ArraySpecCodecTest(parameterized.TestCase):
   def test_encode_bounded_array(self, input_spec, expected_spec_dict):
     """Checks that we can encode specs.BoundedArrays."""
     self._compare_spec_dicts(
-        spec_codec.encode(input_spec), expected_spec_dict)
+        spec_codec.encode(input_spec), expected_spec_dict)  # pyrefly: ignore[bad-argument-type]
 
   # Single specs.DiscreteArray.
 
@@ -260,7 +260,7 @@ class ArraySpecCodecTest(parameterized.TestCase):
   def test_encode_discrete_array(self, input_spec, expected_spec_dict):
     """Checks that we can encode specs.DiscreArrays."""
     self._compare_spec_dicts(
-        spec_codec.encode(input_spec), expected_spec_dict)
+        spec_codec.encode(input_spec), expected_spec_dict)  # pyrefly: ignore[bad-argument-type]
 
   # Lists of specs.Arrays.
 
@@ -289,7 +289,7 @@ class ArraySpecCodecTest(parameterized.TestCase):
     actual_spec_list = spec_codec.encode(input_spec)
     self.assertLen(actual_spec_list, len(expected_spec_list))
     for actual, expected in zip(actual_spec_list, expected_spec_list):
-      self._compare_spec_dicts(actual, expected)
+      self._compare_spec_dicts(actual, expected)  # pyrefly: ignore[bad-argument-type]
 
   # Tuples of specs.Arrays.
 
@@ -318,7 +318,7 @@ class ArraySpecCodecTest(parameterized.TestCase):
     actual_spec_tuple = spec_codec.encode(input_spec)
     self.assertLen(actual_spec_tuple, len(expected_spec_tuple))
     for actual, expected in zip(actual_spec_tuple, expected_spec_tuple):
-      self._compare_spec_dicts(actual, expected)
+      self._compare_spec_dicts(actual, expected)  # pyrefly: ignore[bad-argument-type]
 
   # Dicts of specs.Arrays.
 
