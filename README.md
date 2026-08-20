@@ -160,13 +160,6 @@ pip install envlogger
 > sudo apt-get install libgmpxx4ldbl
 > ```
 
-If you want to use the TFDS backend, you need to install the package with
-extra dependencies:
-
-```
-pip install envlogger[tfds]
-```
-
 ##### Compiling from source
 
 For this option you will need to [install Bazel](https://docs.bazel.build/versions/main/install.html) and [GMP](https://gmplib.org/) (`libgmp-dev` on Debian-based systems).
