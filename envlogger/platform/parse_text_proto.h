@@ -15,6 +15,6 @@
 #ifndef THIRD_PARTY_PY_ENVLOGGER_PLATFORM_PARSE_TEXT_PROTO_H_
 #define THIRD_PARTY_PY_ENVLOGGER_PLATFORM_PARSE_TEXT_PROTO_H_
 
-#include "envlogger/platform/default/parse_text_proto.h"
+#include "envlogger/platform/default/parse_text_proto.h"  // IWYU pragma: export
 
 #endif  // THIRD_PARTY_PY_ENVLOGGER_PLATFORM_PARSE_TEXT_PROTO_H_
