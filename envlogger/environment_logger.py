@@ -22,7 +22,7 @@ Data can be read back using:
 """
 
 from collections.abc import Callable
-from typing import Any, Optional, Union
+from typing import Any
 
 import dm_env
 from envlogger import environment_wrapper
@@ -43,19 +43,19 @@ class EnvLogger(environment_wrapper.EnvironmentWrapper):
   def __init__(
       self,
       env: dm_env.Environment,
-      step_fn: Optional[
-          Callable[[dm_env.TimeStep, Any, dm_env.Environment], Any]
-      ] = None,
-      episode_fn: Optional[
-          Callable[[dm_env.TimeStep, Any, dm_env.Environment], Any]
-      ] = None,
-      metadata: Optional[dict[str, Any]] = None,
-      backend: Union[
-          backend_writer.BackendWriter,
-          backend_type.BackendType,
-          Callable[..., backend_writer.BackendWriter],
-      ] = _DEFAULT_BACKEND,
-      **backend_kwargs
+      step_fn: (
+          Callable[[dm_env.TimeStep, Any, dm_env.Environment], Any] | None
+      ) = None,
+      episode_fn: (
+          Callable[[dm_env.TimeStep, Any, dm_env.Environment], Any] | None
+      ) = None,
+      metadata: dict[str, Any] | None = None,
+      backend: (
+          backend_writer.BackendWriter
+          | backend_type.BackendType
+          | Callable[..., backend_writer.BackendWriter]
+      ) = _DEFAULT_BACKEND,
+      **backend_kwargs,
   ):
     """Constructor.
 
@@ -118,9 +118,9 @@ class EnvLogger(environment_wrapper.EnvironmentWrapper):
     else:
       self._backend = backend(**backend_kwargs)
 
-  def _transform_step(self,
-                      timestep: dm_env.TimeStep,
-                      action: Optional[Any] = None) -> step_data.StepData:
+  def _transform_step(
+      self, timestep: dm_env.TimeStep, action: Any | None = None
+  ) -> step_data.StepData:
     """Puts all data into a StepData named tuple."""
     custom_data = None
     if self._step_fn is not None:
