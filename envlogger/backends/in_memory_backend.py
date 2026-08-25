@@ -17,7 +17,7 @@
 """
 
 import copy
-from typing import Any
+from typing import Any, Self
 
 from envlogger import step_data
 from envlogger.backends import backend_reader
@@ -57,7 +57,7 @@ class InMemoryBackendReader(backend_reader.BackendReader):
     self._backend = in_memory_backend_writer
     super().__init__()
 
-  def _copy(self) -> 'InMemoryBackendReader':
+  def _copy(self) -> Self:
     return copy.deepcopy(self)
 
   def close(self) -> None:

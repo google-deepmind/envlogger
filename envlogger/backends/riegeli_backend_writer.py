@@ -16,7 +16,7 @@
 """For writing trajectory data to riegeli files."""
 
 import datetime
-from typing import Any, Optional
+from typing import Any
 
 from absl import logging
 from envlogger import step_data
@@ -35,7 +35,7 @@ class RiegeliBackendWriter(backend_writer.BackendWriter):
       data_directory: str,
       max_episodes_per_file: int = 10000,
       writer_options: str = 'transpose,brotli:6,chunk_size:1M',
-      flush_scheduler: Optional[schedulers.Scheduler] = None,
+      flush_scheduler: schedulers.Scheduler | None = None,
       **base_kwargs,
   ):
     """Constructor.
