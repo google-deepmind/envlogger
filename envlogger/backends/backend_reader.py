@@ -17,7 +17,7 @@
 
 import abc
 from collections.abc import Callable, Iterator, Sequence
-from typing import Any, Generic, Optional, TypeVar, Union, overload
+from typing import Any, Generic, Self, TypeVar, overload
 
 from absl import logging
 from envlogger import step_data
@@ -50,7 +50,7 @@ class _SequenceAdapter(Generic[T], Sequence[T]):
   def __getitem__(self, index: slice) -> list[T]:
     ...
 
-  def __getitem__(self, index: Union[int, slice]) -> Union[T, list[T]]:
+  def __getitem__(self, index: int | slice) -> T | list[T]:
     """Retrieves items from this sequence.
 
     Args:
@@ -98,7 +98,7 @@ class BackendReader(metaclass=abc.ABCMeta):
   def __init__(self):
     self._init_visitors()
 
-  def copy(self) -> 'BackendReader':
+  def copy(self) -> Self:
     """Returns a copy of self."""
 
     c = self._copy()
@@ -106,7 +106,7 @@ class BackendReader(metaclass=abc.ABCMeta):
     return c
 
   @abc.abstractmethod
-  def _copy(self) -> 'BackendReader':
+  def _copy(self) -> Self:
     """Implementation-specific copy behavior."""
 
   def _init_visitors(self):
@@ -151,12 +151,12 @@ class BackendReader(metaclass=abc.ABCMeta):
     return _SequenceAdapter(
         count=episode.num_steps, get_nth_item=get_nth_step_from_episode)
 
-  def _get_nth_episode_metadata(self, i: int) -> Optional[Any]:
+  def _get_nth_episode_metadata(self, i: int) -> Any | None:
     """Returns the metadata for episode `i` (0-based)."""
     episode = self._get_nth_episode_info(i, include_metadata=True)
     return codec.decode(episode.metadata)
 
-  def __enter__(self):
+  def __enter__(self) -> Self:
     return self
 
   def __exit__(self, exc_type, exc_value, tb):
@@ -177,7 +177,7 @@ class BackendReader(metaclass=abc.ABCMeta):
   def episodes(self) -> Sequence[Sequence[step_data.StepData]]:
     return self._episodes
 
-  def episode_metadata(self) -> Sequence[Optional[Any]]:
+  def episode_metadata(self):
     return self._episode_metadata
 
   @property
