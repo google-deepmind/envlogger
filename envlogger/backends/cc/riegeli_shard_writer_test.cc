@@ -30,8 +30,8 @@
 #include "envlogger/platform/test_macros.h"
 #include "envlogger/proto/storage.pb.h"
 #include "riegeli/records/record_reader.h"
-#include "xtensor/xarray.hpp"
-#include "xtensor/xaxis_iterator.hpp"
+#include "xtensor/containers/xarray.hpp"
+#include "xtensor/views/xaxis_iterator.hpp"
 
 namespace envlogger {
 namespace {

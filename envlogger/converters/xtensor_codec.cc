@@ -32,7 +32,7 @@
 #include "riegeli/bytes/string_writer.h"
 #include "riegeli/endian/endian_reading.h"
 #include "riegeli/endian/endian_writing.h"
-#include "xtensor/xview.hpp"
+#include "xtensor/views/xview.hpp"
 
 namespace envlogger {
 namespace {

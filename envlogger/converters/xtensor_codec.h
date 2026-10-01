@@ -40,7 +40,7 @@
 #include "absl/strings/cord.h"
 #include <gmpxx.h>
 #include "envlogger/proto/storage.pb.h"
-#include "xtensor/xarray.hpp"
+#include "xtensor/containers/xarray.hpp"
 
 namespace envlogger {
 

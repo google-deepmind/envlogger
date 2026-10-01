@@ -26,7 +26,7 @@
 #include "envlogger/converters/xtensor_codec.h"
 #include "envlogger/platform/proto_testutil.h"
 #include "envlogger/proto/storage.pb.h"
-#include "xtensor/xarray.hpp"
+#include "xtensor/containers/xarray.hpp"
 
 ABSL_FLAG(std::string, trajectories_dir, "", "Path to reader trajectory.");
 

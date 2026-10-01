@@ -37,8 +37,8 @@
 #include "envlogger/proto/storage.pb.h"
 #include "riegeli/base/maker.h"
 #include "riegeli/records/record_reader.h"
-#include "xtensor/xaxis_iterator.hpp"
-#include "xtensor/xtensor_forward.hpp"
+#include "xtensor/core/xtensor_forward.hpp"
+#include "xtensor/views/xaxis_iterator.hpp"
 
 namespace envlogger {
 namespace {

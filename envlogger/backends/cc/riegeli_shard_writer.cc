@@ -29,8 +29,8 @@
 #include "riegeli/base/types.h"
 #include "riegeli/records/record_position.h"
 #include "riegeli/records/record_writer.h"
-#include "xtensor/xadapt.hpp"
-#include "xtensor/xview.hpp"
+#include "xtensor/containers/xadapt.hpp"
+#include "xtensor/views/xview.hpp"
 
 namespace envlogger {
 namespace {
