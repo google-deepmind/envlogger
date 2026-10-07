@@ -504,7 +504,7 @@ class EnvLoggerTest(parameterized.TestCase):
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=n) as executor:
       for copy in copies:
-        futures.append(executor.submit(lambda c=copy: _check_data(c)))  # pyrefly: ignore[missing-argument]
+        futures.append(executor.submit(lambda c=copy: _check_data(c)))
     for f in futures:
       f.result(timeout=5)  # Wait for up to 5 seconds.
 

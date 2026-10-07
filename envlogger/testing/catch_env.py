@@ -58,7 +58,7 @@ class Catch(dm_env.Environment):
   def reset(self):
     """Returns the first `TimeStep` of a new episode."""
     self._reset_next_step = False
-    self._ball_x = self._rng.randint(self._columns)  # pyrefly: ignore[bad-assignment]
+    self._ball_x = self._rng.randint(self._columns)
     self._ball_y = 0
     self._paddle_x = self._columns // 2
     return dm_env.restart(self._observation())
@@ -73,7 +73,7 @@ class Catch(dm_env.Environment):
     self._paddle_x = np.clip(self._paddle_x + dx, 0, self._columns - 1)
 
     # Drop the ball.
-    self._ball_y += 1  # pyrefly: ignore[unsupported-operation]
+    self._ball_y += 1
 
     # Check for termination.
     if self._ball_y == self._paddle_y:

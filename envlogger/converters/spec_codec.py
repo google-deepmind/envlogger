@@ -50,8 +50,10 @@ def decode_environment_specs(
 ) -> dict[str, specs.Array | None]:
   """Decodes all the specs of an environment."""
   if encoded_specs:
-    return {spec_name: decode(encoded_specs[spec_name])  # pytype: disable=bad-return-type  # always-use-return-annotations
-            for spec_name in _ENVIRONMENT_SPEC_NAMES}
+    return {  # pyrefly: ignore[bad-return]
+        spec_name: decode(encoded_specs[spec_name])
+        for spec_name in _ENVIRONMENT_SPEC_NAMES
+    }
   return {spec_name: None for spec_name in _ENVIRONMENT_SPEC_NAMES}
 
 

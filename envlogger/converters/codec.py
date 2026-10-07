@@ -428,7 +428,7 @@ def decode_datum(
     )
 
   if array is None:
-    return None  # pytype: disable=bad-return-type
+    return None  # pyrefly: ignore[bad-return]
 
   return np.reshape(array, shape)
 

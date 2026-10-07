@@ -1497,7 +1497,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     v1 = t1.values.add().datum
     v1.shape.dim.add().size = -438
     v1.values.int64_values.append(456)
-    self.assertEqual(codec.encode({123: np.int64(456)}), expected)  # pyrefly: ignore[bad-argument-type, bad-assignment]
+    self.assertEqual(codec.encode({123: np.int64(456)}), expected)  # pyrefly: ignore[bad-assignment]
 
   def test_decode_dict_int_keys(self):
     """Dict with Python int keys."""
@@ -1515,7 +1515,8 @@ class NumpyConvertersTest(parameterized.TestCase):
   def test_identity_dict_int_keys(self):
     """Dict with Python int keys."""
     self.assertEqual(
-        codec.decode(codec.encode({123: np.int64(456)})), {123: np.int64(456)})  # pyrefly: ignore[bad-argument-type, bad-assignment]
+        codec.decode(codec.encode({123: np.int64(456)})), {123: np.int64(456)}  # pyrefly: ignore[bad-assignment]
+    )
 
   def test_encode_dict_int64_keys(self):
     """Dict with Python int64 keys."""
@@ -1528,7 +1529,7 @@ class NumpyConvertersTest(parameterized.TestCase):
     v1 = t1.values.add().datum
     v1.shape.dim.add().size = -438
     v1.values.int32_values.append(12345)
-    self.assertEqual(codec.encode({np.int64(1729): np.int32(12345)}), expected)  # pyrefly: ignore[bad-argument-type, bad-assignment]
+    self.assertEqual(codec.encode({np.int64(1729): np.int32(12345)}), expected)  # pyrefly: ignore[bad-assignment]
 
   def test_decode_dict_int64_keys(self):
     """Dict with Python int64 keys."""
@@ -1546,8 +1547,9 @@ class NumpyConvertersTest(parameterized.TestCase):
   def test_identity_dict_int64_keys(self):
     """Dict with Python int keys."""
     self.assertEqual(
-        codec.decode(codec.encode({np.int64(1729): np.int32(12345)})),  # pyrefly: ignore[bad-argument-type, bad-assignment]
-        {np.int64(1729): np.int32(12345)})
+        codec.decode(codec.encode({np.int64(1729): np.int32(12345)})),  # pyrefly: ignore[bad-assignment]
+        {np.int64(1729): np.int32(12345)},
+    )
 
   def test_identity_dict_mixed_keytypes(self):
     """Dict with Python mixed key types."""
